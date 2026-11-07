@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragmentos/base :: pagina('Mi entidad', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+
+    <section class="portada" aria-labelledby="nombre-entidad">
+      <h1 id="nombre-entidad" th:text="${entidad.razonSocial}">Comedor Los Pibes</h1>
+      <p>Armá tus campañas y contanos qué necesitás. Nosotros buscamos las donaciones que te sirven.</p>
+      <a class="btn btn-sol" th:href="@{/entidad/campanias/nueva}" data-carga><svg th:replace="~{fragmentos/componentes :: ic('megaphone')}"></svg>Nueva campaña</a>
+    </section>
+
+    <div class="franja">
+      <div><div class="valor" th:text="${campanias.size()}">0</div><div class="rotulo">campañas</div></div>
+      <div><div class="valor" th:text="${totalNecesidades}">0</div><div class="rotulo">necesidades cargadas</div></div>
+      <div><div class="valor" th:text="${necesidadesSatisfechas}">0</div><div class="rotulo">ya cubiertas</div></div>
+    </div>
+
+    <div class="banner banner-info" data-descartable="panel-entidad" style="margin-top: var(--s-5)">
+      <svg th:replace="~{fragmentos/componentes :: ic('info')}"></svg>
+      <div>Cuanto más precisas sean tus necesidades, mejor encontramos qué donaciones te sirven.</div>
+      <button type="button" class="cerrar" aria-label="Ocultar este consejo"><svg th:replace="~{fragmentos/componentes :: ic('x')}"></svg></button>
+    </div>
+
+    <section class="seccion" style="margin-top: var(--s-4)" aria-labelledby="t-campanias">
+      <h2 id="t-campanias">Tus campañas</h2>
+      <div class="pila">
+        <article class="tarjeta" th:each="c : ${campanias}" th:aria-labelledby="'c-' + ${c.idCampania}">
+          <div class="fila espaciado">
+            <div>
+              <h3 th:id="'c-' + ${c.idCampania}" th:text="${c.descripcionGeneral}">Campaña de invierno</h3>
+              <p class="suave chico" style="margin:0">Del <time th:datetime="${c.fechaInicio}" th:text="${c.fechaInicio}">2026-06-01</time>
+                al <time th:datetime="${c.fechaFin}" th:text="${c.fechaFin}">2026-08-31</time></p>
+            </div>
+            <a class="btn btn-secundario btn-chico" th:href="@{/entidad/campanias/{id}/necesidades/nueva(id=${c.idCampania})}" data-carga><svg th:replace="~{fragmentos/componentes :: ic('plus')}"></svg>Sumar necesidad</a>
+          </div>
+
+          <ul class="lista" th:if="${!c.necesidades.isEmpty()}" style="margin-top: var(--s-4)">
+            <li class="item" th:each="n : ${c.necesidades}">
+              <div style="flex:1; min-width:12rem">
+                <div class="fila espaciado">
+                  <p class="item-titulo" th:text="${n.nombre}">Frazadas</p>
+                  <span class="estado estado-ok" th:if="${n.satisfecha}"><svg th:replace="~{fragmentos/componentes :: ic('check')}"></svg>Cubierta</span>
+                </div>
+                <p class="suave chico" style="margin:0" th:if="${n.descripcion != null and !n.descripcion.isBlank()}" th:text="${n.descripcion}"></p>
+                <div class="progreso" th:classappend="${n.satisfecha} ? 'completo'" role="progressbar" th:aria-label="'Avance de ' + ${n.nombre}"
+                     aria-valuemin="0" th:aria-valuemax="${n.cantidadObjetivo}" th:aria-valuenow="${n.cantidadRecibida}">
+                  <span th:style="'width:' + ${n.cantidadObjetivo > 0 ? n.cantidadRecibida * 100 / n.cantidadObjetivo : 0} + '%'"></span>
+                </div>
+                <p class="chico suave" style="margin:0" th:text="${#numbers.formatDecimal(n.cantidadRecibida, 1, 0)} + ' de ' + ${#numbers.formatDecimal(n.cantidadObjetivo, 1, 0)} + ' recibidas'">3 de 10</p>
+              </div>
+              <button type="button" class="btn btn-secundario btn-chico" data-modal="confirmar-borrado"
+                      th:attr="data-accion=@{/entidad/campanias/{c}/necesidades/{n}/eliminar(c=${c.idCampania},n=${n.id})},data-detalle='Vas a eliminar la necesidad «' + ${n.nombre} + '». Esta acción no se puede deshacer.'">
+                <svg th:replace="~{fragmentos/componentes :: ic('trash')}"></svg>Eliminar<span class="solo-lectores" th:text="' ' + ${n.nombre}"></span>
+              </button>
+            </li>
+          </ul>
+          <p class="suave" style="margin:var(--s-3) 0 0" th:if="${c.necesidades.isEmpty()}">Esta campaña todavía no tiene necesidades. Sumá la primera para empezar a recibir donaciones.</p>
+        </article>
+
+        <th:block th:if="${campanias.isEmpty()}">
+          <div th:replace="~{fragmentos/componentes :: vacio('megaphone', 'Todavía no tenés campañas', 'Una campaña agrupa lo que necesitás durante un período. Creá la primera.', '/entidad/campanias/nueva', 'Crear mi primera campaña')}"></div>
+        </th:block>
+      </div>
+    </section>
+
+    <section class="seccion" aria-labelledby="t-rec" th:if="${!recibidas.isEmpty()}">
+      <div class="fila espaciado"><h2 id="t-rec">Últimas donaciones asignadas</h2><a th:href="@{/entidad/recepciones}" data-carga>Ver todas</a></div>
+      <ul class="lista">
+        <li class="item" th:each="d : ${recibidas}">
+          <div class="item-cuerpo"><span class="icono-circulo"><svg th:replace="~{fragmentos/componentes :: ic('box')}"></svg></span><p class="item-titulo" th:text="${d.descripcion}">Frazadas</p></div>
+          <span th:replace="~{fragmentos/componentes :: estado(${d.estado})}"></span>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <dialog th:replace="~{fragmentos/componentes :: confirmar('confirmar-borrado', '¿Eliminar esta necesidad?')}"></dialog>
+</main>
+</body>
+</html>

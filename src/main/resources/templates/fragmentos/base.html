@@ -1,0 +1,84 @@
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, contenido)">
+<!--/*
+  Plantilla base. Cada pantalla la usa así (el DOCTYPE va en la pantalla):
+    DOCTYPE html
+    html th:replace="~{fragmentos/base :: pagina('Título', ~{::main})}"
+    main id="contenido" tabindex="-1" ... /main
+*/-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10253f">
+  <title th:text="${titulo} + ' · DonaTrack'">DonaTrack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<svg th:replace="~{fragmentos/sprite :: sprite}"></svg>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="barra">
+  <div class="contenedor">
+    <a class="marca" th:href="@{/}" aria-label="DonaTrack, ir al inicio">
+      <svg class="marca-logo" viewBox="0 0 40 40" aria-hidden="true">
+        <rect width="40" height="40" rx="11" fill="#10253f"/>
+        <path d="M9 27c6 0 5-14 11-14s5 14 11 14" fill="none" stroke="#1b64c2" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="9" cy="27" r="3.6" fill="#ffffff"/><circle cx="31" cy="27" r="3.6" fill="#ffc83d"/>
+      </svg>
+      DonaTrack
+    </a>
+
+    <nav class="nav-principal" aria-label="Principal" th:if="${usuario != null}">
+      <ul class="nav" th:if="${usuario.rol == 'DONANTE'}">
+        <li><a th:href="@{/donante/panel}" th:aria-current="${seccion == 'panel'} ? 'page'" data-carga><svg th:replace="~{fragmentos/componentes :: ic('home')}"></svg>Inicio</a></li>
+        <li><a th:href="@{/donante/donar}" th:aria-current="${seccion == 'donar'} ? 'page'" data-carga><svg th:replace="~{fragmentos/componentes :: ic('gift')}"></svg>Donar</a></li>
+        <li><a th:href="@{/donante/donaciones}" th:aria-current="${seccion == 'donaciones'} ? 'page'" data-carga><svg th:replace="~{fragmentos/componentes :: ic('list')}"></svg>Donaciones</a></li>
+        <li><a th:href="@{/donante/notificaciones}" th:aria-current="${seccion == 'notificaciones'} ? 'page'" data-carga><svg th:replace="~{fragmentos/componentes :: ic('bell')}"></svg>Avisos</a></li>
+      </ul>
+      <ul class="nav" th:if="${usuario.rol == 'ENTIDAD'}">
+        <li><a th:href="@{/entidad/panel}" th:aria-current="${seccion == 'panel'} ? 'page'" data-carga><svg th:replace="~{fragmentos/componentes :: ic('building')}"></svg>Mi entidad</a></li>
+        <li><a th:href="@{/entidad/disponibles}" th:aria-current="${seccion == 'disponibles'} ? 'page'" data-carga><svg th:replace="~{fragmentos/componentes :: ic('box')}"></svg>Disponibles</a></li>
+        <li><a th:href="@{/entidad/recepciones}" th:aria-current="${seccion == 'recepciones'} ? 'page'" data-carga><svg th:replace="~{fragmentos/componentes :: ic('truck')}"></svg>Recepciones</a></li>
+        <li><a th:href="@{/entidad/notificaciones}" th:aria-current="${seccion == 'notificaciones'} ? 'page'" data-carga><svg th:replace="~{fragmentos/componentes :: ic('bell')}"></svg>Avisos</a></li>
+      </ul>
+      <div class="usuario">
+        <span class="avatar" aria-hidden="true" th:text="${#strings.toUpperCase(#strings.substring(usuario.primerNombre, 0, 1))}">C</span>
+        <span class="usuario-nombre" th:text="${usuario.primerNombre}">Cynthia</span>
+        <form th:action="@{/salir}" method="post">
+          <button class="btn btn-secundario btn-chico" type="submit"><svg th:replace="~{fragmentos/componentes :: ic('logout')}"></svg>Salir</button>
+        </form>
+      </div>
+    </nav>
+
+    <!-- En el celular la navegación pasa abajo; acá queda solo la salida -->
+    <form class="usuario-movil" th:if="${usuario != null}" th:action="@{/salir}" method="post">
+      <button class="btn btn-secundario btn-chico" type="submit"><svg th:replace="~{fragmentos/componentes :: ic('logout')}"></svg>Salir</button>
+    </form>
+  </div>
+</header>
+
+<th:block th:replace="${contenido}">contenido</th:block>
+
+<footer class="pie">
+  <div class="contenedor">DonaTrack · Diseño de Sistemas · UTN FRBA · Cada donación, con seguimiento.</div>
+</footer>
+
+<!-- Toasts: mensajes breves tras una acción (role=status los anuncia a lectores de pantalla) -->
+<div class="toasts" role="status" aria-live="polite">
+  <div class="toast" th:if="${toast != null}" th:classappend="${toastTipo == 'error'} ? 'toast-error'">
+    <svg th:replace="${toastTipo == 'error'} ? ~{fragmentos/componentes :: ic('alert')} : ~{fragmentos/componentes :: ic('check')}"></svg>
+    <span th:text="${toast}">Listo</span>
+    <button type="button" class="cerrar" aria-label="Cerrar aviso"><svg th:replace="~{fragmentos/componentes :: ic('x')}"></svg></button>
+  </div>
+</div>
+
+<!-- Indicador de carga: aparece solo si la espera supera 300 ms -->
+<div id="cargando" class="cargando" role="status" aria-label="Cargando">
+  <div class="spinner"></div><span class="solo-lectores">Cargando, un momento…</span>
+</div>
+
+<script th:src="@{/js/app.js}" defer></script>
+</body>
+</html>

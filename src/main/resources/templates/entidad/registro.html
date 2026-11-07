@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragmentos/base :: pagina('Registrá tu entidad', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <div class="encabezado-pagina"><div><h1>Registrá tu entidad</h1>
+      <p>Con estos datos las donaciones pueden asignarse a tu entidad y avisarte cuando lleguen.</p></div></div>
+
+    <form class="formulario tarjeta" method="post" th:action="@{/entidad/registro}" data-carga>
+      <div class="campo">
+        <label for="razonSocial">Nombre de la entidad <span class="requerido" aria-hidden="true">*</span></label>
+        <input id="razonSocial" name="razonSocial" required maxlength="120" placeholder="Ej.: Comedor Los Pibes">
+      </div>
+      <fieldset class="campo">
+        <legend>Quién la representa</legend>
+        <div class="grupo-2">
+          <div class="campo"><label for="representanteNombre">Nombre <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="representanteNombre" name="representanteNombre" required autocomplete="given-name" th:value="${usuario.primerNombre}"></div>
+          <div class="campo"><label for="representanteApellido">Apellido <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="representanteApellido" name="representanteApellido" required autocomplete="family-name"></div>
+        </div>
+        <p class="ayuda">Usamos tu email (<strong th:text="${usuario.email}"></strong>) para los avisos.</p>
+      </fieldset>
+      <fieldset class="campo">
+        <legend>Dirección</legend>
+        <div class="grupo-2">
+          <div class="campo"><label for="calle">Calle <span class="requerido" aria-hidden="true">*</span></label><input id="calle" name="calle" required></div>
+          <div class="campo"><label for="numero">Número <span class="requerido" aria-hidden="true">*</span></label><input id="numero" name="numero" type="number" min="0" required></div>
+          <div class="campo"><label for="codigoPostal">Código postal <span class="requerido" aria-hidden="true">*</span></label><input id="codigoPostal" name="codigoPostal" required autocomplete="postal-code"></div>
+          <div class="campo"><label for="localidad">Localidad <span class="requerido" aria-hidden="true">*</span></label><input id="localidad" name="localidad" required></div>
+          <div class="campo"><label for="provincia">Provincia <span class="requerido" aria-hidden="true">*</span></label><input id="provincia" name="provincia" required></div>
+        </div>
+      </fieldset>
+      <div class="campo">
+        <label for="telefono">Teléfono <span class="suave" style="font-weight:500">(opcional)</span></label>
+        <input id="telefono" name="telefono" type="tel" autocomplete="tel">
+      </div>
+      <button type="submit" class="btn btn-sol btn-grande" data-cargando="Guardando…">Guardar y continuar</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

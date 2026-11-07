@@ -1,0 +1,25 @@
+# Compose del FRONT. El back vive en otro repositorio y se levanta con su propio
+# docker-compose (puertos publicados en el host). Desde el contenedor del front,
+# el host se alcanza como host.docker.internal.
+name: donatrack-front
+
+services:
+  donatrack-frontend:
+    build: .
+    container_name: donatrack-frontend
+    ports:
+      - "8080:8080"
+    environment:
+      # Dónde está el back. Cambiá estas URLs si el back corre en otra máquina.
+      SERVICIOS_DONACIONES_URL: ${SERVICIOS_DONACIONES_URL:-http://host.docker.internal:8081}
+      SERVICIOS_INCENTIVOS_URL: ${SERVICIOS_INCENTIVOS_URL:-http://host.docker.internal:8083}
+      SERVICIOS_NOTIFICACIONES_URL: ${SERVICIOS_NOTIFICACIONES_URL:-http://host.docker.internal:8084}
+      SERVICIOS_LOGISTICA_URL: ${SERVICIOS_LOGISTICA_URL:-http://host.docker.internal:8085}
+      SERVICIOS_AUTENTICACION_URL: ${SERVICIOS_AUTENTICACION_URL:-http://host.docker.internal:8088}
+      # Login con Google (opcional). Se leen del archivo .env, que NO se sube al repo.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # Acceso de prueba sin Google. En un entorno real: false.
+      DONATRACK_DEMO: ${DONATRACK_DEMO:-false}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

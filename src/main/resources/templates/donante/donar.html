@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragmentos/base :: pagina('Nueva donación', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/donante/panel}" data-carga><svg th:replace="~{fragmentos/componentes :: ic('arrow-left')}"></svg>Inicio</a></nav>
+    <div class="encabezado-pagina"><div><h1>¿Qué querés donar?</h1><p>Son tres datos. Nosotros buscamos a quién le sirve.</p></div></div>
+
+    <div class="banner banner-info" data-descartable="donar">
+      <svg th:replace="~{fragmentos/componentes :: ic('info')}"></svg>
+      <div>Si tenés cosas de distinto tipo, cargá una donación por cada tipo. Así llegan a la entidad correcta.</div>
+      <button type="button" class="cerrar" aria-label="Ocultar este consejo"><svg th:replace="~{fragmentos/componentes :: ic('x')}"></svg></button>
+    </div>
+
+    <form class="formulario" method="post" th:action="@{/donante/donar}" data-carga>
+      <fieldset class="campo">
+        <legend>Tipo de donación <span class="requerido" aria-hidden="true">*</span></legend>
+        <div class="chips-tipo">
+          <label class="chip"><input type="radio" name="subcategoria" value="Abrigo" required><span><svg th:replace="~{fragmentos/componentes :: ic('shirt')}"></svg>Abrigo</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Alimentos"><span><svg th:replace="~{fragmentos/componentes :: ic('food')}"></svg>Alimentos</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Útiles escolares"><span><svg th:replace="~{fragmentos/componentes :: ic('book')}"></svg>Útiles escolares</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Higiene personal"><span><svg th:replace="~{fragmentos/componentes :: ic('drop')}"></svg>Higiene personal</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Juguetes"><span><svg th:replace="~{fragmentos/componentes :: ic('star')}"></svg>Juguetes</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Muebles"><span><svg th:replace="~{fragmentos/componentes :: ic('sofa')}"></svg>Muebles</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Otro"><span><svg th:replace="~{fragmentos/componentes :: ic('dots')}"></svg>Otro</span></label>
+        </div>
+      </fieldset>
+
+      <div class="campo" data-muestra-si="subcategoria=Otro" hidden>
+        <label for="subcategoriaOtra">¿Qué tipo es?</label>
+        <input id="subcategoriaOtra" name="subcategoriaOtra" maxlength="60" placeholder="Ej.: Equipo de pesca">
+      </div>
+
+      <div class="campo">
+        <label for="descripcion">Ponele un título <span class="requerido" aria-hidden="true">*</span></label>
+        <input id="descripcion" name="descripcion" type="text" required maxlength="120" placeholder="Ej.: Camperas para el invierno" aria-describedby="descripcion-ayuda">
+        <p id="descripcion-ayuda" class="ayuda">Es el nombre con el que la vas a ver en tu lista.</p>
+      </div>
+
+      <div class="grupo-2">
+        <div class="campo">
+          <label for="cantidad">Cantidad <span class="requerido" aria-hidden="true">*</span></label>
+          <div class="cantidad">
+            <button type="button" data-paso="-1" aria-label="Restar uno"><svg th:replace="~{fragmentos/componentes :: ic('minus')}"></svg></button>
+            <input id="cantidad" name="cantidad" type="number" min="1" value="1" required inputmode="numeric">
+            <button type="button" data-paso="1" aria-label="Sumar uno"><svg th:replace="~{fragmentos/componentes :: ic('plus')}"></svg></button>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="unidad">Unidad</label>
+          <select id="unidad" name="unidad">
+            <option value="unidades">Unidades</option><option value="kg">Kilos</option>
+            <option value="litros">Litros</option><option value="cajas">Cajas</option>
+          </select>
+        </div>
+      </div>
+
+      <fieldset class="campo">
+        <legend>Estado</legend>
+        <div class="opciones">
+          <label class="opcion"><input type="radio" name="esNuevo" value="true" checked> Nuevo</label>
+          <label class="opcion"><input type="radio" name="esNuevo" value="false"> Usado</label>
+        </div>
+      </fieldset>
+
+      <div class="campo">
+        <label for="detalle">Detalle <span class="suave" style="font-weight:500">(opcional)</span></label>
+        <textarea id="detalle" name="detalle" maxlength="300" placeholder="Talles, marcas, estado…"></textarea>
+      </div>
+
+      <div class="campo">
+        <label for="fechaVencimiento">Fecha de vencimiento <span class="suave" style="font-weight:500">(opcional)</span>
+          <span th:replace="~{fragmentos/componentes :: ayuda('vence', 'Solo para alimentos o medicamentos. Evita que se descarte algo vencido.')}"></span>
+        </label>
+        <input id="fechaVencimiento" name="fechaVencimiento" type="date">
+      </div>
+
+      <div class="fila">
+        <button type="submit" class="btn btn-sol btn-grande btn-bloque" data-cargando="Registrando…"><svg th:replace="~{fragmentos/componentes :: ic('gift')}"></svg>Registrar donación</button>
+        <a class="btn btn-secundario btn-grande btn-bloque" th:href="@{/donante/panel}" data-carga>Cancelar</a>
+      </div>
+    </form>
+  </div>
+</main>
+</body>
+</html>

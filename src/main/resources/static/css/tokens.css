@@ -1,0 +1,50 @@
+/* ==========================================================================
+   DonaTrack · design tokens. Única fuente de verdad visual: ningún otro
+   archivo usa colores, tamaños o radios sueltos.
+   Contrastes verificados contra WCAG AA (texto normal ≥ 4.5:1).
+   ========================================================================== */
+:root {
+  /* color */
+  --c-tinta: #10253f;            /* texto y banda principal · 15:1 sobre blanco */
+  --c-tinta-2: #1d3a5c;
+  --c-ruta: #1b64c2;             /* acción y enlaces · 5.7:1 sobre blanco */
+  --c-ruta-oscuro: #134b94;
+  --c-ruta-tinte: #e6f0fc;
+  --c-sol: #ffc83d;              /* solo la acción principal; siempre con texto tinta */
+  --c-sol-oscuro: #f2b310;
+  --c-papel: #f4f7fb;            /* fondo */
+  --c-superficie: #ffffff;
+  --c-linea: #dbe3ee;
+  --c-texto: #10253f;
+  --c-texto-suave: #4b5f78;      /* 6.3:1 sobre papel */
+  --c-ok: #0f7a52;     --c-ok-tinte: #def5ec;
+  --c-aviso: #8a5a00;  --c-aviso-tinte: #fff1cc;
+  --c-error: #c0392b;  --c-error-tinte: #fde5e1;
+  --c-foco: #1b64c2;
+
+  /* tipografía */
+  --f-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-texto: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --t-xs: .8125rem;
+  --t-sm: .9375rem;
+  --t-base: 1.0625rem;
+  --t-lg: 1.25rem;
+  --t-xl: 1.75rem;
+  --t-2xl: 2.5rem;
+  --t-3xl: clamp(2.25rem, 6vw, 3.75rem);
+
+  /* espaciado (escala de 4) */
+  --s-1: .25rem; --s-2: .5rem; --s-3: .75rem; --s-4: 1rem;
+  --s-5: 1.5rem; --s-6: 2rem;  --s-7: 3rem;  --s-8: 4.5rem;
+
+  /* forma: radios con jerarquía (controles < paneles < banda) */
+  --r-sm: 10px; --r-md: 16px; --r-lg: 24px; --r-pill: 999px;
+  --sombra: 0 1px 2px rgba(16, 37, 63, .06), 0 8px 24px rgba(16, 37, 63, .06);
+  --sombra-alta: 0 16px 48px rgba(16, 37, 63, .28);
+
+  /* interacción */
+  --objetivo-min: 48px;          /* área táctil mínima */
+  --ancho-max: 70rem;
+  --alto-barra: 68px;
+  --transicion: 160ms ease;
+}
