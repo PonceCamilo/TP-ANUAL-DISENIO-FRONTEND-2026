@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Ups', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <div class="centrado">
+      <div class="tarjeta vacio" role="alert">
+        <div class="circulo" style="background: var(--c-error-tinte); color: var(--c-error)"><svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg></div>
+        <h1 style="font-size: var(--t-xl)" th:text="${titulo} ?: 'Algo no salió como esperábamos'">Algo no salió como esperábamos</h1>
+        <p th:text="${detalle} ?: 'Probá de nuevo en unos minutos.'">Detalle</p>
+        <div class="fila" style="justify-content:center">
+          <a class="btn" href="javascript:history.back()">Volver</a>
+          <a class="btn btn-secundario" th:href="@{/}">Ir al inicio</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

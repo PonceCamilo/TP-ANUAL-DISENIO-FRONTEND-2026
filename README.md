@@ -52,7 +52,22 @@ Abrí http://localhost:8080 (Codespaces: puerto 8080 en la pestaña *Puertos*). 
 Tokens en `static/css/tokens.css` (colores, tipografías Bricolage Grotesque + Instrument Sans, espacios, objetivo táctil mínimo de 48 px). Contraste AA, foco visible, navegación inferior en celular, loader si un pedido pasa los 300 ms, toasts, banners y modales.
 
 ## Estructura
-`config/` · `seguridad/` (sesión e interceptor) · `clientes/` (REST) · `servicios/` · `controllers/` · `templates/` · `static/`
+Igual que el back: una carpeta por servicio, y cada una con su `controller/` y `services/`
+(el cliente REST de ese servicio). Lo que usan todos va en `comun/`.
+```
+src/main/java/ar/utn/donatrack/frontend/
+├── autenticacion/   controller/ (login, crear cuenta, Google) · services/ (AuthClient, LoginGoogleHandler) · config/
+├── donaciones/      controller/ (donante y entidad) · services/DonacionesApi
+├── notificaciones/  controller/ (avisos de donante y entidad) · services/NotificacionesApi
+├── incentivos/      services/IncentivosApi   (las métricas se ven en el panel del donante)
+├── logistica/       todavía sin pantallas (package-info explica dónde va lo nuevo)
+└── comun/           config/ · seguridad/ (sesión) · clientes/ApiClient · exceptions/ · util/ · controller/ (inicio, paneles, errores)
+
+src/main/resources/templates/   la misma división: autenticacion/ · donaciones/{donante,entidad}/ · notificaciones/ · comun/ (+ fragmentos/)
+src/main/resources/static/      css/ y js/ compartidos (tokens.css = diseño unificado)
+src/test/java/…                 espeja los paquetes
+```
+**Regla para trabajar por separado:** cada integrante toca solo la carpeta de su servicio (Java y plantillas). Si necesita algo de otro servicio, lo pide por su `…Api`. Los dos paneles de inicio están en `comun/` porque juntan datos de donaciones e incentivos.
 
 ## Límites conocidos
 - No se compiló ni corrió en el entorno donde se escribió: es el primer build real.

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Tu panel', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor" th:with="ultima=${ultimas.isEmpty()} ? null : ${ultimas.get(0)}">
+
+    <section class="portada" aria-labelledby="saludo">
+      <h1 id="saludo">Hola, <span th:text="${usuario.primerNombre}">Cynthia</span></h1>
+      <th:block th:if="${ultima != null}">
+        <p>Tu última donación: <strong th:text="${ultima.descripcion}">Ropa de abrigo</strong></p>
+        <ol th:replace="~{comun/fragmentos/componentes :: recorrido(${ultima.estado})}"></ol>
+        <div class="fila" style="margin-top: var(--s-5)">
+          <a class="btn btn-sol" th:href="@{/donante/donar}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Hacer otra donación</a>
+          <a class="btn btn-claro" th:href="@{/donante/donaciones/{id}(id=${ultima.id})}" data-carga>Ver el detalle</a>
+        </div>
+      </th:block>
+      <th:block th:if="${ultima == null}">
+        <p>Cargá tu primera donación y seguila paso a paso, hasta que llegue.</p>
+        <a class="btn btn-sol btn-grande" th:href="@{/donante/donar}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Hacer mi primera donación</a>
+      </th:block>
+    </section>
+
+    <div class="banner banner-aviso" role="status" th:unless="${logrosDisponibles}" style="margin-top: var(--s-4)">
+      <svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg>
+      <div><strong>No pudimos cargar tus logros ahora.</strong> Tus donaciones están a salvo; probá de nuevo en un rato.</div>
+    </div>
+
+    <section aria-labelledby="t-metricas">
+      <h2 id="t-metricas" class="solo-lectores">Tus números</h2>
+      <div class="franja">
+        <div><div class="valor" th:text="${metricas.totalDonacionesHistoricas}">0</div><div class="rotulo">donaciones en total</div></div>
+        <div><div class="valor" th:text="${metricas.donacionesMesActual}">0</div><div class="rotulo">este mes</div></div>
+        <div><div class="valor" th:text="${metricas.organizacionesAyudadas}">0</div><div class="rotulo">organizaciones ayudadas</div></div>
+        <div>
+          <div class="valor" th:text="${metricas.posicionRanking > 0} ? '#' + ${metricas.posicionRanking} : '—'">#1</div>
+          <div class="rotulo">tu ranking
+            <span th:replace="~{comun/fragmentos/componentes :: ayuda('ranking', 'Se calcula con tus donaciones entregadas frente a las de otras personas donantes.')}"></span></div>
+        </div>
+      </div>
+      <p class="suave chico" style="margin-top: var(--s-3)">Categoría actual: <strong th:text="${metricas.categoriaActual}">Bronce</strong></p>
+    </section>
+
+    <div class="grilla-2 seccion">
+      <section aria-labelledby="t-misiones">
+        <h2 id="t-misiones">Tus misiones</h2>
+        <ul class="lista" th:if="${!misiones.isEmpty()}">
+          <li class="item" th:each="m : ${misiones}" style="display:block">
+            <div class="fila espaciado">
+              <p class="item-titulo" th:text="${m.nombre}">Misión</p>
+              <span class="estado estado-ok" th:if="${m.completada}"><svg th:replace="~{comun/fragmentos/componentes :: ic('check')}"></svg>Completada</span>
+            </div>
+            <p class="suave chico" th:text="${m.descripcion}" style="margin-bottom:0">Descripción</p>
+            <div class="progreso" th:classappend="${m.completada} ? 'completo'" role="progressbar" th:aria-label="'Progreso de ' + ${m.nombre}"
+                 aria-valuemin="0" th:aria-valuemax="${m.objetivo}" th:aria-valuenow="${m.progresoActual}">
+              <span th:style="'width:' + ${m.objetivo > 0 ? (m.progresoActual * 100 / m.objetivo) : 0} + '%'"></span>
+            </div>
+            <p class="chico suave" style="margin:0" th:text="${m.progresoActual} + ' de ' + ${m.objetivo}">1 de 3</p>
+          </li>
+        </ul>
+        <p class="suave" th:if="${misiones.isEmpty()}">Las misiones aparecen cuando hacés tu primera donación.</p>
+      </section>
+
+      <section aria-labelledby="t-insignias">
+        <h2 id="t-insignias">Tus insignias</h2>
+        <div class="insignias" th:if="${!insignias.isEmpty()}">
+          <span class="insignia" th:each="i : ${insignias}">
+            <span class="medalla"><svg th:replace="~{comun/fragmentos/componentes :: ic('medal')}"></svg></span><span th:text="${i.nombre}">Primera donación</span>
+          </span>
+        </div>
+        <p class="suave" th:if="${insignias.isEmpty()}">La primera insignia llega con tu primera donación entregada.</p>
+      </section>
+    </div>
+
+    <section class="seccion" aria-labelledby="t-ultimas" th:if="${!ultimas.isEmpty()}">
+      <div class="fila espaciado"><h2 id="t-ultimas">Tus últimas donaciones</h2><a th:href="@{/donante/donaciones}" data-carga>Ver todas</a></div>
+      <ul class="lista">
+        <li th:each="d : ${ultimas}">
+          <a class="item" th:href="@{/donante/donaciones/{id}(id=${d.id})}" data-carga>
+            <div class="item-cuerpo">
+              <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('box')}"></svg></span>
+              <div><p class="item-titulo" th:text="${d.descripcion}">Ropa de abrigo</p>
+                <p class="suave chico" style="margin:0" th:text="${#strings.substring(d.fechaDonacion, 0, 10)}">2026-06-24</p></div>
+            </div>
+            <span th:replace="~{comun/fragmentos/componentes :: estado(${d.estado})}"></span>
+          </a>
+        </li>
+      </ul>
+    </section>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Nueva necesidad', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/entidad/panel}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Mi entidad</a></nav>
+    <div class="encabezado-pagina"><div><h1>Nueva necesidad</h1><p>Lo que le falta a tu campaña.</p></div></div>
+    <form class="formulario tarjeta" method="post" th:action="@{/entidad/campanias/{id}/necesidades(id=${campaniaId})}" data-carga>
+      <div class="campo">
+        <label for="nombre">¿Qué necesitás? <span class="requerido" aria-hidden="true">*</span></label>
+        <input id="nombre" name="nombre" required maxlength="80" placeholder="Ej.: Frazadas">
+      </div>
+      <div class="campo">
+        <label for="descripcion">Detalle (opcional)</label>
+        <textarea id="descripcion" name="descripcion" maxlength="300"></textarea>
+      </div>
+      <div class="campo">
+        <label for="cantidadObjetivo">Cantidad que necesitás <span class="requerido" aria-hidden="true">*</span></label>
+        <input id="cantidadObjetivo" name="cantidadObjetivo" type="number" min="1" required inputmode="numeric">
+      </div>
+      <fieldset class="campo">
+        <legend class="fila">Tipo de necesidad
+          <span th:replace="~{comun/fragmentos/componentes :: ayuda('tipo-nec', 'Extraordinaria: se necesita una sola vez. Recurrente: se repite cada cierto tiempo.')}"></span></legend>
+        <div class="opciones">
+          <label class="opcion"><input type="radio" name="tipo" value="EXTRAORDINARIA" checked> Extraordinaria</label>
+          <label class="opcion"><input type="radio" name="tipo" value="RECURRENTE"> Recurrente</label>
+        </div>
+      </fieldset>
+      <div class="campo" data-muestra-si="tipo=RECURRENTE" hidden>
+        <label for="periodo">¿Cada cuánto?</label>
+        <select id="periodo" name="periodo">
+          <option value="SEMANAL">Semanal</option><option value="MENSUAL" selected>Mensual</option>
+          <option value="CUATRIMESTRAL">Cuatrimestral</option><option value="ANUAL">Anual</option>
+        </select>
+      </div>
+      <div class="fila">
+        <button class="btn btn-sol btn-grande btn-bloque" type="submit" data-cargando="Guardando…">Agregar necesidad</button>
+        <a class="btn btn-secundario btn-grande btn-bloque" th:href="@{/entidad/panel}" data-carga>Cancelar</a>
+      </div>
+    </form>
+  </div>
+</main>
+</body>
+</html>

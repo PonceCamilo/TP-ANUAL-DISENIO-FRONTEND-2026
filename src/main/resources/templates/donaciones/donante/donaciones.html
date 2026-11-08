@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Mis donaciones', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <div class="encabezado-pagina">
+      <div><h1>Mis donaciones</h1><p>Tocá una para ver por dónde va.</p></div>
+      <a class="btn btn-sol" th:href="@{/donante/donar}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('plus')}"></svg>Nueva donación</a>
+    </div>
+
+    <form method="get" th:action="@{/donante/donaciones}" class="fila" style="margin-bottom: var(--s-4)">
+      <div class="campo" style="min-width:15rem">
+        <label for="estado">Filtrar por estado</label>
+        <select id="estado" name="estado" onchange="this.form.submit()">
+          <option value="" th:selected="${estadoFiltro == ''}">Todas</option>
+          <option value="EN_DEPOSITO" th:selected="${estadoFiltro == 'EN_DEPOSITO'}">En depósito</option>
+          <option value="ASIGNACION_REALIZADA" th:selected="${estadoFiltro == 'ASIGNACION_REALIZADA'}">Entidad asignada</option>
+          <option value="LISTA_PARA_ENTREGAR" th:selected="${estadoFiltro == 'LISTA_PARA_ENTREGAR'}">Lista para entregar</option>
+          <option value="EN_TRASLADO" th:selected="${estadoFiltro == 'EN_TRASLADO'}">En camino</option>
+          <option value="ENTREGADA" th:selected="${estadoFiltro == 'ENTREGADA'}">Entregada</option>
+          <option value="ENTREGA_FALLIDA" th:selected="${estadoFiltro == 'ENTREGA_FALLIDA'}">Entrega fallida</option>
+        </select>
+      </div>
+      <noscript><button class="btn btn-secundario" type="submit">Filtrar</button></noscript>
+    </form>
+
+    <ul class="lista" th:if="${!donaciones.isEmpty()}">
+      <li th:each="d : ${donaciones}">
+        <a class="item" th:href="@{/donante/donaciones/{id}(id=${d.id})}" data-carga>
+          <div class="item-cuerpo">
+            <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('box')}"></svg></span>
+            <div>
+              <p class="item-titulo" th:text="${d.descripcion}">Ropa de abrigo</p>
+              <p class="suave chico" style="margin:0">
+                <span th:text="${d.subcategoria}">Abrigo</span> ·
+                <time th:datetime="${d.fechaDonacion}" th:text="${#strings.substring(d.fechaDonacion, 0, 10)}">2026-06-24</time>
+              </p>
+            </div>
+          </div>
+          <span th:replace="~{comun/fragmentos/componentes :: estado(${d.estado})}"></span>
+        </a>
+      </li>
+    </ul>
+    <th:block th:if="${donaciones.isEmpty()}">
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('box', 'No hay donaciones para mostrar', 'Cambiá el filtro o registrá una donación nueva.', '/donante/donar', 'Hacer una donación')}"></div>
+    </th:block>
+  </div>
+</main>
+</body>
+</html>
