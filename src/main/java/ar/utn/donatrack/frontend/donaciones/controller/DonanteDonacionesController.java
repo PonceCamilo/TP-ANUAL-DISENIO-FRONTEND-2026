@@ -1,6 +1,7 @@
 package ar.utn.donatrack.frontend.donaciones.controller;
 
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
+import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
 import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
@@ -29,8 +30,11 @@ import jakarta.servlet.http.HttpSession;
 public class DonanteDonacionesController {
 
     private final DonacionesApi api;
+    private final AuthClient autenticacion;
+    private static final String PERFIL_PENDIENTE = "perfilPendienteDeVincular";
 
-    public DonanteDonacionesController(DonacionesApi api) {
+    public DonanteDonacionesController(DonacionesApi api, AuthClient autenticacion) {
+        this.autenticacion = autenticacion;
         this.api = api;
     }
 
@@ -41,7 +45,6 @@ public class DonanteDonacionesController {
     /** Devuelve el id del donante o null si todavía no completó su registro. */
     private UUID donanteId(HttpSession s) {
         SesionUsuario u = usuario(s);
-        api.resolverIdentidad(u);
         return u.getDonanteId();
     }
 
@@ -100,9 +103,13 @@ public class DonanteDonacionesController {
         if (id == null) {
             return "redirect:/donante/registro";
         }
-        String tipo = "Otro".equals(subcategoria) && subcategoriaOtra != null && !subcategoriaOtra.isBlank()
-                ? subcategoriaOtra.trim()
-                : subcategoria.trim();
+        boolean esOtroTipo = "Otro".equals(subcategoria);
+        if (esOtroTipo && (subcategoriaOtra == null || subcategoriaOtra.isBlank())) {
+            flash.addFlashAttribute("toastTipo", "error");
+            flash.addFlashAttribute("toast", "Indicá qué tipo de donación es al elegir Otro.");
+            return "redirect:/donante/donar";
+        }
+        String tipo = esOtroTipo ? subcategoriaOtra.trim() : subcategoria.trim();
         Map<String, Object> bien = new LinkedHashMap<>();
         bien.put("subcategoria", tipo);
         bien.put("descripcion", detalle == null || detalle.isBlank() ? tipo : detalle.trim());
@@ -134,7 +141,7 @@ public class DonanteDonacionesController {
             return "redirect:/donante/panel";
         }
         model.addAttribute("seccion", "registro");
-        return "donaciones/donante/registro";
+        return usuario(sesion).esDonanteJuridico() ? "autenticacion/registro-donante-juridico" : "donaciones/donante/registro";
     }
 
     @PostMapping("/registro")
@@ -146,6 +153,9 @@ public class DonanteDonacionesController {
                             @RequestParam String provincia,
                             HttpSession sesion, RedirectAttributes flash) {
         SesionUsuario u = usuario(sesion);
+        if (u.esDonanteJuridico() || u.getDonanteId() != null) {
+            return "redirect:/donante/panel";
+        }
         try {
             LocalDate.parse(fechaNacimiento);
         } catch (RuntimeException e) {
@@ -166,9 +176,47 @@ public class DonanteDonacionesController {
                 "calle", calle.trim(), "numero", numero, "codigoPostal", codigoPostal.trim(),
                 "localidad", Map.of("nombre", localidad.trim(), "provincia", Map.of("nombre", provincia.trim()))));
         cuerpo.put("medioContactoPredeterminado", Map.of("tipo", "EMAIL", "valor", u.getEmail()));
+        return completarRegistro(cuerpo, sesion, flash);
+    }
+
+    @PostMapping("/registro-juridico")
+    public String registrarJuridica(@RequestParam String razonSocial, @RequestParam String rubro,
+                                    @RequestParam String tipoOrganizacion, @RequestParam String numeroDocumento,
+                                    @RequestParam String nombre, @RequestParam String apellido,
+                                    @RequestParam String calle, @RequestParam int numero,
+                                    @RequestParam String codigoPostal, @RequestParam String localidad,
+                                    @RequestParam String provincia, HttpSession sesion, RedirectAttributes flash) {
+        SesionUsuario u = usuario(sesion);
+        if (!u.esDonanteJuridico() || u.getDonanteId() != null) {
+            return "redirect:/donante/panel";
+        }
+        Map<String, Object> cuerpo = new HashMap<>();
+        cuerpo.put("tipo", "JURIDICA");
+        cuerpo.put("razonSocial", razonSocial.trim());
+        cuerpo.put("rubro", rubro.trim());
+        cuerpo.put("tipoOrganizacion", tipoOrganizacion);
+        cuerpo.put("tipoDocumento", "CUIT");
+        cuerpo.put("numeroDocumento", numeroDocumento.trim());
+        cuerpo.put("email", u.getEmail());
+        cuerpo.put("direccion", Map.of("calle", calle.trim(), "numero", numero, "codigoPostal", codigoPostal.trim(),
+                "localidad", Map.of("nombre", localidad.trim(), "provincia", Map.of("nombre", provincia.trim()))));
+        cuerpo.put("medioContactoPredeterminado", Map.of("tipo", "EMAIL", "valor", u.getEmail()));
+        cuerpo.put("representantes", List.of(Map.of("nombre", nombre.trim(), "apellido", apellido.trim(), "email", u.getEmail())));
+        return completarRegistro(cuerpo, sesion, flash);
+    }
+
+    private String completarRegistro(Map<String, Object> cuerpo, HttpSession sesion, RedirectAttributes flash) {
+        SesionUsuario u = usuario(sesion);
+        String clavePendiente = PERFIL_PENDIENTE + u.getRol() + u.getEmail();
         try {
-            api.registrarDonante(cuerpo);
-            u.setDonanteId(null);
+            autenticacion.exigirVinculacionConfigurada();
+            UUID id = (UUID) sesion.getAttribute(clavePendiente);
+            if (id == null) {
+                id = api.registrarDonante(cuerpo);
+                sesion.setAttribute(clavePendiente, id);
+            }
+            sesion.setAttribute(SesionUsuario.ATRIBUTO, autenticacion.vincularPerfil(u, id));
+            sesion.removeAttribute(clavePendiente);
         } catch (ApiException e) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", e.getMessage());

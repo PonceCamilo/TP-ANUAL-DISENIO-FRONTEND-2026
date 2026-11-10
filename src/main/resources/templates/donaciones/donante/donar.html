@@ -26,9 +26,12 @@
         </div>
       </fieldset>
 
-      <div class="campo" data-muestra-si="subcategoria=Otro" hidden>
-        <label for="subcategoriaOtra">¿Qué tipo es?</label>
-        <input id="subcategoriaOtra" name="subcategoriaOtra" maxlength="60" placeholder="Ej.: Equipo de pesca">
+      <div data-muestra-si="subcategoria=Otro" hidden>
+        <div class="campo">
+          <label for="subcategoriaOtra">¿Qué tipo es? <span class="requerido" aria-hidden="true">*</span></label>
+          <input id="subcategoriaOtra" name="subcategoriaOtra" maxlength="60" placeholder="Ej.: Equipo de pesca"
+                 required disabled pattern=".*\S.*">
+        </div>
       </div>
 
       <div class="campo">

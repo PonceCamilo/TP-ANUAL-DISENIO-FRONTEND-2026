@@ -1,6 +1,7 @@
 package ar.utn.donatrack.frontend.donaciones.controller;
 
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
+import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
 import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
@@ -29,8 +30,11 @@ import jakarta.servlet.http.HttpSession;
 public class EntidadDonacionesController {
 
     private final DonacionesApi api;
+    private final AuthClient autenticacion;
+    private static final String PERFIL_PENDIENTE = "perfilPendienteDeVincular";
 
-    public EntidadDonacionesController(DonacionesApi api) {
+    public EntidadDonacionesController(DonacionesApi api, AuthClient autenticacion) {
+        this.autenticacion = autenticacion;
         this.api = api;
     }
 
@@ -40,7 +44,6 @@ public class EntidadDonacionesController {
 
     private UUID entidadId(HttpSession s) {
         SesionUsuario u = usuario(s);
-        api.resolverIdentidad(u);
         return u.getEntidadId();
     }
 
@@ -188,8 +191,11 @@ public class EntidadDonacionesController {
                             @RequestParam(required = false) String telefono,
                             HttpSession sesion, RedirectAttributes flash) {
         SesionUsuario u = usuario(sesion);
-        // El email de la cuenta queda como contacto y como email del representante:
-        // así el front reconoce a la entidad la próxima vez que entre.
+        if (u.getEntidadId() != null) {
+            return "redirect:/entidad/panel";
+        }
+        String clavePendiente = PERFIL_PENDIENTE + u.getRol() + u.getEmail();
+        // El email de la cuenta queda como contacto y email del representante.
         List<Map<String, Object>> contactos = new ArrayList<>();
         contactos.add(Map.of("tipo", "EMAIL", "valor", u.getEmail()));
         if (telefono != null && !telefono.isBlank()) {
@@ -204,8 +210,14 @@ public class EntidadDonacionesController {
         cuerpo.put("representantes", List.of(Map.of(
                 "nombre", representanteNombre.trim(), "apellido", representanteApellido.trim(), "email", u.getEmail())));
         try {
-            api.crearEntidad(cuerpo);
-            u.setEntidadId(null);
+            autenticacion.exigirVinculacionConfigurada();
+            UUID id = (UUID) sesion.getAttribute(clavePendiente);
+            if (id == null) {
+                id = api.crearEntidad(cuerpo);
+                sesion.setAttribute(clavePendiente, id);
+            }
+            sesion.setAttribute(SesionUsuario.ATRIBUTO, autenticacion.vincularPerfil(u, id));
+            sesion.removeAttribute(clavePendiente);
         } catch (ApiException e) {
             return volverConError(flash, e, "/entidad/registro");
         }

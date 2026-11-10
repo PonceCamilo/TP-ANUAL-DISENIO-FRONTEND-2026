@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Perfil del donante', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <section class="portada" aria-labelledby="nombre-perfil">
+      <div class="fila incentivos-saludo">
+        <h1 id="nombre-perfil" th:text="${nombrePerfil}">Ana Pérez</h1>
+        <span class="incentivos-categoria" th:text="${categoriaPerfil}">Sostenedor</span>
+      </div>
+      <p>Perfil de donante</p>
+    </section>
+    <section class="tarjeta seccion" aria-labelledby="insignias-publicas">
+      <h2 id="insignias-publicas">Insignias visibles</h2>
+      <ul class="insignias incentivos-lista" th:unless="${insigniasVisibles.isEmpty()}">
+        <li class="insignia" th:each="i : ${insigniasVisibles}">
+          <span class="medalla"><svg th:replace="~{comun/fragmentos/componentes :: ic('medal')}"></svg></span>
+          <span th:text="${i.nombre}">Semilla de Solidaridad</span>
+        </li>
+      </ul>
+      <p class="suave" th:if="${insigniasVisibles.isEmpty()}">Todavía no hay insignias visibles en este perfil.</p>
+    </section>
+  </div>
+</main>
+</body>
+</html>

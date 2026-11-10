@@ -18,7 +18,7 @@
         <p>Cada donación tiene su propio recorrido: del depósito a la entidad que la necesita. Vos lo seguís en cada paso.</p>
         <div class="fila" style="margin-top: var(--s-5)">
           <a class="btn btn-sol btn-grande" th:href="@{/login(rol='DONANTE')}" data-carga>Quiero donar</a>
-          <a class="btn btn-secundario btn-grande" th:href="@{/login(rol='ENTIDAD')}" data-carga>Soy una entidad</a>
+          <a class="btn btn-secundario btn-grande" th:href="@{/login(rol='ENTIDAD_BENEFICIARIA')}" data-carga>Soy una entidad</a>
         </div>
       </div>
       <div class="hero-demo" aria-label="Ejemplo del recorrido de una donación">
@@ -47,7 +47,7 @@
         <span class="icono-circulo"><svg class="ic-grande ic" aria-hidden="true"><use href="#i-building"></use></svg></span>
         <h2 id="t-entidad">Si representás a una entidad</h2>
         <p>Publicá lo que necesitás en tus campañas y recibí donaciones que realmente te sirvan.</p>
-        <a class="btn btn-secundario" th:href="@{/login(rol='ENTIDAD')}" data-carga>Entrar como entidad</a>
+        <a class="btn btn-secundario" th:href="@{/login(rol='ENTIDAD_BENEFICIARIA')}" data-carga>Entrar como entidad</a>
       </section>
     </div>
   </div>

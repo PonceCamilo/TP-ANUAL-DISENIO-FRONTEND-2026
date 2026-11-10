@@ -326,3 +326,26 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* Incentivos en el panel de donantes */
+.incentivos-saludo { margin-bottom: var(--s-3); }
+.incentivos-saludo h1 { margin: 0; }
+.incentivos-categoria {
+  display: inline-flex; align-items: center; border-radius: var(--r-pill);
+  background: var(--c-sol); color: var(--c-tinta); padding: var(--s-1) var(--s-3); font-weight: 700;
+}
+.incentivos-lista { list-style: none; padding: 0; margin: 0; }
+.portada .incentivos-lista { margin-bottom: var(--s-4); }
+.incentivos-podio {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: var(--s-3);
+}
+.incentivos-podio li {
+  display: grid; justify-items: start; gap: var(--s-2); padding: var(--s-4);
+  border-radius: var(--r-lg); border: 1px solid var(--c-linea);
+  background: var(--c-ruta-tinte); color: var(--c-tinta); overflow-wrap: anywhere;
+}
+.incentivos-podio .incentivos-primero { background: var(--c-aviso-tinte); border-color: var(--c-sol); }
+.incentivos-puesto { font-family: var(--f-titulo); font-size: 1.5rem; font-weight: 800; }
+.incentivos-progreso { width: 100%; height: .75rem; accent-color: var(--c-ruta); }
+.incentivos-ojito { width: var(--objetivo-min); padding: 0; }

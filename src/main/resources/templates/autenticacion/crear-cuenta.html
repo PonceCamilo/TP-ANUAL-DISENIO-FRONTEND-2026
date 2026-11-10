@@ -8,17 +8,24 @@
 
       <div class="segmentos" role="navigation" aria-label="Tipo de cuenta">
         <a th:href="@{/crear-cuenta(rol='DONANTE')}" th:aria-current="${rol == 'DONANTE'} ? 'page'"><svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Soy donante</a>
-        <a th:href="@{/crear-cuenta(rol='ENTIDAD')}" th:aria-current="${rol == 'ENTIDAD'} ? 'page'"><svg th:replace="~{comun/fragmentos/componentes :: ic('building')}"></svg>Soy entidad</a>
+        <a th:href="@{/crear-cuenta(rol='ENTIDAD_BENEFICIARIA')}" th:aria-current="${rol == 'ENTIDAD_BENEFICIARIA'} ? 'page'"><svg th:replace="~{comun/fragmentos/componentes :: ic('building')}"></svg>Soy entidad</a>
       </div>
 
-      <h1 th:text="${rol == 'ENTIDAD'} ? 'Creá la cuenta de tu entidad' : 'Creá tu cuenta'">Creá tu cuenta</h1>
-      <p class="suave" th:text="${rol == 'ENTIDAD'} ? 'Después te pedimos los datos de la entidad.' : 'Tarda menos de un minuto.'">Texto</p>
+      <h1 th:text="${rol == 'ENTIDAD_BENEFICIARIA'} ? 'Creá la cuenta de tu entidad' : 'Creá tu cuenta'">Creá tu cuenta</h1>
+      <p class="suave" th:text="${rol == 'ENTIDAD_BENEFICIARIA'} ? 'Después te pedimos los datos de la entidad.' : 'Tarda menos de un minuto.'">Texto</p>
 
       <div class="tarjeta">
         <form th:action="@{/crear-cuenta}" method="post" class="formulario" data-carga data-repetir>
           <input type="hidden" name="rol" th:value="${rol}">
+          <div class="campo" th:if="${rol == 'DONANTE'}">
+            <label for="tipoDonante">¿A nombre de quién donás?</label>
+            <select id="tipoDonante" name="tipoDonante">
+              <option value="HUMANA" th:selected="${tipoDonanteIngresado != 'JURIDICA'}">Persona humana</option>
+              <option value="JURIDICA" th:selected="${tipoDonanteIngresado == 'JURIDICA'}">Persona jurídica</option>
+            </select>
+          </div>
           <div class="campo">
-            <label for="nombre" th:text="${rol == 'ENTIDAD'} ? 'Tu nombre (quien administra la cuenta)' : 'Tu nombre'">Tu nombre</label>
+            <label for="nombre" th:text="${rol == 'ENTIDAD_BENEFICIARIA'} ? 'Tu nombre (quien administra la cuenta)' : 'Tu nombre'">Tu nombre</label>
             <input id="nombre" name="nombre" required maxlength="100" autocomplete="name" th:value="${nombreIngresado}">
           </div>
           <div class="campo">
@@ -43,6 +50,8 @@
 
         <div class="separador" th:if="${googleDisponible}">o</div>
         <a class="btn btn-google btn-grande" th:if="${googleDisponible}" th:href="@{/login/google(rol=${rol})}" data-carga style="width:100%">Registrarme con Google</a>
+        <a class="btn btn-secundario btn-grande" th:if="${googleDisponible and rol == 'DONANTE'}"
+           th:href="@{/login/google(rol='DONANTE',tipoDonante='JURIDICA')}" data-carga>Registrar donante jurídico con Google</a>
       </div>
 
       <p class="pie-form">¿Ya tenés cuenta? <a th:href="@{/login(rol=${rol})}">Ingresá</a></p>

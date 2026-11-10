@@ -44,13 +44,11 @@ public class NotificacionesController {
 
     private UUID donanteId(HttpSession s) {
         SesionUsuario u = usuario(s);
-        donaciones.resolverIdentidad(u);
         return u.getDonanteId();
     }
 
     private UUID entidadId(HttpSession s) {
         SesionUsuario u = usuario(s);
-        donaciones.resolverIdentidad(u);
         return u.getEntidadId();
     }
 

@@ -1,0 +1,16 @@
+<form xmlns:th="http://www.thymeleaf.org" th:fragment="formulario(accion, rol)"
+      th:action="@{${accion}}" method="post" class="formulario" data-carga>
+  <input th:if="${rol != null}" type="hidden" name="rol" th:value="${rol}">
+  <div class="campo">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required autocomplete="email" th:value="${emailIngresado}">
+  </div>
+  <div class="campo">
+    <label for="password">Contraseña</label>
+    <div class="clave">
+      <input id="password" name="password" type="password" required autocomplete="current-password">
+      <button type="button" data-mostrar-clave="password" aria-pressed="false">Mostrar</button>
+    </div>
+  </div>
+  <button class="btn btn-sol btn-grande" type="submit" data-cargando="Ingresando…">Ingresar</button>
+</form>
