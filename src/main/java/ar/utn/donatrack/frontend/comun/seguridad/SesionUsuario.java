@@ -13,17 +13,36 @@ public class SesionUsuario implements Serializable {
 
     public static final String ATRIBUTO = "usuario";
     public static final String DONANTE = "DONANTE";
-    public static final String ENTIDAD = "ENTIDAD";
+    public static final String ENTIDAD_BENEFICIARIA = "ENTIDAD_BENEFICIARIA";
+    public static final String ADMINISTRADOR = "ADMINISTRADOR";
+    public static final String CHOFER = "CHOFER";
+
+    public static String panelDe(String rol) {
+        return switch (rol) {
+            case DONANTE -> "/donante/panel";
+            case ENTIDAD_BENEFICIARIA -> "/entidad/panel";
+            case ADMINISTRADOR -> "/admin/panel";
+            case CHOFER -> "/chofer/panel";
+            default -> "/login";
+        };
+    }
 
     private final String email;
     private final String nombre;
     private final String rol;
+    private final String tipoDonante;
     private final String token;
     private final Instant expiraEn;
     private UUID donanteId;
     private UUID entidadId;
+    private UUID camionId;
 
     public SesionUsuario(String email, String nombre, String rol, String token, Instant expiraEn) {
+        this(email, nombre, rol, token, expiraEn, "HUMANA");
+    }
+
+    public SesionUsuario(String email, String nombre, String rol, String token, Instant expiraEn, String tipoDonante) {
+        this.tipoDonante = tipoDonante;
         this.email = email;
         this.nombre = nombre;
         this.rol = rol;
@@ -37,6 +56,10 @@ public class SesionUsuario implements Serializable {
 
     public boolean esDonante() {
         return DONANTE.equals(rol);
+    }
+
+    public boolean esDonanteJuridico() {
+        return esDonante() && "JURIDICA".equals(tipoDonante);
     }
 
     public String getPrimerNombre() {
@@ -53,6 +76,8 @@ public class SesionUsuario implements Serializable {
     public Instant getExpiraEn() { return expiraEn; }
     public UUID getDonanteId() { return donanteId; }
     public void setDonanteId(UUID donanteId) { this.donanteId = donanteId; }
+    public UUID getCamionId() { return camionId; }
+    public void setCamionId(UUID camionId) { this.camionId = camionId; }
     public UUID getEntidadId() { return entidadId; }
     public void setEntidadId(UUID entidadId) { this.entidadId = entidadId; }
 }
