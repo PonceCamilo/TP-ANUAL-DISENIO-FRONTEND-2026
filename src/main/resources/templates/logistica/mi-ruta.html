@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Mi ruta', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta">
+      <a th:href="@{/logistica/flota/{id}(id=${camion['id']})}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Camión</a>
+    </nav>
+    <div class="encabezado-pagina">
+      <div>
+        <h1>Mi ruta</h1>
+        <p th:text="|Camión ${camion['patente']}|">Camión</p>
+      </div>
+    </div>
+
+    <div class="tarjeta vacio" th:if="${ruta == null}">
+      <div class="circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg></div>
+      <h2>Hoy no tenés un reparto asignado</h2>
+      <p>Cuando logística arme una ruta para este camión, aparece acá.</p>
+    </div>
+
+    <div th:if="${ruta != null}">
+      <p>
+        <strong th:text="${ruta['estado'] == 'PLANIFICADA' ? 'Planificada, sin iniciar' : (ruta['estado'] == 'INICIADA' ? 'En curso' : ruta['estado'])}">En curso</strong>
+        <span th:if="${ruta['fechaInicio'] != null}" th:text="| · salió ${#strings.replace(#strings.substring(ruta['fechaInicio'], 0, 16), 'T', ' ')}|"> · salió</span>
+      </p>
+      <p><a class="btn btn-secundario" th:href="@{/tracking/ruta/{id}(id=${ruta['id']})}" data-carga>Ver en el mapa</a></p>
+
+      <form th:if="${ruta['estado'] == 'PLANIFICADA'}" method="post" th:action="@{/logistica/mi-ruta/{id}/iniciar(id=${camion['id']})}" data-carga>
+        <button class="btn btn-sol btn-grande" type="submit" data-cargando="Iniciando…">Iniciar ruta</button>
+      </form>
+
+      <form th:if="${ruta['estado'] == 'INICIADA'}" id="form-ubicacion" method="post" class="seccion"
+            th:action="@{/logistica/mi-ruta/{id}/ubicacion(id=${camion['id']})}" data-carga>
+        <input type="hidden" name="latitud" id="latitud">
+        <input type="hidden" name="longitud" id="longitud">
+        <button class="btn btn-sol btn-grande" type="button" id="enviar-ubicacion">Enviar mi ubicación ahora</button>
+        <p id="ubicacion-aviso" class="suave" hidden></p>
+      </form>
+
+      <ol class="lista seccion" th:if="${ruta['paradas'] != null}">
+        <li class="item" th:each="p : ${ruta['paradas']}">
+          <div class="item-cuerpo">
+            <span class="icono-circulo" th:text="${p['orden']}">1</span>
+            <div>
+              <p class="item-titulo" th:if="${p['direccion'] != null}"
+                 th:text="|${p['direccion']['calle']} ${p['direccion']['numero']}|">Calle 123</p>
+              <p class="suave chico" style="margin:0" th:if="${p['direccion'] != null}"
+                 th:text="|${p['direccion']['localidad']} · ${p['direccion']['provincia']}|">Localidad</p>
+              <div th:each="e : ${p['entregas']}" style="margin-top: var(--s-3)">
+                <p class="suave chico" style="margin:0">
+                  Donación <a th:href="@{/recepcion(donacion=${e['idDonacion']})}" th:text="${e['idDonacion']}" data-carga>id</a>
+                </p>
+                <p th:if="${e['estado'] != 'EN_TRASLADO'}"
+                   th:text="${e['estado'] == 'ENTREGADA' ? 'Entregada' : (e['estado'] == 'NO_RECIBIDA' ? 'No recibida' : (e['estado'] == 'LISTO_PARA_ENTREGAR' ? 'Lista para entregar' : e['estado']))}">En traslado</p>
+                <form th:if="${e['estado'] == 'EN_TRASLADO'}" method="post" class="formulario"
+                      th:action="@{/logistica/mi-ruta/{camion}/entregas/{entrega}/incidente(camion=${camion['id']}, entrega=${e['id']})}" data-carga>
+                  <div class="campo">
+                    <label th:for="${'motivo-' + e['id']}">Registrar incidente</label>
+                    <select th:id="${'motivo-' + e['id']}" name="motivo" required>
+                      <option value="">Elegí un motivo</option>
+                      <option value="ENTIDAD_AUSENTE">La entidad no estaba</option>
+                      <option value="DIRECCION_INCORRECTA">Dirección incorrecta</option>
+                      <option value="RECHAZADA_POR_ENTIDAD">La entidad rechazó la entrega</option>
+                      <option value="MERCADERIA_ROTA">Mercadería rota</option>
+                      <option value="MERCADERIA_PERDIDA">Mercadería perdida</option>
+                      <option value="ROBO">Robo</option>
+                    </select>
+                  </div>
+                  <button class="btn btn-secundario" type="submit" data-cargando="Registrando…">Registrar incidente</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>
+  <script th:if="${ruta != null and ruta['estado'] == 'INICIADA'}" th:inline="javascript">
+    document.getElementById('enviar-ubicacion').addEventListener('click', function () {
+      var aviso = document.getElementById('ubicacion-aviso');
+      aviso.hidden = false;
+      if (!navigator.geolocation) {
+        aviso.textContent = 'Este navegador no informa la posición.';
+        return;
+      }
+      aviso.textContent = 'Buscando la posición…';
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        document.getElementById('latitud').value = pos.coords.latitude;
+        document.getElementById('longitud').value = pos.coords.longitude;
+        document.getElementById('form-ubicacion').requestSubmit();
+      }, function () {
+        aviso.textContent = 'No se pudo leer la posición. Revisá el permiso del navegador.';
+      }, { enableHighAccuracy: true, timeout: 10000 });
+    });
+  </script>
+</main>
+</body>
+</html>

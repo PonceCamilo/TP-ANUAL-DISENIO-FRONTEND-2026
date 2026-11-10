@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Seguimiento', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <div class="contenedor">
+    <div class="encabezado-pagina">
+      <div>
+        <h1>Seguimiento</h1>
+        <p th:if="${camion != null}" th:text="|Camión ${camion['patente']}|">Camión</p>
+      </div>
+      <span class="estado estado-info" th:if="${ruta['estado'] != null}"
+            th:text="${ruta['estado'] == 'PLANIFICADA' ? 'Planificada, sin iniciar' : (ruta['estado'] == 'INICIADA' ? 'En curso' : (ruta['estado'] == 'FINALIZADA' ? 'Finalizada' : ruta['estado']))}">En curso</span>
+    </div>
+
+    <p id="ultima" class="suave" th:if="${camion != null and camion['latitud'] != null}">
+      Última actualización: <span th:text="${#strings.replace(#strings.substring(camion['ubicacionActualizadaEn'], 0, 16), 'T', ' ')}">hora</span>
+    </p>
+    <p id="ultima" class="suave" th:if="${camion == null or camion['latitud'] == null}">El camión todavía no informó su posición.</p>
+
+    <div class="grilla-2">
+      <div id="mapa" style="height: 420px; border-radius: var(--r-md); border: 1px solid var(--c-linea);"
+           th:attr="data-lat=${camion != null ? camion['latitud'] : ''}, data-lng=${camion != null ? camion['longitud'] : ''}, data-patente=${camion != null ? camion['patente'] : ''}, data-seguir=${ruta['estado'] == 'INICIADA'}, data-posicion=@{/tracking/ruta/{id}/posicion(id=${ruta['id']})}"></div>
+      <section aria-labelledby="t-paradas">
+        <h2 id="t-paradas" style="font-size: var(--t-lg)">Paradas</h2>
+        <ol class="lista" th:if="${ruta['paradas'] != null}">
+          <li class="item" th:each="p : ${ruta['paradas']}">
+            <div class="item-cuerpo">
+              <span class="icono-circulo" th:text="${p['orden']}">1</span>
+              <div>
+                <p class="item-titulo" th:if="${p['direccion'] != null}"
+                   th:text="|${p['direccion']['calle']} ${p['direccion']['numero']}|">Calle 123</p>
+                <p class="suave chico" style="margin:0" th:if="${p['direccion'] != null}"
+                   th:text="|${p['direccion']['localidad']} · ${p['direccion']['provincia']}|">Localidad</p>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </section>
+    </div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function () {
+      var caja = document.getElementById('mapa');
+      var lat = parseFloat(caja.dataset.lat);
+      var lng = parseFloat(caja.dataset.lng);
+      var tiene = !Number.isNaN(lat) && !Number.isNaN(lng);
+      var mapa = L.map('mapa').setView(tiene ? [lat, lng] : [-34.60, -58.42], tiene ? 15 : 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(mapa);
+      var marca = null;
+      function poner(la, lo, patente) {
+        var punto = [la, lo];
+        if (marca) {
+          marca.setLatLng(punto);
+        } else {
+          marca = L.marker(punto).addTo(mapa);
+        }
+        if (patente) {
+          marca.bindPopup(patente);
+        }
+        mapa.setView(punto, 15);
+      }
+      if (tiene) {
+        poner(lat, lng, caja.dataset.patente);
+      }
+      if (caja.dataset.seguir === 'true') {
+        setInterval(function () {
+          fetch(caja.dataset.posicion).then(function (r) { return r.json(); }).then(function (p) {
+            if (p.latitud == null || p.longitud == null) {
+              return;
+            }
+            poner(p.latitud, p.longitud, p.patente);
+            var texto = document.getElementById('ultima');
+            if (texto && p.actualizada) {
+              texto.textContent = 'Última actualización: ' + p.actualizada;
+            }
+          });
+        }, 15000);
+      }
+    })();
+  </script>
+</main>
+</body>
+</html>

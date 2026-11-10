@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Flota', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Inicio</a></nav>
+    <div class="encabezado-pagina">
+      <div>
+        <h1>Flota</h1>
+        <p>Camiones de la organización: patente, capacidad y si están disponibles para salir.</p>
+      </div>
+      <a class="btn btn-secundario" th:href="@{/logistica/entregas/no-recibidas}" data-carga>Entregas no recibidas</a>
+    </div>
+
+    <div class="grilla-2">
+      <section aria-labelledby="t-lista">
+        <h2 id="t-lista" class="solo-lectores">Camiones registrados</h2>
+        <ul class="lista" th:if="${!camiones.isEmpty()}">
+          <li th:each="c : ${camiones}">
+            <a class="item" th:href="@{/logistica/flota/{id}(id=${c['id']})}" data-carga>
+            <div class="item-cuerpo">
+              <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg></span>
+              <div>
+                <p class="item-titulo" th:text="${c['patente']}">AB123CD</p>
+                <p class="suave chico" style="margin:0"
+                   th:text="|${c['capacidadVolumenM3']} m³ · ${c['alturaM']} m de alto · ${c['capacidadCargaKg']} kg|">20 m³</p>
+                <p class="suave chico" style="margin:0" th:if="${c['latitud'] != null}"
+                   th:text="|Última posición: ${c['latitud']}, ${c['longitud']}|">Última posición</p>
+                <p class="suave chico" style="margin:0" th:if="${c['latitud'] == null}">Sin posición informada</p>
+              </div>
+            </div>
+            <span class="estado" th:classappend="${c['estado'] == 'DISPONIBLE' ? 'estado-ok' : (c['estado'] == 'MANTENIMIENTO' ? 'estado-warn' : 'estado-info')}">
+              <svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>
+              <span th:text="${c['estado'] == 'DISPONIBLE' ? 'Disponible' : (c['estado'] == 'EN_RUTA' ? 'En ruta' : (c['estado'] == 'MANTENIMIENTO' ? 'En mantenimiento' : c['estado']))}">Disponible</span>
+            </span>
+            </a>
+          </li>
+        </ul>
+        <div class="tarjeta vacio" th:if="${camiones.isEmpty()}">
+          <div class="circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg></div>
+          <h2>Todavía no hay camiones</h2>
+          <p>Registrá el primero con la patente y las tres capacidades.</p>
+        </div>
+      </section>
+
+      <section class="tarjeta" aria-labelledby="t-alta">
+        <h2 id="t-alta" style="font-size: var(--t-lg)">Registrar camión</h2>
+        <form class="formulario" method="post" th:action="@{/logistica/flota}" data-carga>
+          <div class="campo">
+            <label for="patente">Patente <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="patente" name="patente" required maxlength="10" autocomplete="off" placeholder="AB123CD">
+          </div>
+          <div class="campo">
+            <label for="capacidadVolumenM3">Volumen (m³) <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="capacidadVolumenM3" name="capacidadVolumenM3" type="number" min="0.01" step="any" required inputmode="decimal">
+          </div>
+          <div class="campo">
+            <label for="alturaM">Altura (m) <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="alturaM" name="alturaM" type="number" min="0.01" step="any" required inputmode="decimal">
+          </div>
+          <div class="campo">
+            <label for="capacidadCargaKg">Carga (kg) <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="capacidadCargaKg" name="capacidadCargaKg" type="number" min="0.01" step="any" required inputmode="decimal">
+          </div>
+          <button class="btn btn-sol btn-grande btn-bloque" type="submit" data-cargando="Registrando…">Registrar camión</button>
+        </form>
+      </section>
+    </div>
+  </div>
+</main>
+</body>
+</html>
