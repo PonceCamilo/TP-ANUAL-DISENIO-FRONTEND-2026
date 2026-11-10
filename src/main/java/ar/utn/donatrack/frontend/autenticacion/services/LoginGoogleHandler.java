@@ -22,6 +22,7 @@ public class LoginGoogleHandler implements AuthenticationSuccessHandler {
 
     public static final String ROL_ELEGIDO = "rolElegido";
 
+    public static final String TIPO_ELEGIDO = "tipoDonanteElegido";
     private final AuthClient authClient;
 
     public LoginGoogleHandler(AuthClient authClient) {
@@ -33,14 +34,17 @@ public class LoginGoogleHandler implements AuthenticationSuccessHandler {
                                         Authentication authentication) throws IOException {
         HttpSession sesion = request.getSession();
         String rol = String.valueOf(sesion.getAttribute(ROL_ELEGIDO));
-        if (!SesionUsuario.DONANTE.equals(rol) && !SesionUsuario.ENTIDAD.equals(rol)) {
+        if (!SesionUsuario.DONANTE.equals(rol) && !SesionUsuario.ENTIDAD_BENEFICIARIA.equals(rol)) {
             rol = SesionUsuario.DONANTE;
         }
         try {
             OidcUser google = (OidcUser) authentication.getPrincipal();
-            SesionUsuario usuario = authClient.canjearGoogle(google.getIdToken().getTokenValue(), rol);
+            String tipo = (String) sesion.getAttribute(TIPO_ELEGIDO);
+            sesion.removeAttribute(ROL_ELEGIDO);
+            sesion.removeAttribute(TIPO_ELEGIDO);
+            SesionUsuario usuario = authClient.canjearGoogle(google.getIdToken().getTokenValue(), rol, tipo);
             sesion.setAttribute(SesionUsuario.ATRIBUTO, usuario);
-            response.sendRedirect(destino(rol));
+            response.sendRedirect(destino(usuario.getRol()));
         } catch (ApiException e) {
             sesion.setAttribute("errorLogin", e.getMessage());
             response.sendRedirect("/login?rol=" + rol);
@@ -48,6 +52,6 @@ public class LoginGoogleHandler implements AuthenticationSuccessHandler {
     }
 
     public static String destino(String rol) {
-        return SesionUsuario.ENTIDAD.equals(rol) ? "/entidad/panel" : "/donante/panel";
+        return SesionUsuario.panelDe(rol);
     }
 }

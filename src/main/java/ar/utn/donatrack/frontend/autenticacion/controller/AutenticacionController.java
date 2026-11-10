@@ -2,7 +2,6 @@ package ar.utn.donatrack.frontend.autenticacion.controller;
 
 import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.autenticacion.services.LoginGoogleHandler;
-import ar.utn.donatrack.frontend.comun.config.FrontendProperties;
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 
@@ -21,21 +20,18 @@ import jakarta.servlet.http.HttpSession;
 public class AutenticacionController {
 
     private final AuthClient authClient;
-    private final FrontendProperties props;
     private final boolean googleDisponible;
 
-    public AutenticacionController(AuthClient authClient, FrontendProperties props,
+    public AutenticacionController(AuthClient authClient,
                                    ObjectProvider<ClientRegistrationRepository> clientes) {
         this.authClient = authClient;
-        this.props = props;
         this.googleDisponible = clientes.getIfAvailable() != null;
     }
 
     @GetMapping("/login")
     public String login(@RequestParam(defaultValue = "DONANTE") String rol, HttpSession sesion, Model model) {
-        model.addAttribute("rol", rolValido(rol));
+        model.addAttribute("rol", rolPublico(rol));
         model.addAttribute("googleDisponible", googleDisponible);
-        model.addAttribute("demo", props.demoEnabled());
         Object error = sesion.getAttribute("errorLogin");
         if (error != null) {
             model.addAttribute("errorLogin", error);
@@ -48,21 +44,58 @@ public class AutenticacionController {
     @PostMapping("/login")
     public String ingresar(@RequestParam String email, @RequestParam String password, @RequestParam String rol,
                            HttpSession sesion, RedirectAttributes flash) {
-        String rolOk = rolValido(rol);
+        String rolPublico = rolPublico(rol);
+        return ingresarConRol(email, password, rolPublico, "/login?rol=" + rolPublico, sesion, flash);
+    }
+
+    @GetMapping("/admin/ingreso")
+    public String loginAdministracion(HttpSession sesion, Model model) {
+        return loginInterno("Administración", "/admin/ingreso", sesion, model);
+    }
+
+    @PostMapping("/admin/ingreso")
+    public String ingresarAdministracion(@RequestParam String email, @RequestParam String password,
+                                         HttpSession sesion, RedirectAttributes flash) {
+        return ingresarConRol(email, password, SesionUsuario.ADMINISTRADOR, "/admin/ingreso", sesion, flash);
+    }
+
+    @GetMapping("/transporte/ingreso")
+    public String loginTransporte(HttpSession sesion, Model model) {
+        return loginInterno("Transporte", "/transporte/ingreso", sesion, model);
+    }
+
+    @PostMapping("/transporte/ingreso")
+    public String ingresarTransporte(@RequestParam String email, @RequestParam String password,
+                                      HttpSession sesion, RedirectAttributes flash) {
+        return ingresarConRol(email, password, SesionUsuario.CHOFER, "/transporte/ingreso", sesion, flash);
+    }
+
+    private String loginInterno(String area, String accion, HttpSession sesion, Model model) {
+        if (sesion.getAttribute(SesionUsuario.ATRIBUTO) instanceof SesionUsuario usuario && !usuario.vencida()) {
+            return "redirect:" + SesionUsuario.panelDe(usuario.getRol());
+        }
+        model.addAttribute("area", area);
+        model.addAttribute("accionIngreso", accion);
+        return "autenticacion/login-interno";
+    }
+
+    private String ingresarConRol(String email, String password, String rol, String volverA,
+                                  HttpSession sesion, RedirectAttributes flash) {
         try {
-            sesion.setAttribute(SesionUsuario.ATRIBUTO, authClient.ingresar(email.trim(), password, rolOk));
-            return "redirect:" + LoginGoogleHandler.destino(rolOk);
+            SesionUsuario usuario = authClient.ingresar(email.trim(), password, rol);
+            sesion.setAttribute(SesionUsuario.ATRIBUTO, usuario);
+            return "redirect:" + LoginGoogleHandler.destino(usuario.getRol());
         } catch (ApiException e) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", e.getMessage());
             flash.addFlashAttribute("emailIngresado", email.trim());
-            return "redirect:/login?rol=" + rolOk;
+            return "redirect:" + volverA;
         }
     }
 
     @GetMapping("/crear-cuenta")
     public String crearCuenta(@RequestParam(defaultValue = "DONANTE") String rol, Model model) {
-        model.addAttribute("rol", rolValido(rol));
+        model.addAttribute("rol", rolPublico(rol));
         model.addAttribute("googleDisponible", googleDisponible);
         return "autenticacion/crear-cuenta";
     }
@@ -70,8 +103,10 @@ public class AutenticacionController {
     @PostMapping("/crear-cuenta")
     public String registrar(@RequestParam String nombre, @RequestParam String email, @RequestParam String password,
                             @RequestParam String repetir, @RequestParam String rol,
+                            @RequestParam(defaultValue = "HUMANA") String tipoDonante,
                             HttpSession sesion, RedirectAttributes flash) {
-        String rolOk = rolValido(rol);
+        String rolOk = rolPublico(rol);
+        flash.addFlashAttribute("tipoDonanteIngresado", tipoDonante);
         if (!password.equals(repetir)) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", "Las contraseñas no coinciden.");
@@ -80,7 +115,7 @@ public class AutenticacionController {
             return "redirect:/crear-cuenta?rol=" + rolOk;
         }
         try {
-            sesion.setAttribute(SesionUsuario.ATRIBUTO, authClient.registrar(nombre.trim(), email.trim(), password, rolOk));
+            sesion.setAttribute(SesionUsuario.ATRIBUTO, authClient.registrar(nombre.trim(), email.trim(), password, rolOk, tipoDonante));
         } catch (ApiException e) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", e.getMessage());
@@ -93,32 +128,37 @@ public class AutenticacionController {
         return "redirect:" + LoginGoogleHandler.destino(rolOk);
     }
 
-    private static String rolValido(String rol) {
-        return SesionUsuario.ENTIDAD.equals(rol) ? SesionUsuario.ENTIDAD : SesionUsuario.DONANTE;
+    @PostMapping("/admin/choferes")
+    public String crearChofer(@RequestParam String nombre, @RequestParam String email, @RequestParam String password,
+                              HttpSession sesion, RedirectAttributes flash) {
+        SesionUsuario admin = (SesionUsuario) sesion.getAttribute(SesionUsuario.ATRIBUTO);
+        try {
+            authClient.crearChofer(admin, nombre.trim(), email.trim(), password);
+            flash.addFlashAttribute("toastTipo", "ok");
+            flash.addFlashAttribute("toast", "Cuenta de chofer creada. Compartile sus credenciales.");
+        } catch (ApiException e) {
+            flash.addFlashAttribute("toastTipo", "error");
+            flash.addFlashAttribute("toast", e.getMessage());
+            flash.addFlashAttribute("nombreChofer", nombre.trim());
+            flash.addFlashAttribute("emailChofer", email.trim());
+        }
+        return "redirect:/admin/panel";
+    }
+
+    private static String rolPublico(String rol) {
+        return switch (rol) {
+            case "ENTIDAD", SesionUsuario.ENTIDAD_BENEFICIARIA -> SesionUsuario.ENTIDAD_BENEFICIARIA;
+            default -> SesionUsuario.DONANTE;
+        };
     }
 
     /** Guarda el rol elegido y delega en Spring Security el flujo OIDC con Google. */
     @GetMapping("/login/google")
-    public String google(@RequestParam String rol, HttpSession sesion) {
-        sesion.setAttribute(LoginGoogleHandler.ROL_ELEGIDO,
-                SesionUsuario.ENTIDAD.equals(rol) ? SesionUsuario.ENTIDAD : SesionUsuario.DONANTE);
+    public String google(@RequestParam String rol, @RequestParam(defaultValue = "HUMANA") String tipoDonante,
+                         HttpSession sesion) {
+        sesion.setAttribute(LoginGoogleHandler.ROL_ELEGIDO, rolPublico(rol));
+        sesion.setAttribute(LoginGoogleHandler.TIPO_ELEGIDO, tipoDonante);
         return "redirect:/oauth2/authorization/google";
     }
 
-    @PostMapping("/login/demo")
-    public String demo(@RequestParam String email, @RequestParam String nombre, @RequestParam String rol,
-                       HttpSession sesion, RedirectAttributes flash) {
-        if (!props.demoEnabled()) {
-            return "redirect:/";
-        }
-        String rolOk = SesionUsuario.ENTIDAD.equals(rol) ? SesionUsuario.ENTIDAD : SesionUsuario.DONANTE;
-        try {
-            sesion.setAttribute(SesionUsuario.ATRIBUTO, authClient.canjearDemo(email.trim(), nombre.trim(), rolOk));
-            return "redirect:" + LoginGoogleHandler.destino(rolOk);
-        } catch (ApiException e) {
-            flash.addFlashAttribute("toastTipo", "error");
-            flash.addFlashAttribute("toast", e.getMessage());
-            return "redirect:/login?rol=" + rolOk;
-        }
-    }
 }
