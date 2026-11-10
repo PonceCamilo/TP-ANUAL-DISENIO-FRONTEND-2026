@@ -3,6 +3,7 @@ package ar.utn.donatrack.frontend.donaciones.controller;
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
+import ar.utn.donatrack.frontend.donaciones.services.Candidatos;
 import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
 
 import java.util.ArrayList;
@@ -144,11 +145,7 @@ public class EntidadDonacionesController {
         List<Map<String, Object>> aptas = new ArrayList<>();
         for (Map<String, Object> d : api.donacionesEnDeposito()) {
             Map<String, Object> cand = api.candidatos(UUID.fromString(Mapas.texto(d, "id")));
-            boolean candidata = Mapas.lista(cand.get("porCompatibilidad")).stream()
-                    .anyMatch(e -> String.valueOf(id).equals(Mapas.texto(e, "id")))
-                    || Mapas.lista(cand.get("porSubatendidos")).stream()
-                    .anyMatch(e -> String.valueOf(id).equals(Mapas.texto(e, "id")));
-            if (candidata) {
+            if (Candidatos.incluye(cand, id)) {
                 aptas.add(d);
             }
         }

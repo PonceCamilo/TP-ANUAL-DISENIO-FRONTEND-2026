@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Donaciones', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
+
+    <div class="encabezado-pagina">
+      <div><h1>Donaciones</h1><p>Todas las donaciones registradas. Tocá una para ver el detalle y gestionarla.</p></div>
+      <a class="btn btn-sol" th:href="@{/admin/donaciones/nueva}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('plus')}"></svg>Registrar donación</a>
+    </div>
+
+    <form method="get" th:action="@{/admin/donaciones}" class="tarjeta pila" aria-label="Filtrar donaciones" style="margin-bottom: var(--s-5)">
+      <div class="grupo-2">
+        <div class="campo">
+          <label for="estado">Estado</label>
+          <select id="estado" name="estado">
+            <option value="" th:selected="${filtros.estado == null or filtros.estado == ''}">Todos</option>
+            <option th:each="e : ${ {'EN_DEPOSITO','ASIGNACION_REALIZADA','LISTA_PARA_ENTREGAR','EN_TRASLADO','ENTREGADA','ENTREGA_FALLIDA','VENCIDA'} }"
+                    th:value="${e}" th:text="${@etiquetas.estado(e)}" th:selected="${filtros.estado == e}">En depósito</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="subcategoria">Subcategoría</label>
+          <input id="subcategoria" name="subcategoria" th:value="${filtros.subcategoria}" placeholder="Ej.: Abrigo" maxlength="60">
+        </div>
+        <div class="campo">
+          <label for="desde">Desde</label>
+          <input id="desde" name="desde" type="date" th:value="${filtros.desde}">
+        </div>
+        <div class="campo">
+          <label for="hasta">Hasta</label>
+          <input id="hasta" name="hasta" type="date" th:value="${filtros.hasta}">
+        </div>
+      </div>
+      <div class="fila espaciado">
+        <label class="opcion"><input type="checkbox" name="vencidas" value="true" th:checked="${filtros.vencidas != null}">
+          Solo con productos vencidos</label>
+        <div class="fila">
+          <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/admin/donaciones}" data-carga>Limpiar</a>
+          <button class="btn" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="banner banner-aviso" role="status" th:if="${aviso != null}" style="margin-bottom: var(--s-4)">
+      <svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg><div th:text="${aviso}">Aviso</div>
+    </div>
+
+    <th:block th:if="${!pagina.vacia}">
+      <p class="suave chico" th:text="${pagina.totalElementos == 1} ? '1 donación' : ${pagina.totalElementos} + ' donaciones'">12 donaciones</p>
+      <ul class="lista">
+        <li th:each="d : ${pagina.contenido}">
+          <a class="item" th:href="@{/admin/donaciones/{id}(id=${d.id})}" data-carga>
+            <div class="item-cuerpo">
+              <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('box')}"></svg></span>
+              <div>
+                <p class="item-titulo" th:text="${d.descripcion}">Ropa de abrigo</p>
+                <p class="suave chico" style="margin:0">
+                  <span th:text="${d.subcategoria}">Abrigo</span>
+                  <th:block th:if="${d['fechaDonacion'] != null}"> ·
+                    <time th:datetime="${d.fechaDonacion}" th:text="${#strings.substring(d.fechaDonacion, 0, 10)}">2026-06-24</time></th:block>
+                </p>
+              </div>
+            </div>
+            <span th:replace="~{comun/fragmentos/componentes :: estado(${d.estado})}"></span>
+          </a>
+        </li>
+      </ul>
+      <nav th:replace="~{donaciones/admin/fragmentos :: paginador(${pagina}, ${urlAnterior}, ${urlSiguiente})}"></nav>
+    </th:block>
+    <th:block th:if="${pagina.vacia}">
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('box', 'No hay donaciones para mostrar', 'Probá con otros filtros o registrá una donación a nombre de un donante.', '/admin/donaciones/nueva', 'Registrar donación')}"></div>
+    </th:block>
+  </div>
+</main>
+</body>
+</html>

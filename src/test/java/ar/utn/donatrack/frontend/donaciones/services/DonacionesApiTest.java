@@ -72,6 +72,17 @@ class DonacionesApiTest {
             pedidosComoLista++;
             return List.of();
         }
+
+        /** Lo que se mandó con enviar(): "MÉTODO url", el cuerpo y las variables. */
+        final List<String> envios = new ArrayList<>();
+        final List<Object> cuerpos = new ArrayList<>();
+
+        @Override
+        public void enviar(org.springframework.http.HttpMethod metodo, String url, Object cuerpo, Object... variables) {
+            envios.add(metodo.name() + " " + url);
+            cuerpos.add(cuerpo);
+            variablesPedidas.addAll(List.of(variables));
+        }
     }
 
     private final ApiDePrueba api = new ApiDePrueba();
@@ -194,6 +205,105 @@ class DonacionesApiTest {
             donaciones.resolverIdentidad(sesion);
 
             assertThat(api.urlsPedidas).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("Administración")
+    class Administracion {
+
+        @Test
+        @DisplayName("Pide una sola página con los filtros que tienen valor, como variables de la URL")
+        void paginaConFiltros() {
+            api.respuestaFija = Map.of("contenido", List.of(conId("d1")), "pagina", 2, "totalPaginas", 5, "totalElementos", 81);
+            Map<String, Object> filtros = new java.util.LinkedHashMap<>();
+            filtros.put("estado", "EN_DEPOSITO");
+            filtros.put("subcategoria", "  ");
+            filtros.put("desde", LocalDate.of(2026, 10, 10));
+            filtros.put("vencidas", null);
+
+            Pagina pagina = donaciones.paginaDeDonaciones(filtros, 2);
+
+            assertThat(api.urlsPedidas).containsExactly(BASE + "/donaciones?estado={estado}&desde={desde}&page=2&size=20");
+            assertThat(api.variablesPedidas).containsExactly("EN_DEPOSITO", LocalDate.of(2026, 10, 10));
+            assertThat(pagina.getContenido()).hasSize(1);
+            assertThat(pagina.getNumero()).isEqualTo(2);
+            assertThat(pagina.getTotalElementos()).isEqualTo(81);
+            assertThat(pagina.isHayAnterior()).isTrue();
+            assertThat(pagina.isHaySiguiente()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Sin filtros pide la página sin parámetros extra; un número negativo se toma como 0")
+        void paginaSinFiltros() {
+            api.respuestaFija = Map.of("contenido", List.of(), "pagina", 0, "totalPaginas", 0, "totalElementos", 0);
+
+            Pagina pagina = donaciones.paginaDeEntidades(null, -3);
+
+            assertThat(api.urlsPedidas).containsExactly(BASE + "/entidades?page=0&size=20");
+            assertThat(pagina.isVacia()).isTrue();
+            assertThat(pagina.isHayAnterior()).isFalse();
+            assertThat(pagina.isHaySiguiente()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Los donantes se filtran por estado y email")
+        void paginaDeDonantes() {
+            api.respuestaFija = Map.of("contenido", List.of());
+
+            donaciones.paginaDeDonantes("BLOQUEADO", " ana@example.com ", 0);
+
+            assertThat(api.urlsPedidas.getFirst()).contains("estado={estado}").contains("email={email}");
+            assertThat(api.variablesPedidas).containsExactlyInAnyOrder("BLOQUEADO", "ana@example.com");
+        }
+
+        @Test
+        @DisplayName("Cambiar el estado manda el estado y la justificación; una justificación en blanco va como null")
+        void cambiarEstado() {
+            UUID id = UUID.randomUUID();
+
+            donaciones.cambiarEstado(id, "VENCIDA", "  ");
+
+            assertThat(api.envios).containsExactly("PATCH " + BASE + "/donaciones/{id}/estado");
+            Map<?, ?> cuerpo = (Map<?, ?>) api.cuerpos.getFirst();
+            assertThat(cuerpo.get("estado")).isEqualTo("VENCIDA");
+            assertThat(cuerpo.get("justificacion")).isNull();
+            assertThat(api.variablesPedidas).containsExactly(id);
+        }
+
+        @Test
+        @DisplayName("Despachar manda los ids y deja que el broker elija si no se indica proveedor")
+        void despachar() {
+            List<UUID> ids = List.of(UUID.randomUUID(), UUID.randomUUID());
+
+            donaciones.despachar(ids, "");
+
+            assertThat(api.envios).containsExactly("POST " + BASE + "/donaciones/envios");
+            Map<?, ?> cuerpo = (Map<?, ?>) api.cuerpos.getFirst();
+            assertThat(cuerpo.get("idsDonaciones")).isEqualTo(ids);
+            assertThat(cuerpo.get("proveedor")).isNull();
+        }
+
+        @Test
+        @DisplayName("Las bajas usan DELETE sobre el recurso que corresponde")
+        void bajas() {
+            donaciones.eliminarDonacion(UUID.randomUUID());
+            donaciones.eliminarDonante(UUID.randomUUID());
+            donaciones.eliminarEntidad(UUID.randomUUID());
+
+            assertThat(api.envios).containsExactly(
+                    "DELETE " + BASE + "/donaciones/{id}",
+                    "DELETE " + BASE + "/donantes/{id}",
+                    "DELETE " + BASE + "/entidades/{id}");
+        }
+
+        @Test
+        @DisplayName("Bloquear a un donante manda el motivo")
+        void bloquearDonante() {
+            donaciones.cambiarEstadoDonante(UUID.randomUUID(), "BLOQUEADO", " fraude ");
+
+            assertThat(api.envios).containsExactly("PATCH " + BASE + "/donantes/{id}/estado");
+            assertThat(((Map<?, ?>) api.cuerpos.getFirst()).get("justificacion")).isEqualTo("fraude");
         }
     }
 

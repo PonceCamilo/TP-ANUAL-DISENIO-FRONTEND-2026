@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Por asignar', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
+
+    <div class="encabezado-pagina">
+      <div><h1>Donaciones por asignar</h1>
+        <p>Las que siguen en depósito, con las entidades que les sugirieron los algoritmos en el cálculo de cada noche.</p></div>
+    </div>
+
+    <ul class="lista" th:if="${!pendientes.isEmpty()}">
+      <li class="item" th:each="p : ${pendientes}">
+        <div class="item-cuerpo">
+          <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('box')}"></svg></span>
+          <div>
+            <p class="item-titulo" th:text="${p.donacion.descripcion}">Frazadas</p>
+            <p class="suave chico" style="margin:0">
+              <span th:text="${p.donacion.subcategoria}">Abrigo</span> ·
+              <span th:text="${p.cantidadDeCandidatas == 1} ? '1 entidad sugerida' : ${p.cantidadDeCandidatas} + ' entidades sugeridas'">3 entidades sugeridas</span>
+              <th:block th:if="${p['fechaCalculo'] != null}"> · calculado el
+                <time th:datetime="${p.fechaCalculo}" th:text="${#strings.substring(p.fechaCalculo, 0, 10)}">2026-11-10</time></th:block>
+            </p>
+          </div>
+        </div>
+        <a class="btn btn-sol" th:href="@{/admin/donaciones/{id}/candidatos(id=${p.idDonacion})}" data-carga
+           th:aria-label="'Elegir entidad para ' + ${p.donacion.descripcion}">Elegir entidad</a>
+      </li>
+    </ul>
+    <th:block th:if="${pendientes.isEmpty()}">
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('pin', 'No hay donaciones esperando destino', 'Las donaciones nuevas aparecen acá después del cálculo nocturno. Mientras tanto, se puede elegir la entidad desde el detalle de cada donación.', '/admin/donaciones?estado=EN_DEPOSITO', 'Ver las que están en depósito')}"></div>
+    </th:block>
+  </div>
+</main>
+</body>
+</html>

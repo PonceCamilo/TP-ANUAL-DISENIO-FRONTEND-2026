@@ -26,13 +26,13 @@
           <label class="opcion"><input type="radio" name="tipo" value="RECURRENTE"> Recurrente</label>
         </div>
       </fieldset>
-      <div class="campo" data-muestra-si="tipo=RECURRENTE" hidden>
+      <div data-muestra-si="tipo=RECURRENTE" hidden><div class="campo">
         <label for="periodo">¿Cada cuánto?</label>
         <select id="periodo" name="periodo">
           <option value="SEMANAL">Semanal</option><option value="MENSUAL" selected>Mensual</option>
           <option value="CUATRIMESTRAL">Cuatrimestral</option><option value="ANUAL">Anual</option>
         </select>
-      </div>
+      </div></div>
       <div class="fila">
         <button class="btn btn-sol btn-grande btn-bloque" type="submit" data-cargando="Guardando…">Agregar necesidad</button>
         <a class="btn btn-secundario btn-grande btn-bloque" th:href="@{/entidad/panel}" data-carga>Cancelar</a>

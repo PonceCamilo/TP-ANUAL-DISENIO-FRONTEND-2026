@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Entidades', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
+
+    <div class="encabezado-pagina">
+      <div><h1>Entidades beneficiarias</h1><p>Las organizaciones que reciben donaciones.</p></div>
+    </div>
+
+    <form method="get" th:action="@{/admin/entidades}" class="tarjeta" aria-label="Buscar entidades" style="margin-bottom: var(--s-5)">
+      <div class="fila" style="align-items:flex-end">
+        <div class="campo" style="flex:1;min-width:14rem">
+          <label for="email">Buscar por email de contacto o representante</label>
+          <input id="email" name="email" type="email" th:value="${filtros.email}" placeholder="contacto@entidad.org">
+        </div>
+        <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/admin/entidades}" data-carga>Limpiar</a>
+        <button class="btn" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Buscar</button>
+      </div>
+    </form>
+
+    <th:block th:if="${!pagina.vacia}">
+      <p class="suave chico" th:text="${pagina.totalElementos == 1} ? '1 entidad' : ${pagina.totalElementos} + ' entidades'">5 entidades</p>
+      <ul class="lista">
+        <li class="item" th:each="e : ${pagina.contenido}">
+          <div class="item-cuerpo">
+            <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('building')}"></svg></span>
+            <div>
+              <p class="item-titulo" th:text="${e.razonSocial}">Comedor Los Pibes</p>
+              <p class="suave chico" style="margin:0">
+                <th:block th:if="${e['direccion'] != null and e['direccion']['localidad'] != null}">
+                  <span th:text="${e['direccion']['localidad']['nombre']}">Lanús</span> ·
+                </th:block>
+                <span th:with="campanias=${e['campanias'] == null ? 0 : e['campanias'].size()}"
+                      th:text="${campanias == 1} ? '1 campaña' : ${campanias} + ' campañas'">2 campañas</span>
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn btn-secundario btn-icono" data-modal="confirmar-baja"
+                  th:data-accion="@{/admin/entidades/{id}/eliminar(id=${e.id})}"
+                  th:data-detalle="${'Se elimina ' + e.razonSocial + '. Si ya recibió donaciones, el servicio no lo permite.'}"
+                  th:aria-label="'Eliminar ' + ${e.razonSocial}">
+            <svg th:replace="~{comun/fragmentos/componentes :: ic('trash')}"></svg></button>
+        </li>
+      </ul>
+      <nav th:replace="~{donaciones/admin/fragmentos :: paginador(${pagina}, ${urlAnterior}, ${urlSiguiente})}"></nav>
+    </th:block>
+    <th:block th:if="${pagina.vacia}">
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('search', 'No encontramos entidades', 'Probá con otro email. Las entidades se registran desde su propia cuenta.', null, null)}"></div>
+    </th:block>
+
+    <dialog th:replace="~{comun/fragmentos/componentes :: confirmar('confirmar-baja', '¿Eliminar esta entidad?')}"></dialog>
+  </div>
+</main>
+</body>
+</html>

@@ -7,7 +7,6 @@ import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -100,22 +99,8 @@ public class DonanteDonacionesController {
         if (id == null) {
             return "redirect:/donante/registro";
         }
-        String tipo = "Otro".equals(subcategoria) && subcategoriaOtra != null && !subcategoriaOtra.isBlank()
-                ? subcategoriaOtra.trim()
-                : subcategoria.trim();
-        Map<String, Object> bien = new LinkedHashMap<>();
-        bien.put("subcategoria", tipo);
-        bien.put("descripcion", detalle == null || detalle.isBlank() ? tipo : detalle.trim());
-        bien.put("cantidad", cantidad);
-        bien.put("unidad", unidad.trim());
-        bien.put("esNuevo", esNuevo);
-        if (fechaVencimiento != null && !fechaVencimiento.isBlank()) {
-            bien.put("fechaVencimiento", fechaVencimiento);
-        }
-        Map<String, Object> cuerpo = new LinkedHashMap<>();
-        cuerpo.put("idDonante", id);
-        cuerpo.put("descripcion", descripcion.trim());
-        cuerpo.put("bienes", List.of(bien));
+        Map<String, Object> cuerpo = FormularioDonacion.cuerpo(id, descripcion, subcategoria, subcategoriaOtra,
+                detalle, cantidad, unidad, esNuevo, fechaVencimiento);
         try {
             api.crearDonacion(cuerpo);
         } catch (ApiException e) {

@@ -7,6 +7,7 @@ import ar.utn.donatrack.frontend.comun.util.Mapas;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -25,6 +26,8 @@ public class DonacionesApi {
     static final int TAMANIO_DE_PAGINA = 100;
     /** Tope de viajes por listado, para que un listado enorme no cuelgue una pantalla. */
     static final int MAXIMO_DE_PAGINAS = 10;
+    /** Elementos por página en las pantallas de administración. */
+    public static final int TAMANIO_ADMINISTRACION = 20;
 
     private final ApiClient api;
     private final String donaciones;
@@ -161,5 +164,95 @@ public class DonacionesApi {
     public void asignar(UUID donacionId, UUID entidadId) {
         api.enviar(HttpMethod.PATCH, donaciones + "/donaciones/{id}/asignar",
                 Map.of("idEntidadBeneficiaria", entidadId), donacionId);
+    }
+
+    // ── Administración ──────────────────────────────────────────────────────────
+    // Las pantallas de la persona administradora muestran una página por vez:
+    // los listados completos pueden ser grandes y ahí no hace falta tenerlos enteros.
+
+    /**
+     * Una página del listado, con los filtros que tengan valor. Los valores van
+     * como variables de la URL para que se codifiquen (un email con "+", una
+     * subcategoría con espacios).
+     */
+    Pagina pagina(String ruta, Map<String, Object> filtros, int numero) {
+        StringBuilder url = new StringBuilder(donaciones).append(ruta).append('?');
+        List<Object> valores = new ArrayList<>();
+        for (Map.Entry<String, Object> filtro : filtros.entrySet()) {
+            Object valor = filtro.getValue();
+            if (valor == null || valor instanceof String texto && texto.isBlank()) {
+                continue;
+            }
+            url.append(filtro.getKey()).append("={").append(filtro.getKey()).append("}&");
+            valores.add(valor instanceof String texto ? texto.strip() : valor);
+        }
+        url.append("page=").append(Math.max(0, numero)).append("&size=").append(TAMANIO_ADMINISTRACION);
+        return Pagina.desde(api.objeto(url.toString(), valores.toArray()));
+    }
+
+    /** Filtros posibles: estado, subcategoria, desde, hasta y vencidas (ver GET /donaciones). */
+    public Pagina paginaDeDonaciones(Map<String, Object> filtros, int numero) {
+        return pagina("/donaciones", filtros, numero);
+    }
+
+    public Pagina paginaDeDonantes(String estado, String email, int numero) {
+        Map<String, Object> filtros = new HashMap<>();
+        filtros.put("estado", estado);
+        filtros.put("email", email);
+        return pagina("/donantes", filtros, numero);
+    }
+
+    public Pagina paginaDeEntidades(String email, int numero) {
+        Map<String, Object> filtros = new HashMap<>();
+        filtros.put("email", email);
+        return pagina("/entidades", filtros, numero);
+    }
+
+    /** Donaciones con entidad asignada que todavía no se mandaron a logística. */
+    public List<Map<String, Object>> donacionesParaDespachar() {
+        return paginado(donaciones + "/donaciones?estado=ASIGNACION_REALIZADA");
+    }
+
+    /** Resultado del matchmaking nocturno: donaciones en depósito con sus entidades sugeridas. */
+    public List<Map<String, Object>> candidatosPendientes() {
+        return api.lista(donaciones + "/donaciones/candidatos");
+    }
+
+    public void cambiarEstado(UUID donacionId, String estado, String justificacion) {
+        api.enviar(HttpMethod.PATCH, donaciones + "/donaciones/{id}/estado",
+                conJustificacion(estado, justificacion), donacionId);
+    }
+
+    /** proveedor: DONATRACK, EXTERNA, o null para que el broker elija. */
+    public void despachar(List<UUID> donacionIds, String proveedor) {
+        Map<String, Object> cuerpo = new HashMap<>();
+        cuerpo.put("idsDonaciones", donacionIds);
+        cuerpo.put("proveedor", proveedor == null || proveedor.isBlank() ? null : proveedor);
+        api.enviar(HttpMethod.POST, donaciones + "/donaciones/envios", cuerpo);
+    }
+
+    /** Baja lógica: la donación queda guardada pero deja de aparecer en los listados. */
+    public void eliminarDonacion(UUID donacionId) {
+        api.enviar(HttpMethod.DELETE, donaciones + "/donaciones/{id}", null, donacionId);
+    }
+
+    public void cambiarEstadoDonante(UUID donanteId, String estado, String justificacion) {
+        api.enviar(HttpMethod.PATCH, donaciones + "/donantes/{id}/estado",
+                conJustificacion(estado, justificacion), donanteId);
+    }
+
+    public void eliminarDonante(UUID donanteId) {
+        api.enviar(HttpMethod.DELETE, donaciones + "/donantes/{id}", null, donanteId);
+    }
+
+    public void eliminarEntidad(UUID entidadId) {
+        api.enviar(HttpMethod.DELETE, donaciones + "/entidades/{id}", null, entidadId);
+    }
+
+    private static Map<String, Object> conJustificacion(String estado, String justificacion) {
+        Map<String, Object> cuerpo = new HashMap<>();
+        cuerpo.put("estado", estado);
+        cuerpo.put("justificacion", justificacion == null || justificacion.isBlank() ? null : justificacion.strip());
+        return cuerpo;
     }
 }
