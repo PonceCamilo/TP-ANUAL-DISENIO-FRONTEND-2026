@@ -39,6 +39,7 @@ public class RecepcionController {
         try {
             Map<String, Object> entrega = api.entregaPorDonacion(donacion);
             model.addAttribute("entrega", entrega);
+            model.addAttribute("camionTexto", textoDelCamion(entrega.get("camionId")));
             model.addAttribute("replanificable", esReplanificable(entrega.get("historial")));
         } catch (ApiException e) {
             if (e.getStatus() == 404) {
@@ -69,6 +70,22 @@ public class RecepcionController {
         flash.addFlashAttribute("toastTipo", "ok");
         flash.addFlashAttribute("toast", "Recepción confirmada.");
         return "redirect:/recepcion?donacion=" + donacion;
+    }
+
+    /** La recepción es pública: el camión se muestra como texto, sin entrar a la flota. */
+    private String textoDelCamion(Object camionId) {
+        if (camionId == null) {
+            return null;
+        }
+        try {
+            Object patente = api.camion(UUID.fromString(String.valueOf(camionId))).get("patente");
+            if (patente != null && !String.valueOf(patente).isBlank()) {
+                return String.valueOf(patente);
+            }
+        } catch (ApiException | IllegalArgumentException e) {
+            return String.valueOf(camionId);
+        }
+        return String.valueOf(camionId);
     }
 
     private static boolean esReplanificable(Object historial) {

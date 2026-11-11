@@ -18,9 +18,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Revisión de las entregas que el chofer marcó como no recibidas.
+ * La hace la persona administradora, por eso cuelga de /admin.
  */
 @Controller
-@RequestMapping("/logistica/entregas")
+@RequestMapping("/admin/entregas")
 public class RevisionEntregasController {
 
     private static final Set<String> REPLANIFICABLES = Set.of(
@@ -42,6 +43,7 @@ public class RevisionEntregasController {
 
     @GetMapping("/no-recibidas")
     public String listar(Model model) {
+        model.addAttribute("seccion", "no-recibidas");
         List<Map<String, Object>> entregas = api.entregasPorEstado("NO_RECIBIDA");
         entregas.forEach(this::anotarMotivo);
         model.addAttribute("entregas", entregas);
@@ -51,6 +53,7 @@ public class RevisionEntregasController {
     @GetMapping("/{id}")
     public String detalle(@PathVariable UUID id, Model model) {
         Map<String, Object> entrega = api.entrega(id);
+        model.addAttribute("seccion", "no-recibidas");
         anotarMotivo(entrega);
         model.addAttribute("entrega", entrega);
         return "logistica/entrega";
@@ -63,11 +66,11 @@ public class RevisionEntregasController {
         } catch (ApiException e) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", e.getMessage());
-            return "redirect:/logistica/entregas/" + id;
+            return "redirect:/admin/entregas/" + id;
         }
         flash.addFlashAttribute("toastTipo", "ok");
         flash.addFlashAttribute("toast", "Volvió al depósito. La nueva ruta la arma la planificación.");
-        return "redirect:/logistica/entregas/no-recibidas";
+        return "redirect:/admin/entregas/no-recibidas";
     }
 
     private void anotarMotivo(Map<String, Object> entrega) {

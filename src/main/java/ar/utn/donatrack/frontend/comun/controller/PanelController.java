@@ -1,13 +1,17 @@
 package ar.utn.donatrack.frontend.comun.controller;
 
+import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
 import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
 import ar.utn.donatrack.frontend.incentivos.services.IncentivosApi;
+import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 
 import java.time.Month;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.List;
@@ -32,10 +36,15 @@ public class PanelController {
 
     private final DonacionesApi donaciones;
     private final IncentivosApi incentivos;
+    private final LogisticaApi logistica;
+    private final AuthClient autenticacion;
 
-    public PanelController(DonacionesApi donaciones, IncentivosApi incentivos) {
+    public PanelController(DonacionesApi donaciones, IncentivosApi incentivos,
+                           LogisticaApi logistica, AuthClient autenticacion) {
         this.donaciones = donaciones;
         this.incentivos = incentivos;
+        this.logistica = logistica;
+        this.autenticacion = autenticacion;
     }
 
     private SesionUsuario usuario(HttpSession s) {
@@ -164,18 +173,75 @@ public class PanelController {
     }
 
     @GetMapping("/admin/panel")
-    public String panelAdministracion(Model model) {
+    public String panelAdministracion(HttpSession sesion, Model model) {
+        model.addAttribute("seccion", "panel");
         model.addAttribute("area", "Administración");
         model.addAttribute("descripcionArea", "Área interna para la gestión de DonaTrack.");
+        model.addAttribute("flotaNoDisponible", false);
+        model.addAttribute("choferesNoDisponibles", false);
+        List<Map<String, Object>> camiones = camionesParaAsignar(model);
+        List<Map<String, Object>> choferes = choferesParaAsignar(sesion, model);
+        model.addAttribute("camiones", camiones);
+        model.addAttribute("choferes", conPatente(choferes, camiones));
         return "autenticacion/panel-interno";
     }
 
     @GetMapping({"/chofer/panel", "/transporte/panel"})
     public String panelTransporte(HttpSession sesion, Model model) {
-        model.addAttribute("camionAsignado", usuario(sesion).getCamionId());
+        model.addAttribute("seccion", "panel");
+        UUID camionId = usuario(sesion).getCamionId();
+        model.addAttribute("camionAsignado", camionId);
+        if (camionId != null) {
+            try {
+                model.addAttribute("patenteAsignada", logistica.camion(camionId).get("patente"));
+            } catch (ApiException e) {
+                model.addAttribute("patenteNoDisponible", true);
+            }
+        }
         model.addAttribute("area", "Transporte");
         model.addAttribute("descripcionArea", "Área del equipo que realiza las entregas.");
         return "autenticacion/panel-interno";
+    }
+
+    private List<Map<String, Object>> camionesParaAsignar(Model model) {
+        try {
+            return logistica.camiones();
+        } catch (ApiException e) {
+            model.addAttribute("flotaNoDisponible", true);
+            return List.of();
+        }
+    }
+
+    private List<Map<String, Object>> choferesParaAsignar(HttpSession sesion, Model model) {
+        try {
+            return autenticacion.choferes(usuario(sesion));
+        } catch (ApiException e) {
+            model.addAttribute("choferesNoDisponibles", true);
+            return List.of();
+        }
+    }
+
+    /** Cruza el camionId de la cuenta con la patente que conoce logística. */
+    private List<Map<String, Object>> conPatente(List<Map<String, Object>> choferes,
+                                                 List<Map<String, Object>> camiones) {
+        Map<String, String> patentes = new HashMap<>();
+        for (Map<String, Object> camion : camiones) {
+            if (camion.get("id") != null && camion.get("patente") != null) {
+                patentes.put(String.valueOf(camion.get("id")), String.valueOf(camion.get("patente")));
+            }
+        }
+        List<Map<String, Object>> filas = new ArrayList<>();
+        for (Map<String, Object> chofer : choferes) {
+            Map<String, Object> fila = new LinkedHashMap<>(chofer);
+            Object camionId = chofer.get("camionId");
+            if (camionId != null) {
+                String patente = patentes.get(String.valueOf(camionId));
+                fila.put("patente", patente);
+                fila.put("camionPerdido", patente == null);
+            }
+            filas.add(fila);
+        }
+        return filas;
     }
 
     @GetMapping("/entidad/panel")

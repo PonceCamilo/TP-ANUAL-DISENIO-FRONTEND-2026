@@ -6,6 +6,7 @@ import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,6 +76,39 @@ public class AuthClient {
         } catch (RestClientResponseException e) {
             String mensaje = detalle(e);
             throw new ApiException(mensaje.isBlank() ? "No pudimos crear la cuenta del chofer." : mensaje,
+                    e.getStatusCode().value());
+        } catch (ResourceAccessException e) {
+            throw new ApiException("El servicio de autenticación no responde.", 503);
+        }
+    }
+
+    public List<Map<String, Object>> choferes(SesionUsuario admin) {
+        try {
+            List<Map<String, Object>> cuerpo = rest.get().uri(baseUrl + "/api/autenticacion/choferes")
+                    .headers(headers -> headers.setBearerAuth(admin.getToken()))
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<List<Map<String, Object>>>() {});
+            return cuerpo == null ? List.of() : cuerpo;
+        } catch (RestClientResponseException e) {
+            String mensaje = detalle(e);
+            throw new ApiException(mensaje.isBlank() ? "No pudimos consultar los choferes." : mensaje,
+                    e.getStatusCode().value());
+        } catch (ResourceAccessException e) {
+            throw new ApiException("El servicio de autenticación no responde.", 503);
+        }
+    }
+
+    public void asignarCamion(SesionUsuario admin, UUID choferId, UUID camionId) {
+        try {
+            rest.put().uri(baseUrl + "/api/autenticacion/choferes/{id}/camion", choferId)
+                    .headers(headers -> headers.setBearerAuth(admin.getToken()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("camionId", camionId))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientResponseException e) {
+            String mensaje = detalle(e);
+            throw new ApiException(mensaje.isBlank() ? "No pudimos asignar el camión." : mensaje,
                     e.getStatusCode().value());
         } catch (ResourceAccessException e) {
             throw new ApiException("El servicio de autenticación no responde.", 503);

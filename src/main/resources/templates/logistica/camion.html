@@ -3,7 +3,7 @@
 <body>
 <main id="contenido" tabindex="-1">
   <div class="contenedor">
-    <nav class="migas" aria-label="Ruta"><a th:href="@{/logistica/flota}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Flota</a></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/flota}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Flota</a></nav>
 
     <div class="encabezado-pagina">
       <div>
@@ -31,7 +31,6 @@
             <span th:if="${ruta['fechaInicio'] != null}" th:text="| · salió ${#strings.replace(#strings.substring(ruta['fechaInicio'], 0, 16), 'T', ' ')}|"> · salió</span>
           </p>
           <p class="fila">
-            <a class="btn btn-secundario" th:href="@{/logistica/mi-ruta/{id}(id=${camion['id']})}" data-carga>Abrir como chofer</a>
             <a class="btn btn-secundario" th:href="@{/tracking/ruta/{id}(id=${ruta['id']})}" data-carga>Ver en el mapa</a>
           </p>
           <ol class="lista" th:if="${ruta['paradas'] != null}">
@@ -59,10 +58,10 @@
         <p th:if="${ruta != null and ruta['estado'] != 'INICIADA' and ruta['estado'] != 'PLANIFICADA'}">Tiene un reparto abierto y no se puede sacar de servicio.</p>
         <p th:if="${!puedeMantenimiento and !puedeDisponible and ruta == null}">No se puede cambiar la disponibilidad en este estado.</p>
 
-        <form th:if="${puedeMantenimiento}" method="post" th:action="@{/logistica/flota/{id}/mantenimiento(id=${camion['id']})}" data-carga>
+        <form th:if="${puedeMantenimiento}" method="post" th:action="@{/admin/flota/{id}/mantenimiento(id=${camion['id']})}" data-carga>
           <button class="btn btn-sol btn-grande" type="submit" data-cargando="Guardando…">Pasar a mantenimiento</button>
         </form>
-        <form th:if="${puedeDisponible}" method="post" th:action="@{/logistica/flota/{id}/disponible(id=${camion['id']})}" data-carga>
+        <form th:if="${puedeDisponible}" method="post" th:action="@{/admin/flota/{id}/disponible(id=${camion['id']})}" data-carga>
           <button class="btn btn-sol btn-grande" type="submit" data-cargando="Guardando…">Volver a disponible</button>
         </form>
       </section>

@@ -97,6 +97,11 @@ public class LogisticaApi {
         api.enviar(HttpMethod.POST, logistica + "/api/logistica/camiones/{id}/ubicacion", cuerpo, camionId);
     }
 
+    /** Entregas que ya volvieron al depósito. Lista vacía si no hay ninguna. */
+    public List<Map<String, Object>> replanificarPendientes() {
+        return api.publicarLista(logistica + "/api/logistica/planificaciones/reintentos", null);
+    }
+
     public void registrarCamion(String patente, double volumenM3, double alturaM, double cargaKg) {
         Map<String, Object> cuerpo = new LinkedHashMap<>();
         cuerpo.put("patente", patente);

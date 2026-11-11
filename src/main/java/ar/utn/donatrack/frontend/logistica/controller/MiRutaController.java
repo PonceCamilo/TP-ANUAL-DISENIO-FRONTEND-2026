@@ -1,6 +1,7 @@
 package ar.utn.donatrack.frontend.logistica.controller;
 
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
+import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 
 import java.util.List;
@@ -16,13 +17,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.servlet.http.HttpSession;
 
 /**
- * Recorrido del chofer. El id del camión va en la dirección hasta que
- * autenticación informe cuál le toca.
+ * Recorrido del chofer. El camión es el de la sesión: autenticación lo informa
+ * y el interceptor lo refresca en cada pedido a /chofer.
  */
 @Controller
-@RequestMapping("/logistica/mi-ruta")
+@RequestMapping("/chofer/mi-ruta")
 public class MiRutaController {
 
     private static final Set<String> MOTIVOS = Set.of(
@@ -39,8 +41,15 @@ public class MiRutaController {
         this.api = api;
     }
 
-    @GetMapping("/{camionId}")
-    public String ver(@PathVariable UUID camionId, Model model) {
+    @GetMapping
+    public String ver(HttpSession sesion, Model model) {
+        model.addAttribute("seccion", "mi-ruta");
+        UUID camionId = camionDe(sesion);
+        if (camionId == null) {
+            model.addAttribute("sinCamion", true);
+            return "logistica/mi-ruta";
+        }
+        model.addAttribute("sinCamion", false);
         Map<String, Object> camion = api.camion(camionId);
         Map<String, Object> ruta = api.rutaVigente(camionId);
         completarEstados(ruta);
@@ -49,69 +58,93 @@ public class MiRutaController {
         return "logistica/mi-ruta";
     }
 
-    @PostMapping("/{camionId}/iniciar")
-    public String iniciar(@PathVariable UUID camionId, RedirectAttributes flash) {
+    @PostMapping("/iniciar")
+    public String iniciar(HttpSession sesion, RedirectAttributes flash) {
+        UUID camionId = camionDe(sesion);
+        if (camionId == null) {
+            return sinCamion(flash);
+        }
         Map<String, Object> ruta = api.rutaVigente(camionId);
         if (ruta == null) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", "Este camión no tiene una ruta para iniciar.");
-            return volver(camionId);
+            return volver();
         }
         try {
             api.iniciarRuta(UUID.fromString(String.valueOf(ruta.get("id"))));
         } catch (ApiException e) {
-            return error(flash, e, camionId);
+            return error(flash, e);
         }
         flash.addFlashAttribute("toastTipo", "ok");
         flash.addFlashAttribute("toast", "Ruta iniciada. Las entregas están en traslado.");
-        return volver(camionId);
+        return volver();
     }
 
-    @PostMapping("/{camionId}/entregas/{entregaId}/incidente")
-    public String incidente(@PathVariable UUID camionId, @PathVariable UUID entregaId,
+    @PostMapping("/entregas/{entregaId}/incidente")
+    public String incidente(HttpSession sesion, @PathVariable UUID entregaId,
                             @RequestParam String motivo, RedirectAttributes flash) {
+        if (camionDe(sesion) == null) {
+            return sinCamion(flash);
+        }
         if (!MOTIVOS.contains(motivo)) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", "Elegí un motivo de la lista.");
-            return volver(camionId);
+            return volver();
         }
         try {
             api.marcarNoRecibida(entregaId, motivo);
         } catch (ApiException e) {
-            return error(flash, e, camionId);
+            return error(flash, e);
         }
         flash.addFlashAttribute("toastTipo", "ok");
         flash.addFlashAttribute("toast", "Incidente registrado.");
-        return volver(camionId);
+        return volver();
     }
 
-    @PostMapping("/{camionId}/ubicacion")
-    public String ubicacion(@PathVariable UUID camionId,
+    @PostMapping("/ubicacion")
+    public String ubicacion(HttpSession sesion,
                             @RequestParam double latitud, @RequestParam double longitud,
                             RedirectAttributes flash) {
+        UUID camionId = camionDe(sesion);
+        if (camionId == null) {
+            return sinCamion(flash);
+        }
         if (latitud < -90 || latitud > 90 || longitud < -180 || longitud > 180) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", "La posición que informó el navegador no es válida.");
-            return volver(camionId);
+            return volver();
         }
         try {
             api.registrarUbicacion(camionId, latitud, longitud);
         } catch (ApiException e) {
-            return error(flash, e, camionId);
+            return error(flash, e);
         }
         flash.addFlashAttribute("toastTipo", "ok");
         flash.addFlashAttribute("toast", "Ubicación enviada.");
-        return volver(camionId);
+        return volver();
     }
 
-    private String volver(UUID camionId) {
-        return "redirect:/logistica/mi-ruta/" + camionId;
+    private UUID camionDe(HttpSession sesion) {
+        if (sesion.getAttribute(SesionUsuario.ATRIBUTO) instanceof SesionUsuario usuario) {
+            return usuario.getCamionId();
+        }
+        return null;
     }
 
-    private String error(RedirectAttributes flash, ApiException e, UUID camionId) {
+    private String sinCamion(RedirectAttributes flash) {
+        flash.addFlashAttribute("toastTipo", "error");
+        flash.addFlashAttribute("toast", "Todavía no tenés un camión asignado.");
+        return volver();
+    }
+
+    private String volver() {
+        return "redirect:/chofer/mi-ruta";
+    }
+
+    private String error(RedirectAttributes flash, ApiException e) {
         flash.addFlashAttribute("toastTipo", "error");
         flash.addFlashAttribute("toast", e.getMessage());
-        return volver(camionId);
+        return volver();
     }
 
     @SuppressWarnings("unchecked")

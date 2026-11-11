@@ -146,6 +146,7 @@ main:focus { outline: none; }
 
 /* ---------- listas ---------- */
 .lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.lista.seccion { margin-top: var(--s-7); }
 .item { background: var(--c-superficie); border: 1px solid var(--c-linea); border-radius: var(--r-md); padding: var(--s-4) var(--s-5);
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3); transition: box-shadow var(--transicion), border-color var(--transicion); }
 a.item { text-decoration: none; color: inherit; }

@@ -43,6 +43,15 @@
         <li><a th:href="@{/entidad/recepciones}" th:aria-current="${seccion == 'recepciones'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Recepciones</a></li>
         <li><a th:href="@{/entidad/notificaciones}" th:aria-current="${seccion == 'notificaciones'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('bell')}"></svg>Avisos</a></li>
       </ul>
+      <ul class="nav" th:if="${usuario.rol == 'ADMINISTRADOR'}">
+        <li><a th:href="@{/admin/panel}" th:aria-current="${seccion == 'panel'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('home')}"></svg>Inicio</a></li>
+        <li><a th:href="@{/admin/flota}" th:aria-current="${seccion == 'flota'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Flota</a></li>
+        <li><a th:href="@{/admin/entregas/no-recibidas}" th:aria-current="${seccion == 'no-recibidas'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg>No recibidas</a></li>
+      </ul>
+      <ul class="nav" th:if="${usuario.rol == 'CHOFER'}">
+        <li><a th:href="@{/chofer/panel}" th:aria-current="${seccion == 'panel'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('home')}"></svg>Inicio</a></li>
+        <li><a th:href="@{/chofer/mi-ruta}" th:aria-current="${seccion == 'mi-ruta'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Mi ruta</a></li>
+      </ul>
       <div class="usuario">
         <span class="avatar" aria-hidden="true" th:text="${#strings.toUpperCase(#strings.substring(usuario.primerNombre, 0, 1))}">C</span>
         <span class="usuario-nombre" th:text="${usuario.primerNombre}">Cynthia</span>

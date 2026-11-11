@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * Flota de la organización. Hoy se abre sin sesión: el rol de administrador
- * se engancha cuando autenticación lo entregue.
+ * Flota de la organización. Vive bajo /admin: el interceptor deja pasar
+ * solo a la persona administradora.
  */
 @Controller
-@RequestMapping("/logistica/flota")
+@RequestMapping("/admin/flota")
 public class FlotaController {
 
     private final LogisticaApi api;
@@ -31,6 +31,7 @@ public class FlotaController {
 
     @GetMapping
     public String listar(Model model) {
+        model.addAttribute("seccion", "flota");
         model.addAttribute("camiones", api.camiones());
         return "logistica/flota";
     }
@@ -45,18 +46,18 @@ public class FlotaController {
         if (patenteLimpia.isBlank() || capacidadVolumenM3 <= 0 || alturaM <= 0 || capacidadCargaKg <= 0) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", "Completá la patente y las tres capacidades con un número mayor que cero.");
-            return "redirect:/logistica/flota";
+            return "redirect:/admin/flota";
         }
         try {
             api.registrarCamion(patenteLimpia, capacidadVolumenM3, alturaM, capacidadCargaKg);
         } catch (ApiException e) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", e.getMessage());
-            return "redirect:/logistica/flota";
+            return "redirect:/admin/flota";
         }
         flash.addFlashAttribute("toastTipo", "ok");
         flash.addFlashAttribute("toast", "Camión " + patenteLimpia + " registrado.");
-        return "redirect:/logistica/flota";
+        return "redirect:/admin/flota";
     }
 
     @GetMapping("/{id}")
@@ -65,6 +66,7 @@ public class FlotaController {
         Map<String, Object> ruta = api.rutaVigente(id);
         String estado = String.valueOf(camion.get("estado"));
         boolean rutaAbierta = ruta != null;
+        model.addAttribute("seccion", "flota");
         model.addAttribute("camion", camion);
         model.addAttribute("ruta", ruta);
         model.addAttribute("puedeMantenimiento", "DISPONIBLE".equals(estado) && !rutaAbierta);
@@ -92,12 +94,12 @@ public class FlotaController {
         } catch (ApiException e) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", e.getMessage());
-            return "redirect:/logistica/flota/" + id;
+            return "redirect:/admin/flota/" + id;
         }
         flash.addFlashAttribute("toastTipo", "ok");
         flash.addFlashAttribute("toast", aMantenimiento
                 ? "El camión pasó a mantenimiento."
                 : "El camión volvió a estar disponible.");
-        return "redirect:/logistica/flota/" + id;
+        return "redirect:/admin/flota/" + id;
     }
 }

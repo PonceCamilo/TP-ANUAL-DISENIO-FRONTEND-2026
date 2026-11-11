@@ -3,13 +3,13 @@
 <body>
 <main id="contenido" tabindex="-1">
   <div class="contenedor">
-    <nav class="migas" aria-label="Ruta"><a th:href="@{/}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Inicio</a></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/panel}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Administración</a></nav>
     <div class="encabezado-pagina">
       <div>
         <h1>Flota</h1>
         <p>Camiones de la organización: patente, capacidad y si están disponibles para salir.</p>
       </div>
-      <a class="btn btn-secundario" th:href="@{/logistica/entregas/no-recibidas}" data-carga>Entregas no recibidas</a>
+      <a class="btn btn-secundario" th:href="@{/admin/entregas/no-recibidas}" data-carga>Entregas no recibidas</a>
     </div>
 
     <div class="grilla-2">
@@ -17,7 +17,7 @@
         <h2 id="t-lista" class="solo-lectores">Camiones registrados</h2>
         <ul class="lista" th:if="${!camiones.isEmpty()}">
           <li th:each="c : ${camiones}">
-            <a class="item" th:href="@{/logistica/flota/{id}(id=${c['id']})}" data-carga>
+            <a class="item" th:href="@{/admin/flota/{id}(id=${c['id']})}" data-carga>
             <div class="item-cuerpo">
               <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg></span>
               <div>
@@ -45,7 +45,7 @@
 
       <section class="tarjeta" aria-labelledby="t-alta">
         <h2 id="t-alta" style="font-size: var(--t-lg)">Registrar camión</h2>
-        <form class="formulario" method="post" th:action="@{/logistica/flota}" data-carga>
+        <form class="formulario" method="post" th:action="@{/admin/flota}" data-carga>
           <div class="campo">
             <label for="patente">Patente <span class="requerido" aria-hidden="true">*</span></label>
             <input id="patente" name="patente" required maxlength="10" autocomplete="off" placeholder="AB123CD">

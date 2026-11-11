@@ -73,6 +73,18 @@ public class ApiClient {
         return ejecutar(() -> rest.get().uri(url, variables).retrieve().body(Object.class));
     }
 
+    /** POST que devuelve una lista. El cuerpo puede ir vacío. */
+    public List<Map<String, Object>> publicarLista(String url, Object cuerpo) {
+        return ejecutar(() -> {
+            var pedido = rest.post().uri(url).contentType(MediaType.APPLICATION_JSON);
+            if (cuerpo != null) {
+                pedido.body(cuerpo);
+            }
+            List<Map<String, Object>> r = pedido.retrieve().body(LISTA);
+            return r == null ? List.of() : r;
+        });
+    }
+
     public Map<String, Object> crear(String url, Object cuerpo) {
         return ejecutar(() -> rest.post().uri(url).contentType(MediaType.APPLICATION_JSON)
                 .body(cuerpo).retrieve().body(OBJETO));

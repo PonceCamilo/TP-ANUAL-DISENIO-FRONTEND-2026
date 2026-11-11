@@ -3,7 +3,7 @@
 <body>
 <main id="contenido" tabindex="-1">
   <div class="contenedor">
-    <nav class="migas" aria-label="Ruta"><a th:href="@{/logistica/flota}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Flota</a></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/panel}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Administración</a></nav>
     <div class="encabezado-pagina">
       <div>
         <h1>Entregas no recibidas</h1>
@@ -13,7 +13,7 @@
 
     <ul class="lista" th:if="${!entregas.isEmpty()}">
       <li th:each="e : ${entregas}">
-        <a class="item" th:href="@{/logistica/entregas/{id}(id=${e['id']})}" data-carga>
+        <a class="item" th:href="@{/admin/entregas/{id}(id=${e['id']})}" data-carga>
           <div class="item-cuerpo">
             <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg></span>
             <div>

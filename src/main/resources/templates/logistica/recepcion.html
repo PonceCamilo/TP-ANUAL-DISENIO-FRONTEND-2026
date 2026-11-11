@@ -33,9 +33,7 @@
         <span th:text="${entrega['estado'] == 'EN_TRASLADO' ? 'En camino' : (entrega['estado'] == 'ENTREGADA' ? 'Entregada' : (entrega['estado'] == 'NO_RECIBIDA' ? 'No se pudo entregar' : (entrega['estado'] == 'LISTO_PARA_ENTREGAR' ? 'Todavía no salió' : entrega['estado'])))}">Estado</span>
       </p>
       <p class="suave" th:if="${entrega['estado'] == 'LISTO_PARA_ENTREGAR'}">El camión todavía no salió.</p>
-      <p class="suave" th:if="${entrega['camionId'] != null}">
-        Camión <a th:href="@{/logistica/flota/{id}(id=${entrega['camionId']})}" th:text="${entrega['camionId']}" data-carga>id</a>
-      </p>
+      <p class="suave" th:if="${camionTexto != null}" th:text="|Camión ${camionTexto}|">Camión</p>
       <p th:if="${entrega['rutaId'] != null}">
         <a class="btn btn-secundario" th:href="@{/tracking/ruta/{id}(id=${entrega['rutaId']})}" data-carga>Ver en el mapa</a>
       </p>
