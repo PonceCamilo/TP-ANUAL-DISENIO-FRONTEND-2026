@@ -19,11 +19,14 @@ import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Único punto por donde el front le habla a los servicios de aplicación.
@@ -87,6 +90,16 @@ public class ApiClient {
             }
             spec.retrieve().toBodilessEntity();
             return null;
+        });
+    }
+
+    /** Envía un archivo como multipart/form-data (ej: importación de CSV). */
+    public Map<String, Object> enviarArchivo(String url, String nombreCampo, MultipartFile archivo) {
+        return ejecutar(() -> {
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add(nombreCampo, archivo.getResource());
+            return rest.post().uri(url).contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(body).retrieve().body(OBJETO);
         });
     }
 

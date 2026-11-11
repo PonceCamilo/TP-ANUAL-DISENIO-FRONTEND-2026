@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina(${area}, ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <section class="portada" aria-labelledby="titulo-area">
+      <h1 id="titulo-area" th:text="${area}">Donantes</h1>
+      <p th:text="${descripcionArea}">Alta manual e importación masiva de personas donantes.</p>
+    </section>
+
+    <section class="tarjeta seccion" th:if="${resumenImportacion != null}" aria-labelledby="titulo-resumen">
+      <h2 id="titulo-resumen">Resultado de la importación</h2>
+      <p>
+        <strong th:text="${resumenImportacion.totalProcesadas}">0</strong> filas procesadas ·
+        <strong th:text="${resumenImportacion.creadas}">0</strong> creadas ·
+        <strong th:text="${resumenImportacion.actualizadas}">0</strong> actualizadas ·
+        <strong th:text="${resumenImportacion.conError}">0</strong> con error
+      </p>
+      <table class="tabla" th:if="${!#lists.isEmpty(resumenImportacion.errores)}">
+        <thead><tr><th>Línea</th><th>Email</th><th>Detalle</th></tr></thead>
+        <tbody>
+          <tr th:each="e : ${resumenImportacion.errores}">
+            <td th:text="${e.numeroLinea}">3</td>
+            <td th:text="${e.email}">email</td>
+            <td th:text="${e.detalle}">detalle</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="suave chico" th:if="${resumenImportacion.erroresOmitidos > 0}"
+         th:text="'Y ' + ${resumenImportacion.erroresOmitidos} + ' error(es) más, no mostrados.'">Y más errores</p>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-lista">
+      <h2 id="titulo-lista">Personas donantes</h2>
+      <th:block th:if="${#lists.isEmpty(donantes)}">
+        <div th:replace="~{comun/fragmentos/componentes :: vacio('gift', 'Todavía no hay donantes registrados', 'Dalos de alta manualmente o importalos desde un archivo CSV.', null, null)}"></div>
+      </th:block>
+      <table class="tabla" th:if="${!#lists.isEmpty(donantes)}">
+        <thead><tr><th>Nombre / Razón social</th><th>Documento</th><th>Email</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr th:each="don : ${donantes}">
+            <td th:text="${don['razonSocial']} != null ? ${don['razonSocial']} : (${don['nombre']} + ' ' + ${don['apellido']})">Nombre</td>
+            <td th:text="${don['tipoDocumento']} + ' ' + ${don['numeroDocumento']}">Documento</td>
+            <td th:text="${don['email']}">Email</td>
+            <td th:text="${don['estado']}">ACTIVO</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-csv">
+      <h2 id="titulo-csv">Importar desde CSV</h2>
+      <p>Columnas con encabezado, en este orden: TipoPersona (HUMANA o JURIDICA), TipoDoc, Documento, Nombre, Email y Telefono (opcional). Si el email ya existe, se actualiza esa persona.</p>
+      <form th:action="@{/admin/donantes/import}" method="post" enctype="multipart/form-data" class="formulario" data-carga>
+        <div class="campo">
+          <label for="archivo-csv">Archivo CSV</label>
+          <input id="archivo-csv" name="archivo" type="file" accept=".csv" required>
+        </div>
+        <button class="btn btn-sol" type="submit" data-cargando="Importando…">Importar</button>
+      </form>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-alta">
+      <h2 id="titulo-alta">Alta manual (persona)</h2>
+      <p class="suave chico">Para organizaciones (persona jurídica), usá la importación por CSV o pedinos que lo agreguemos.</p>
+      <form th:action="@{/admin/donantes}" method="post" class="formulario" data-carga>
+        <div class="fila">
+          <div class="campo">
+            <label for="nombre-donante">Nombre</label>
+            <input id="nombre-donante" name="nombre" required maxlength="100">
+          </div>
+          <div class="campo">
+            <label for="apellido-donante">Apellido</label>
+            <input id="apellido-donante" name="apellido" required maxlength="100">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label for="tipo-documento">Tipo de documento</label>
+            <input id="tipo-documento" name="tipoDocumento" required maxlength="20" placeholder="DNI">
+          </div>
+          <div class="campo">
+            <label for="numero-documento">Número de documento</label>
+            <input id="numero-documento" name="numeroDocumento" required maxlength="20">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label for="email-donante">Email</label>
+            <input id="email-donante" name="email" type="email" required maxlength="150">
+          </div>
+          <div class="campo">
+            <label for="fecha-nacimiento">Fecha de nacimiento</label>
+            <input id="fecha-nacimiento" name="fechaNacimiento" type="date" required>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="genero">Género</label>
+          <select id="genero" name="genero" required>
+            <option value="" disabled selected>Elegí una opción</option>
+            <option value="MASCULINO">Masculino</option>
+            <option value="FEMENINO">Femenino</option>
+            <option value="NO_BINARIO">No binario</option>
+            <option value="OTRO">Otro</option>
+            <option value="PREFIERO_NO_DECIR">Prefiero no decir</option>
+          </select>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label for="calle">Calle</label>
+            <input id="calle" name="calle" required maxlength="100">
+          </div>
+          <div class="campo">
+            <label for="numero-calle">Número</label>
+            <input id="numero-calle" name="numero" type="number" min="0">
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label for="localidad">Localidad</label>
+            <input id="localidad" name="localidad" required maxlength="100">
+          </div>
+          <div class="campo">
+            <label for="provincia">Provincia</label>
+            <input id="provincia" name="provincia" required maxlength="100">
+          </div>
+        </div>
+        <div class="campo">
+          <label for="codigo-postal">Código postal</label>
+          <input id="codigo-postal" name="codigoPostal" required maxlength="15">
+        </div>
+        <button class="btn btn-sol" type="submit" data-cargando="Registrando…">Registrar donante</button>
+      </form>
+    </section>
+  </div>
+</main>
+</body>
+</html>

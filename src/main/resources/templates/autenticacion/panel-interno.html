@@ -7,30 +7,6 @@
       <h1 id="titulo-area" th:text="${area}">Área interna</h1>
       <p th:text="${descripcionArea}">Área interna de DonaTrack</p>
     </section>
-    <section class="tarjeta seccion" th:if="${usuario.rol == 'ADMINISTRADOR'}" aria-labelledby="titulo-alta-chofer">
-      <h2 id="titulo-alta-chofer">Crear cuenta de chofer</h2>
-      <p>Creá la cuenta con su email y una contraseña que puedas compartirle. El camión se asigna por separado.</p>
-      <form th:action="@{/admin/choferes}" method="post" class="formulario" data-carga>
-        <div class="campo">
-          <label for="nombre-chofer">Nombre</label>
-          <input id="nombre-chofer" name="nombre" required maxlength="100" th:value="${nombreChofer}">
-        </div>
-        <div class="campo">
-          <label for="email-chofer">Email</label>
-          <input id="email-chofer" name="email" type="email" required maxlength="150" th:value="${emailChofer}">
-        </div>
-        <div class="campo">
-          <label for="clave-chofer">Contraseña</label>
-          <div class="clave">
-            <input id="clave-chofer" name="password" type="password" required minlength="8" maxlength="72"
-                   autocomplete="new-password" aria-describedby="ayuda-clave-chofer">
-            <button type="button" data-mostrar-clave="clave-chofer" aria-pressed="false">Mostrar</button>
-          </div>
-          <p id="ayuda-clave-chofer" class="ayuda">Al menos 8 caracteres.</p>
-        </div>
-        <button class="btn btn-sol" type="submit" data-cargando="Creando cuenta…">Crear cuenta</button>
-      </form>
-    </section>
     <section class="tarjeta seccion" th:if="${usuario.rol == 'CHOFER'}">
       <h2>Mi camión</h2>
       <p th:if="${camionAsignado == null}">Todavía no tenés un camión asignado.</p>

@@ -50,6 +50,29 @@ main:focus { outline: none; }
   color: var(--c-texto-suave); text-decoration: none; font-weight: 600; transition: background var(--transicion), color var(--transicion); }
 .nav a:hover { background: var(--c-ruta-tinte); color: var(--c-ruta-oscuro); }
 .nav a[aria-current="page"] { background: var(--c-tinta); color: #fff; }
+
+.tabla { width: 100%; border-collapse: collapse; margin-top: var(--s-3); }
+.tabla th, .tabla td { text-align: left; padding: var(--s-2) var(--s-3); border-bottom: 1px solid var(--c-linea); }
+.tabla th { color: var(--c-texto-suave); font-weight: 600; font-size: var(--t-sm); }
+.formulario-inline { display: flex; gap: var(--s-2); align-items: center; }
+.formulario-inline select { min-height: var(--objetivo-min); border-radius: var(--r-md); border: 1px solid var(--c-linea); padding: 0 var(--s-2); }
+
+.nav-icono { position: relative; display: inline-flex; }
+.badge-no-leidas {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--c-error);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
 .usuario { display: flex; align-items: center; gap: var(--s-3); }
 .usuario form { margin: 0; }
 .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--c-sol); color: var(--c-tinta); font-weight: 800; display: inline-grid; place-items: center; font-family: var(--f-titulo); }
@@ -153,6 +176,11 @@ a.item:hover, .item:hover { border-color: var(--c-ruta); box-shadow: var(--sombr
 .item-titulo { font-weight: 700; margin: 0; }
 .item .icono-circulo { width: 44px; height: 44px; border-radius: 50%; background: var(--c-ruta-tinte); color: var(--c-ruta); display: grid; place-items: center; flex: none; }
 .item-cuerpo { display: flex; gap: var(--s-3); align-items: center; flex: 1; min-width: 12rem; }
+
+/* ---------- ranking de entidades candidatas (Asignación) ---------- */
+.lista-ranking { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.lista-ranking li { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) var(--s-3); border: 1px solid var(--c-linea); border-radius: var(--r-md); }
+.lista-ranking .puesto { display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--c-ruta-tinte); color: var(--c-ruta-oscuro); font-weight: 700; font-size: var(--t-sm); flex: none; }
 .insignias { display: flex; flex-wrap: wrap; gap: var(--s-3); }
 .insignia { display: inline-flex; align-items: center; gap: var(--s-2); background: var(--c-aviso-tinte); color: var(--c-tinta); border-radius: var(--r-pill); padding: 6px 16px 6px 6px; font-weight: 700; }
 .insignia .medalla { width: 34px; height: 34px; border-radius: 50%; background: var(--c-sol); display: inline-grid; place-items: center; }
@@ -167,6 +195,8 @@ a.item:hover, .item:hover { border-color: var(--c-ruta); box-shadow: var(--sombr
 .formulario { display: flex; flex-direction: column; gap: var(--s-5); max-width: 42rem; }
 .campo { display: flex; flex-direction: column; gap: var(--s-1); }
 .campo label, .campo legend { font-weight: 700; display: flex; align-items: center; gap: var(--s-1); flex-wrap: wrap; }
+.campo-check { justify-content: center; }
+.campo-check label { font-weight: 400; display: flex; align-items: center; gap: var(--s-2); }
 .ayuda { color: var(--c-texto-suave); font-size: var(--t-sm); margin: 0; }
 .requerido { color: var(--c-error); }
 input, select, textarea { font: inherit; color: inherit; min-height: var(--objetivo-min); padding: 0 var(--s-4); background: #fff;

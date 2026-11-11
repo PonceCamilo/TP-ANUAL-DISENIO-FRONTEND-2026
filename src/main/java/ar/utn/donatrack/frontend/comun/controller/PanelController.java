@@ -1,10 +1,12 @@
 package ar.utn.donatrack.frontend.comun.controller;
 
+import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
 import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
 import ar.utn.donatrack.frontend.incentivos.services.IncentivosApi;
+import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 
 import java.time.Month;
 import java.time.format.TextStyle;
@@ -32,10 +34,15 @@ public class PanelController {
 
     private final DonacionesApi donaciones;
     private final IncentivosApi incentivos;
+    private final AuthClient authClient;
+    private final LogisticaApi logisticaApi;
 
-    public PanelController(DonacionesApi donaciones, IncentivosApi incentivos) {
+    public PanelController(DonacionesApi donaciones, IncentivosApi incentivos,
+                           AuthClient authClient, LogisticaApi logisticaApi) {
         this.donaciones = donaciones;
         this.incentivos = incentivos;
+        this.authClient = authClient;
+        this.logisticaApi = logisticaApi;
     }
 
     private SesionUsuario usuario(HttpSession s) {
@@ -165,9 +172,91 @@ public class PanelController {
 
     @GetMapping("/admin/panel")
     public String panelAdministracion(Model model) {
-        model.addAttribute("area", "Administración");
-        model.addAttribute("descripcionArea", "Área interna para la gestión de DonaTrack.");
-        return "autenticacion/panel-interno";
+        model.addAttribute("area", "Panel");
+        model.addAttribute("descripcionArea", "Operación del depósito.");
+        model.addAttribute("seccion", "panel");
+        try {
+            List<Map<String, Object>> enDeposito = donaciones.donacionesEnDeposito();
+            List<Map<String, Object>> pendientes = donaciones.candidatosPendientes();
+            List<Map<String, Object>> camiones = logisticaApi.camiones();
+            List<Map<String, Object>> donantesTotal = donaciones.donantes();
+
+            model.addAttribute("totalEnDeposito", enDeposito.size());
+            model.addAttribute("totalPendientes", pendientes.size());
+            model.addAttribute("totalCamionesDisponibles",
+                    camiones.stream().filter(c -> Mapas.igual(Mapas.texto(c, "estado"), "DISPONIBLE")).count());
+            model.addAttribute("totalDonantes", donantesTotal.size());
+
+            model.addAttribute("pendientesPreview", pendientes.stream().limit(3).map(p -> {
+                Map<String, Object> fila = new LinkedHashMap<>(p);
+                try {
+                    Map<String, Object> donacion = donaciones.donacion(UUID.fromString(Mapas.texto(p, "idDonacion")));
+                    fila.put("donacion", donacion);
+                    Object idDonante = donacion.get("idDonante");
+                    if (idDonante != null) {
+                        fila.put("nombreDonante", nombreCorto(donaciones.donante(UUID.fromString(String.valueOf(idDonante)))));
+                    }
+                } catch (ApiException | IllegalArgumentException ignorado) {
+                    fila.put("donacion", Map.of());
+                }
+                return fila;
+            }).toList());
+            model.addAttribute("flotaPreview", camiones.stream().limit(3).toList());
+        } catch (ApiException e) {
+            model.addAttribute("totalEnDeposito", 0);
+            model.addAttribute("totalPendientes", 0);
+            model.addAttribute("totalCamionesDisponibles", 0);
+            model.addAttribute("totalDonantes", 0);
+            model.addAttribute("pendientesPreview", List.of());
+            model.addAttribute("flotaPreview", List.of());
+            model.addAttribute("toast", e.getMessage());
+            model.addAttribute("toastTipo", "error");
+        }
+        return "autenticacion/admin-panel";
+    }
+
+    private String nombreCorto(Map<String, Object> donante) {
+        if (donante.get("razonSocial") instanceof String razonSocial && !razonSocial.isBlank()) {
+            return razonSocial;
+        }
+        String nombre = Mapas.texto(donante, "nombre");
+        String apellido = Mapas.texto(donante, "apellido");
+        return (nombre + " " + apellido).strip();
+    }
+
+    @GetMapping("/admin/camiones")
+    public String adminCamiones(HttpSession sesion, Model model) {
+        model.addAttribute("area", "Camiones");
+        model.addAttribute("descripcionArea", "Flota de camiones y cuentas de choferes.");
+        model.addAttribute("seccion", "camiones");
+        SesionUsuario admin = usuario(sesion);
+        try {
+            model.addAttribute("choferes", authClient.listarChoferes(admin));
+        } catch (ApiException e) {
+            model.addAttribute("choferes", List.of());
+            if (!model.containsAttribute("toast")) {
+                model.addAttribute("toast", e.getMessage());
+                model.addAttribute("toastTipo", "error");
+            }
+        }
+        try {
+            model.addAttribute("camiones", logisticaApi.camiones());
+        } catch (ApiException e) {
+            model.addAttribute("camiones", List.of());
+            if (!model.containsAttribute("toast")) {
+                model.addAttribute("toast", e.getMessage());
+                model.addAttribute("toastTipo", "error");
+            }
+        }
+        return "autenticacion/admin-camiones";
+    }
+
+    @GetMapping("/admin/rankings")
+    public String adminRankings(Model model) {
+        model.addAttribute("area", "Rankings");
+        model.addAttribute("descripcionArea", "Mes actual e historial de rankings.");
+        model.addAttribute("seccion", "rankings");
+        return "autenticacion/admin-placeholder";
     }
 
     @GetMapping({"/chofer/panel", "/transporte/panel"})

@@ -5,12 +5,14 @@ import ar.utn.donatrack.frontend.comun.config.FrontendProperties;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Cliente REST de servicio-donaciones: donantes, entidades, campañas,
@@ -112,5 +114,28 @@ public class DonacionesApi {
     public void asignar(UUID donacionId, UUID entidadId) {
         api.enviar(HttpMethod.PATCH, donaciones + "/donaciones/{id}/asignar",
                 Map.of("idEntidadBeneficiaria", entidadId), donacionId);
+    }
+
+    /** Donaciones en depósito con recomendación de los algoritmos, pendientes de confirmar destino. */
+    public List<Map<String, Object>> candidatosPendientes() {
+        return listado("/donaciones/candidatos");
+    }
+
+    public void cambiarEstadoDonacion(UUID id, String estado, String justificacion) {
+        Map<String, Object> cuerpo = new LinkedHashMap<>();
+        cuerpo.put("estado", estado);
+        if (justificacion != null && !justificacion.isBlank()) {
+            cuerpo.put("justificacion", justificacion);
+        }
+        api.enviar(HttpMethod.PATCH, donaciones + "/donaciones/{id}/estado", cuerpo, id);
+    }
+
+    /** Personas donantes, paginadas (trae todas las páginas). */
+    public List<Map<String, Object>> donantes() {
+        return listado("/donantes");
+    }
+
+    public Map<String, Object> importarDonantesCsv(MultipartFile archivo) {
+        return api.enviarArchivo(donaciones + "/donantes/import", "file", archivo);
     }
 }

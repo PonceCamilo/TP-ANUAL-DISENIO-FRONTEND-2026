@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina(${area}, ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <section class="portada" aria-labelledby="titulo-area">
+      <h1 id="titulo-area" th:text="${area}">Asignación</h1>
+      <p th:text="${descripcionArea}">Donaciones pendientes de confirmar destino, según los algoritmos.</p>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-pendientes">
+      <h2 id="titulo-pendientes">Pendientes de asignar</h2>
+      <th:block th:if="${#lists.isEmpty(pendientes)}">
+        <div th:replace="~{comun/fragmentos/componentes :: vacio('target', 'No hay donaciones pendientes', 'Cuando una donación en depósito tenga recomendación de los algoritmos, va a aparecer acá.', null, null)}"></div>
+      </th:block>
+      <ul class="lista" th:if="${!#lists.isEmpty(pendientes)}">
+        <li class="item" th:each="p : ${pendientes}">
+          <div class="item-cuerpo">
+            <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('target')}"></svg></span>
+            <div>
+              <p class="item-titulo" th:text="${p.donacion.descripcion}">Descripción</p>
+              <p class="suave chico">
+                <span th:text="${p.donacion.subcategoria}">Subcategoría</span> ·
+                <span th:if="${p.huboCoincidencias}" class="estado estado-ok">
+                  <svg th:replace="~{comun/fragmentos/componentes :: ic('check')}"></svg>Hubo coincidencia
+                </span>
+                <span th:unless="${p.huboCoincidencias}" class="suave chico">Sin coincidencia entre algoritmos</span>
+              </p>
+            </div>
+          </div>
+          <a class="btn btn-sol" th:href="@{/admin/asignacion/{id}(id=${p.idDonacion})}" data-carga>Revisar y asignar</a>
+        </li>
+      </ul>
+    </section>
+  </div>
+</main>
+</body>
+</html>

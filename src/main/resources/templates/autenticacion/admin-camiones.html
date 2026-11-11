@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina(${area}, ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <section class="portada" aria-labelledby="titulo-area">
+      <h1 id="titulo-area" th:text="${area}">Camiones</h1>
+      <p th:text="${descripcionArea}">Flota de camiones y cuentas de choferes.</p>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-flota">
+      <h2 id="titulo-flota">Flota</h2>
+      <p th:if="${#lists.isEmpty(camiones)}">No se pudo cargar la flota. Probá de nuevo más tarde.</p>
+      <table class="tabla" th:if="${!#lists.isEmpty(camiones)}">
+        <thead>
+          <tr><th>Patente</th><th>Volumen</th><th>Altura</th><th>Carga</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="camion : ${camiones}">
+            <td th:text="${camion.patente}">Patente</td>
+            <td th:text="${camion.capacidadVolumenM3} + ' m³'">Volumen</td>
+            <td th:text="${camion.alturaM} + ' m'">Altura</td>
+            <td th:text="${camion.capacidadCargaKg} + ' kg'">Carga</td>
+            <td th:text="${camion.estado}">Estado</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="tarjeta seccion" th:if="${usuario.rol == 'ADMINISTRADOR'}" aria-labelledby="titulo-alta-chofer">
+      <h2 id="titulo-alta-chofer">Crear cuenta de chofer</h2>
+      <p>Creá la cuenta con su email y una contraseña que puedas compartirle. El camión se asigna por separado.</p>
+      <form th:action="@{/admin/choferes}" method="post" class="formulario" data-carga>
+        <div class="campo">
+          <label for="nombre-chofer">Nombre</label>
+          <input id="nombre-chofer" name="nombre" required maxlength="100" th:value="${nombreChofer}">
+        </div>
+        <div class="campo">
+          <label for="email-chofer">Email</label>
+          <input id="email-chofer" name="email" type="email" required maxlength="150" th:value="${emailChofer}">
+        </div>
+        <div class="campo">
+          <label for="clave-chofer">Contraseña</label>
+          <div class="clave">
+            <input id="clave-chofer" name="password" type="password" required minlength="8" maxlength="72"
+                   autocomplete="new-password" aria-describedby="ayuda-clave-chofer">
+            <button type="button" data-mostrar-clave="clave-chofer" aria-pressed="false">Mostrar</button>
+          </div>
+          <p id="ayuda-clave-chofer" class="ayuda">Al menos 8 caracteres.</p>
+        </div>
+        <button class="btn btn-sol" type="submit" data-cargando="Creando cuenta…">Crear cuenta</button>
+      </form>
+    </section>
+
+    <section class="tarjeta seccion" th:if="${usuario.rol == 'ADMINISTRADOR'}" aria-labelledby="titulo-choferes">
+      <h2 id="titulo-choferes">Choferes</h2>
+      <p th:if="${#lists.isEmpty(choferes)}">Todavía no creaste ninguna cuenta de chofer.</p>
+      <table class="tabla" th:if="${!#lists.isEmpty(choferes)}">
+        <thead>
+          <tr><th>Nombre</th><th>Email</th><th>Camión</th><th>Asignar</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="chofer : ${choferes}">
+            <td th:text="${chofer.nombre}">Nombre</td>
+            <td th:text="${chofer.email}">Email</td>
+            <td>
+              <span th:if="${chofer.camionId == null}">Sin asignar</span>
+              <span th:if="${chofer.camionId != null}">Asignado</span>
+            </td>
+            <td>
+              <form th:action="@{'/admin/choferes/' + ${chofer.id} + '/camion'}" method="post" class="formulario-inline" data-carga>
+                <select name="camionId" required>
+                  <option value="" disabled selected>Elegir camión</option>
+                  <option th:each="camion : ${camiones}" th:value="${camion.id}" th:text="${camion.patente}">Patente</option>
+                </select>
+                <button class="btn btn-secundario btn-chico" type="submit">Asignar</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</main>
+</body>
+</html>

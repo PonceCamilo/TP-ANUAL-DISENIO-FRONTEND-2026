@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina(${area}, ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <section class="portada" aria-labelledby="titulo-area">
+      <h1 id="titulo-area" th:text="${area}">Depósito</h1>
+      <p th:text="${descripcionArea}">Donaciones disponibles y vencimientos.</p>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-en-deposito">
+      <h2 id="titulo-en-deposito">En depósito</h2>
+      <th:block th:if="${#lists.isEmpty(donaciones)}">
+        <div th:replace="~{comun/fragmentos/componentes :: vacio('warehouse', 'No hay donaciones en depósito', 'Cuando se registre una donación nueva, va a aparecer acá.', null, null)}"></div>
+      </th:block>
+      <table class="tabla" th:if="${!#lists.isEmpty(donaciones)}">
+        <thead>
+          <tr><th>Fecha</th><th>Descripción</th><th>Subcategoría</th><th>Estado</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="d : ${donaciones}">
+            <td th:text="${#strings.substring(d.fechaDonacion, 0, 10)}">2026-10-10</td>
+            <td th:text="${d.descripcion}">Descripción</td>
+            <td th:text="${d.subcategoria}">Subcategoría</td>
+            <td><span th:replace="~{comun/fragmentos/componentes :: estado(${d.estado})}"></span></td>
+            <td>
+              <button type="button" class="btn btn-secundario btn-chico" data-modal="confirmar-vencer"
+                      th:attr="data-accion=@{/admin/deposito/{id}/vencer(id=${d.id})},data-detalle='Vas a marcar «' + ${d.descripcion} + '» como vencida. Esta acción no se puede deshacer.'">
+                Marcar vencida
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-registrar">
+      <h2 id="titulo-registrar">Registrar donación recibida</h2>
+      <p>Asociá la donación a la persona donante correspondiente. Si es un solo tipo de bien, alcanza con esta carga.</p>
+      <form th:action="@{/admin/deposito}" method="post" class="formulario" data-carga>
+        <div class="campo">
+          <label for="id-donante">Donante</label>
+          <select id="id-donante" name="idDonante" required>
+            <option value="" disabled selected>Elegí una persona donante</option>
+            <option th:each="don : ${donantes}" th:value="${don['id']}"
+                    th:text="${!#strings.isEmpty(don['razonSocial'])} ? (${don['razonSocial']} + ' · ' + ${don['numeroDocumento']}) : (${don['nombre']} + ' ' + ${don['apellido']} + ' · ' + ${don['numeroDocumento']})">
+              Nombre · Documento
+            </option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="descripcion-donacion">Descripción general</label>
+          <input id="descripcion-donacion" name="descripcion" required maxlength="200" placeholder="Ej: Ropa de abrigo donada en campaña de invierno">
+        </div>
+        <div class="campo">
+          <label for="subcategoria">Subcategoría del bien</label>
+          <input id="subcategoria" name="subcategoria" required maxlength="100" placeholder="Ej: Abrigo">
+        </div>
+        <div class="campo">
+          <label for="bien-descripcion">Descripción del bien</label>
+          <input id="bien-descripcion" name="bienDescripcion" maxlength="200" placeholder="Ej: Camperas talle M">
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label for="cantidad">Cantidad</label>
+            <input id="cantidad" name="cantidad" type="number" min="1" required>
+          </div>
+          <div class="campo">
+            <label for="unidad">Unidad</label>
+            <input id="unidad" name="unidad" required maxlength="30" placeholder="Ej: unidades, kg">
+          </div>
+        </div>
+        <p class="ayuda">Si el bien tiene vencimiento, completá la fecha. Si es un bien con estado (ropa, muebles), marcá si es nuevo. Si no aplica ninguna, dejá los dos sin completar.</p>
+        <div class="fila">
+          <div class="campo">
+            <label for="fecha-vencimiento">Fecha de vencimiento (perecederos)</label>
+            <input id="fecha-vencimiento" name="fechaVencimiento" type="date">
+          </div>
+          <div class="campo campo-check">
+            <label><input type="checkbox" name="esNuevo" value="true"> Es nuevo (bienes con estado)</label>
+          </div>
+        </div>
+        <button class="btn btn-sol" type="submit" data-cargando="Registrando…">Registrar donación</button>
+      </form>
+    </section>
+  </div>
+</main>
+<dialog th:replace="~{comun/fragmentos/componentes :: confirmar('confirmar-vencer', '¿Marcar como vencida?')}"></dialog>
+</body>
+</html>

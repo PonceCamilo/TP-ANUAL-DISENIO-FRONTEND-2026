@@ -64,6 +64,7 @@ public class NotificacionesController {
         Map<String, Object> donante = donaciones.donante(id);
         Mapas.lista(donante.get("contactos")).forEach(c -> destinatarios.add(Mapas.texto(c, "valor")));
         model.addAttribute("notificaciones", notificaciones.notificacionesDe(destinatarios));
+        notificaciones.marcarLeidas(destinatarios);
         model.addAttribute("seccion", "notificaciones");
         return "notificaciones/donante";
     }
@@ -78,6 +79,7 @@ public class NotificacionesController {
         destinatarios.add(usuario(sesion).getEmail());
         Mapas.lista(donaciones.entidad(id).get("contactos")).forEach(c -> destinatarios.add(Mapas.texto(c, "valor")));
         model.addAttribute("notificaciones", notificaciones.notificacionesDe(destinatarios));
+        notificaciones.marcarLeidas(destinatarios);
         model.addAttribute("seccion", "notificaciones");
         return "notificaciones/entidad";
     }
