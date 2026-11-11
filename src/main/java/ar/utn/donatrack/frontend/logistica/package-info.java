@@ -1,10 +1,13 @@
 /**
  * Pantallas y cliente REST de servicio-logistica.
  *
- * <p>Hoy el front no consume este servicio: el seguimiento de una donación sale del
- * historial de estados que devuelve servicio-donaciones. Cuando haya pantallas de
- * logística (retiros, rutas, entregas) van acá, con la misma forma que los demás
- * servicios: {@code controller/}, {@code services/} y sus plantillas en
+ * <p>La flota está en {@code /logistica/flota}. La ruta del chofer, en
+ * {@code /logistica/mi-ruta/{camionId}}. La revisión de no recibidas, en
+ * {@code /logistica/entregas/no-recibidas}. El mapa de una ruta, en
+ * {@code /tracking/ruta/{rutaId}}. La confirmación de la entidad, en
+ * {@code /recepcion?donacion=}. El seguimiento que hoy ve el
+ * donante sigue saliendo del historial de servicio-donaciones. Las pantallas
+ * nuevas van acá, con {@code controller/}, {@code services/} y plantillas en
  * {@code templates/logistica/}.
  */
 package ar.utn.donatrack.frontend.logistica;

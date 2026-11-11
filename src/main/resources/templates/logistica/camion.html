@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Camión', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/logistica/flota}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Flota</a></nav>
+
+    <div class="encabezado-pagina">
+      <div>
+        <h1 th:text="${camion['patente']}">AB123CD</h1>
+        <p th:text="|${camion['capacidadVolumenM3']} m³ · ${camion['alturaM']} m de alto · ${camion['capacidadCargaKg']} kg|">Capacidad</p>
+      </div>
+      <span class="estado" th:classappend="${camion['estado'] == 'DISPONIBLE' ? 'estado-ok' : (camion['estado'] == 'MANTENIMIENTO' ? 'estado-warn' : 'estado-info')}">
+        <svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>
+        <span th:text="${camion['estado'] == 'DISPONIBLE' ? 'Disponible' : (camion['estado'] == 'EN_RUTA' ? 'En ruta' : (camion['estado'] == 'MANTENIMIENTO' ? 'En mantenimiento' : camion['estado']))}">Disponible</span>
+      </span>
+    </div>
+
+    <p class="suave" th:if="${camion['estado'] == 'EN_RUTA' and camion['latitud'] != null}" th:text="|Última posición: ${camion['latitud']}, ${camion['longitud']}|">Posición</p>
+    <p class="suave" th:if="${camion['estado'] == 'EN_RUTA' and camion['latitud'] == null}">Sin posición informada.</p>
+
+    <div class="grilla-2 seccion">
+      <section class="tarjeta" aria-labelledby="t-ruta">
+        <h2 id="t-ruta" style="font-size: var(--t-lg)">Ruta abierta</h2>
+        <div th:if="${ruta == null}">
+          <p>Sin ruta abierta.</p>
+        </div>
+        <div th:if="${ruta != null}">
+          <p>
+            <strong th:text="${ruta['estado'] == 'PLANIFICADA' ? 'Planificada, sin iniciar' : (ruta['estado'] == 'INICIADA' ? 'En curso' : ruta['estado'])}">Planificada</strong>
+            <span th:if="${ruta['fechaInicio'] != null}" th:text="| · salió ${#strings.replace(#strings.substring(ruta['fechaInicio'], 0, 16), 'T', ' ')}|"> · salió</span>
+          </p>
+          <p class="fila">
+            <a class="btn btn-secundario" th:href="@{/logistica/mi-ruta/{id}(id=${camion['id']})}" data-carga>Abrir como chofer</a>
+            <a class="btn btn-secundario" th:href="@{/tracking/ruta/{id}(id=${ruta['id']})}" data-carga>Ver en el mapa</a>
+          </p>
+          <ol class="lista" th:if="${ruta['paradas'] != null}">
+            <li class="item" th:each="p : ${ruta['paradas']}">
+              <div class="item-cuerpo">
+                <span class="icono-circulo" th:text="${p['orden']}">1</span>
+                <div>
+                  <p class="item-titulo" th:if="${p['direccion'] != null}"
+                     th:text="|${p['direccion']['calle']} ${p['direccion']['numero']}|">Calle 123</p>
+                  <p class="suave chico" style="margin:0" th:if="${p['direccion'] != null}"
+                     th:text="|${p['direccion']['localidad']} · ${p['direccion']['provincia']}|">Localidad</p>
+                </div>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="tarjeta" aria-labelledby="t-disp">
+        <h2 id="t-disp" style="font-size: var(--t-lg)">Disponibilidad</h2>
+        <p th:if="${puedeMantenimiento}">Está libre. Podés sacarlo de servicio hasta que vuelva a estar disponible.</p>
+        <p th:if="${puedeDisponible}">Está en mantenimiento. Cuando esté listo, vuelve a la flota.</p>
+        <p th:if="${ruta != null and ruta['estado'] == 'INICIADA'}">Está en camino. No se puede sacar de servicio hasta que termine la ruta.</p>
+        <p th:if="${ruta != null and ruta['estado'] == 'PLANIFICADA'}">Ya tiene un reparto armado que todavía no salió. No se puede pasar a mantenimiento.</p>
+        <p th:if="${ruta != null and ruta['estado'] != 'INICIADA' and ruta['estado'] != 'PLANIFICADA'}">Tiene un reparto abierto y no se puede sacar de servicio.</p>
+        <p th:if="${!puedeMantenimiento and !puedeDisponible and ruta == null}">No se puede cambiar la disponibilidad en este estado.</p>
+
+        <form th:if="${puedeMantenimiento}" method="post" th:action="@{/logistica/flota/{id}/mantenimiento(id=${camion['id']})}" data-carga>
+          <button class="btn btn-sol btn-grande" type="submit" data-cargando="Guardando…">Pasar a mantenimiento</button>
+        </form>
+        <form th:if="${puedeDisponible}" method="post" th:action="@{/logistica/flota/{id}/disponible(id=${camion['id']})}" data-carga>
+          <button class="btn btn-sol btn-grande" type="submit" data-cargando="Guardando…">Volver a disponible</button>
+        </form>
+      </section>
+    </div>
+  </div>
+</main>
+</body>
+</html>
