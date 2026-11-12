@@ -42,6 +42,7 @@
             th:action="@{/chofer/mi-ruta/ubicacion}" data-carga>
         <input type="hidden" name="latitud" id="latitud">
         <input type="hidden" name="longitud" id="longitud">
+        <p class="suave">Mientras esta página esté abierta, la posición se envía sola.</p>
         <button class="btn btn-sol btn-grande" type="button" id="enviar-ubicacion">Enviar mi ubicación ahora</button>
         <p id="ubicacion-aviso" class="suave" hidden></p>
       </form>
@@ -84,22 +85,45 @@
       </ol>
     </div>
   <script th:if="${ruta != null and ruta['estado'] == 'INICIADA'}" th:inline="javascript">
-    document.getElementById('enviar-ubicacion').addEventListener('click', function () {
+    (function () {
+      var form = document.getElementById('form-ubicacion');
       var aviso = document.getElementById('ubicacion-aviso');
-      aviso.hidden = false;
-      if (!navigator.geolocation) {
-        aviso.textContent = 'Este navegador no informa la posición.';
-        return;
+      var enviando = false;
+
+      function enviar() {
+        if (enviando) {
+          return;
+        }
+        aviso.hidden = false;
+        if (!navigator.geolocation) {
+          aviso.textContent = 'Este navegador no informa la posición.';
+          return;
+        }
+        enviando = true;
+        aviso.textContent = 'Buscando la posición…';
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          document.getElementById('latitud').value = pos.coords.latitude;
+          document.getElementById('longitud').value = pos.coords.longitude;
+          fetch(form.action, { method: 'POST', body: new FormData(form) })
+            .then(function () {
+              aviso.textContent = 'Ubicación enviada.';
+            })
+            .catch(function () {
+              aviso.textContent = 'No se pudo enviar la ubicación.';
+            })
+            .finally(function () {
+              enviando = false;
+            });
+        }, function () {
+          enviando = false;
+          aviso.textContent = 'No se pudo leer la posición. Revisá el permiso del navegador.';
+        }, { enableHighAccuracy: true, timeout: 10000 });
       }
-      aviso.textContent = 'Buscando la posición…';
-      navigator.geolocation.getCurrentPosition(function (pos) {
-        document.getElementById('latitud').value = pos.coords.latitude;
-        document.getElementById('longitud').value = pos.coords.longitude;
-        document.getElementById('form-ubicacion').requestSubmit();
-      }, function () {
-        aviso.textContent = 'No se pudo leer la posición. Revisá el permiso del navegador.';
-      }, { enableHighAccuracy: true, timeout: 10000 });
-    });
+
+      document.getElementById('enviar-ubicacion').addEventListener('click', enviar);
+      enviar();
+      setInterval(enviar, 30000);
+    })();
   </script>
   </div>
   </div>
