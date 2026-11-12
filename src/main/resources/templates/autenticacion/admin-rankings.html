@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina(${area}, ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <section class="portada" aria-labelledby="titulo-area">
+      <h1 id="titulo-area" th:text="${area}">Rankings</h1>
+      <p th:text="${descripcionArea}">Mes actual e historial de rankings.</p>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-podio">
+      <div class="fila-entre">
+        <h2 id="titulo-podio">Ranking de este mes</h2>
+        <span class="suave chico" th:if="${podioProvisional}">En curso, todavía puede cambiar</span>
+      </div>
+
+      <th:block th:if="${podioNoDisponible}">
+        <div th:replace="~{comun/fragmentos/componentes :: vacio('medal', 'No pudimos cargar el ranking', 'Probá de nuevo en un momento.', null, null)}"></div>
+      </th:block>
+
+      <th:block th:if="${!podioNoDisponible and #lists.isEmpty(podio)}">
+        <div th:replace="~{comun/fragmentos/componentes :: vacio('medal', 'Todavía no hay misiones completadas este mes', 'Cuando las personas donantes completen misiones, van a aparecer acá.', null, null)}"></div>
+      </th:block>
+
+      <div class="podio-top3" th:if="${!podioNoDisponible and !#lists.isEmpty(podio)}">
+        <div class="podio-puesto" th:each="p : ${podio}" th:if="${p.puesto == 2}">
+          <span class="podio-numero">2</span>
+          <p class="item-titulo" th:text="${p.nombre}">Donante</p>
+          <p class="suave chico" th:text="${p.misionesCompletadas} + ' misiones'">0 misiones</p>
+        </div>
+        <div class="podio-puesto podio-primero" th:each="p : ${podio}" th:if="${p.puesto == 1}">
+          <span class="podio-numero">1</span>
+          <p class="item-titulo" th:text="${p.nombre}">Donante</p>
+          <p class="suave chico" th:text="${p.misionesCompletadas} + ' misiones'">0 misiones</p>
+        </div>
+        <div class="podio-puesto" th:each="p : ${podio}" th:if="${p.puesto == 3}">
+          <span class="podio-numero">3</span>
+          <p class="item-titulo" th:text="${p.nombre}">Donante</p>
+          <p class="suave chico" th:text="${p.misionesCompletadas} + ' misiones'">0 misiones</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-historial">
+      <h2 id="titulo-historial">Historial de rankings</h2>
+
+      <div class="selector-anios">
+        <a th:each="a : ${anios}" class="btn btn-chico"
+           th:classappend="${a == anioSel} ? 'btn-sol' : 'btn-secundario'"
+           th:href="@{/admin/rankings(anio=${a},mes=${mesSel})}"
+           th:text="${a}">2026</a>
+      </div>
+
+      <div class="grilla-meses">
+        <a th:if="${periodosDisponibles.contains(anioSel + '-1')}" class="btn btn-chico" th:classappend="${mesSel == 1} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=1)}">Ene</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-1')}" class="mes-deshabilitado">Ene</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-2')}" class="btn btn-chico" th:classappend="${mesSel == 2} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=2)}">Feb</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-2')}" class="mes-deshabilitado">Feb</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-3')}" class="btn btn-chico" th:classappend="${mesSel == 3} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=3)}">Mar</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-3')}" class="mes-deshabilitado">Mar</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-4')}" class="btn btn-chico" th:classappend="${mesSel == 4} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=4)}">Abr</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-4')}" class="mes-deshabilitado">Abr</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-5')}" class="btn btn-chico" th:classappend="${mesSel == 5} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=5)}">May</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-5')}" class="mes-deshabilitado">May</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-6')}" class="btn btn-chico" th:classappend="${mesSel == 6} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=6)}">Jun</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-6')}" class="mes-deshabilitado">Jun</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-7')}" class="btn btn-chico" th:classappend="${mesSel == 7} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=7)}">Jul</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-7')}" class="mes-deshabilitado">Jul</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-8')}" class="btn btn-chico" th:classappend="${mesSel == 8} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=8)}">Ago</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-8')}" class="mes-deshabilitado">Ago</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-9')}" class="btn btn-chico" th:classappend="${mesSel == 9} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=9)}">Sep</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-9')}" class="mes-deshabilitado">Sep</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-10')}" class="btn btn-chico" th:classappend="${mesSel == 10} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=10)}">Oct</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-10')}" class="mes-deshabilitado">Oct</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-11')}" class="btn btn-chico" th:classappend="${mesSel == 11} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=11)}">Nov</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-11')}" class="mes-deshabilitado">Nov</span>
+
+        <a th:if="${periodosDisponibles.contains(anioSel + '-12')}" class="btn btn-chico" th:classappend="${mesSel == 12} ? 'btn-sol' : 'btn-secundario'" th:href="@{/admin/rankings(anio=${anioSel},mes=12)}">Dic</a>
+        <span th:unless="${periodosDisponibles.contains(anioSel + '-12')}" class="mes-deshabilitado">Dic</span>
+      </div>
+
+      <h3>
+        Ranking <span th:text="${mesSel} + '/' + ${anioSel}">Mes/Año</span>
+        <span class="suave chico" th:if="${rankingProvisional}">(provisional, mes todavía en curso)</span>
+      </h3>
+
+      <th:block th:if="${rankingNoDisponible}">
+        <div th:replace="~{comun/fragmentos/componentes :: vacio('medal', 'No pudimos cargar el ranking', 'Probá de nuevo en un momento.', null, null)}"></div>
+      </th:block>
+
+      <th:block th:if="${!rankingNoDisponible and #lists.isEmpty(ranking)}">
+        <div th:replace="~{comun/fragmentos/componentes :: vacio('medal', 'Sin datos para este período', 'Todavía no hay misiones completadas registradas en este mes.', null, null)}"></div>
+      </th:block>
+
+      <ol class="lista-ranking" th:if="${!rankingNoDisponible and !#lists.isEmpty(ranking)}">
+        <li th:each="r : ${ranking}">
+          <span class="puesto" th:text="${r.puesto}">1</span>
+          <span th:text="${r.nombre}">Donante</span>
+          <span class="suave chico" th:text="${r.misionesCompletadas} + ' misiones'">0 misiones</span>
+        </li>
+      </ol>
+
+      <p class="suave chico" th:if="${!rankingNoDisponible and rankingTotalPaginas > 1}">
+        Página <span th:text="${rankingPagina + 1}">1</span> de <span th:text="${rankingTotalPaginas}">1</span>
+        (<span th:text="${rankingTotalElementos}">0</span> en total)
+      </p>
+      <div class="fila" th:if="${!rankingNoDisponible and rankingTotalPaginas > 1}">
+        <a th:if="${rankingPagina > 0}" class="btn btn-secundario btn-chico"
+           th:href="@{/admin/rankings(anio=${anioSel},mes=${mesSel},pagina=${rankingPagina - 1})}">« Anterior</a>
+        <a th:if="${rankingPagina + 1 < rankingTotalPaginas}" class="btn btn-secundario btn-chico"
+           th:href="@{/admin/rankings(anio=${anioSel},mes=${mesSel},pagina=${rankingPagina + 1})}">Siguiente »</a>
+      </div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina(${area}, ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <section class="portada" aria-labelledby="titulo-area">
+      <h1 id="titulo-area" th:text="${area}">Área</h1>
+      <p th:text="${descripcionArea}">Descripción del área</p>
+    </section>
+    <section class="tarjeta seccion" aria-labelledby="titulo-proximamente">
+      <h2 id="titulo-proximamente">Próximamente</h2>
+      <p>Esta sección todavía no está conectada.</p>
+    </section>
+  </div>
+</main>
+</body>
+</html>

@@ -145,7 +145,22 @@ public class AutenticacionController {
             flash.addFlashAttribute("nombreChofer", nombre.trim());
             flash.addFlashAttribute("emailChofer", email.trim());
         }
-        return "redirect:/admin/panel";
+        return "redirect:/admin/camiones";
+    }
+
+    @PostMapping("/admin/choferes/{id}/camion")
+    public String asignarCamionChofer(@PathVariable UUID id, @RequestParam UUID camionId,
+                                      HttpSession sesion, RedirectAttributes flash) {
+        SesionUsuario admin = (SesionUsuario) sesion.getAttribute(SesionUsuario.ATRIBUTO);
+        try {
+            authClient.asignarCamion(admin, id, camionId);
+            flash.addFlashAttribute("toastTipo", "ok");
+            flash.addFlashAttribute("toast", "Camión asignado correctamente.");
+        } catch (ApiException e) {
+            flash.addFlashAttribute("toastTipo", "error");
+            flash.addFlashAttribute("toast", e.getMessage());
+        }
+        return "redirect:/admin/camiones";
     }
 
     /** El camión queda en la cuenta del chofer. Logística no guarda esa relación. */

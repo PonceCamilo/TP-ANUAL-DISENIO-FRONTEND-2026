@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 /** Cliente REST de servicio-notificaciones. */
@@ -34,5 +35,15 @@ public class NotificacionesApi {
         }
         propias.sort((a, b) -> Mapas.texto(b, "fechaCreacion").compareTo(Mapas.texto(a, "fechaCreacion")));
         return propias;
+    }
+
+    /**
+     * Marca como leídas todas las notificaciones pendientes de esos
+     * destinatarios (se llama al abrir la pantalla de notificaciones, para
+     * que el contador de la campanita vuelva a cero).
+     */
+    public void marcarLeidas(List<String> destinatarios) {
+        api.enviar(HttpMethod.PATCH, notificaciones + "/notificaciones/leidas",
+                Map.of("destinatarios", destinatarios));
     }
 }
