@@ -89,6 +89,8 @@ public class EntidadDonacionesController {
     @PostMapping("/campanias/{campaniaId}/necesidades")
     public String crearNecesidad(@PathVariable UUID campaniaId, @RequestParam String nombre,
                                  @RequestParam(required = false) String descripcion,
+                                 @RequestParam String subcategoria,
+                                 @RequestParam(required = false) String subcategoriaOtra,
                                  @RequestParam int cantidadObjetivo, @RequestParam String tipo,
                                  @RequestParam(required = false) String periodo,
                                  HttpSession sesion, RedirectAttributes flash) {
@@ -96,10 +98,20 @@ public class EntidadDonacionesController {
         if (id == null) {
             return "redirect:/entidad/registro";
         }
+        String volverAlFormulario = "/entidad/campanias/" + campaniaId + "/necesidades/nueva";
+        // Mismos tipos que elige el donante: el back cruza la necesidad con la
+        // donación comparando estas subcategorías.
+        boolean esOtroTipo = "Otro".equals(subcategoria);
+        if (esOtroTipo && (subcategoriaOtra == null || subcategoriaOtra.isBlank())) {
+            flash.addFlashAttribute("toastTipo", "error");
+            flash.addFlashAttribute("toast", "Indicá qué tipo de cosa necesitás al elegir Otro.");
+            return "redirect:" + volverAlFormulario;
+        }
         Map<String, Object> cuerpo = new LinkedHashMap<>();
         cuerpo.put("tipo", "RECURRENTE".equals(tipo) ? "RECURRENTE" : "EXTRAORDINARIA");
         cuerpo.put("nombre", nombre.trim());
         cuerpo.put("descripcion", descripcion == null ? "" : descripcion.trim());
+        cuerpo.put("subcategoria", esOtroTipo ? subcategoriaOtra.trim() : subcategoria.trim());
         cuerpo.put("cantidadObjetivo", cantidadObjetivo);
         if ("RECURRENTE".equals(tipo)) {
             cuerpo.put("periodo", periodo == null || periodo.isBlank() ? "MENSUAL" : periodo);
@@ -107,7 +119,7 @@ public class EntidadDonacionesController {
         try {
             api.crearNecesidad(id, campaniaId, cuerpo);
         } catch (ApiException e) {
-            return volverConError(flash, e, "/entidad/campanias/" + campaniaId + "/necesidades/nueva");
+            return volverConError(flash, e, volverAlFormulario);
         }
         return conExito(flash, "Necesidad agregada a la campaña.", "/entidad/panel");
     }
@@ -138,7 +150,18 @@ public class EntidadDonacionesController {
         return "donaciones/entidad/recepciones";
     }
 
-    /** Donaciones en depósito para las que esta entidad aparece como candidata. */
+    /**
+     * Algoritmo del back que compara la subcategoría de la donación con las
+     * necesidades abiertas de cada entidad. Es el único que mira qué necesita la
+     * entidad: PRIORIDAD_SUBATENDIDOS le da puntaje a todas, así que si se lo
+     * tuviera en cuenta a cualquier entidad le aparecería cualquier donación.
+     */
+    private static final String ALGORITMO_COMPATIBILIDAD = "COMPATIBILIDAD_SEMANTICA";
+
+    /**
+     * Donaciones en depósito para las que esta entidad tiene alguna necesidad
+     * compatible. El back responde {@code rankings: [{algoritmo, entidades}]}.
+     */
     @GetMapping("/disponibles")
     public String disponibles(HttpSession sesion, Model model) {
         UUID id = entidadId(sesion);
@@ -148,7 +171,11 @@ public class EntidadDonacionesController {
         List<Map<String, Object>> aptas = new ArrayList<>();
         for (Map<String, Object> d : api.donacionesEnDeposito()) {
             Map<String, Object> cand = api.candidatos(UUID.fromString(Mapas.texto(d, "id")));
-            if (Candidatos.incluye(cand, id)) {
+            boolean candidata = Mapas.lista(cand.get("rankings")).stream()
+                    .filter(r -> ALGORITMO_COMPATIBILIDAD.equals(Mapas.texto(r, "algoritmo")))
+                    .flatMap(r -> Mapas.lista(r.get("entidades")).stream())
+                    .anyMatch(e -> String.valueOf(id).equals(Mapas.texto(e, "id")));
+            if (candidata) {
                 aptas.add(d);
             }
         }

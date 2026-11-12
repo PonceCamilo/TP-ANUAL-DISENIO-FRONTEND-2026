@@ -10,6 +10,26 @@
         <label for="nombre">¿Qué necesitás? <span class="requerido" aria-hidden="true">*</span></label>
         <input id="nombre" name="nombre" required maxlength="80" placeholder="Ej.: Frazadas">
       </div>
+      <fieldset class="campo">
+        <legend class="fila">Tipo <span class="requerido" aria-hidden="true">*</span>
+          <span th:replace="~{comun/fragmentos/componentes :: ayuda('tipo-bien', 'Es el mismo tipo que eligen los donantes. Con él te mostramos las donaciones que te sirven.')}"></span></legend>
+        <div class="chips-tipo">
+          <label class="chip"><input type="radio" name="subcategoria" value="Abrigo" required><span><svg th:replace="~{comun/fragmentos/componentes :: ic('shirt')}"></svg>Abrigo</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Alimentos"><span><svg th:replace="~{comun/fragmentos/componentes :: ic('food')}"></svg>Alimentos</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Útiles escolares"><span><svg th:replace="~{comun/fragmentos/componentes :: ic('book')}"></svg>Útiles escolares</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Higiene personal"><span><svg th:replace="~{comun/fragmentos/componentes :: ic('drop')}"></svg>Higiene personal</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Juguetes"><span><svg th:replace="~{comun/fragmentos/componentes :: ic('star')}"></svg>Juguetes</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Muebles"><span><svg th:replace="~{comun/fragmentos/componentes :: ic('sofa')}"></svg>Muebles</span></label>
+          <label class="chip"><input type="radio" name="subcategoria" value="Otro"><span><svg th:replace="~{comun/fragmentos/componentes :: ic('dots')}"></svg>Otro</span></label>
+        </div>
+      </fieldset>
+      <div data-muestra-si="subcategoria=Otro" hidden>
+        <div class="campo">
+          <label for="subcategoriaOtra">¿Qué tipo es? <span class="requerido" aria-hidden="true">*</span></label>
+          <input id="subcategoriaOtra" name="subcategoriaOtra" maxlength="60" placeholder="Ej.: Equipo de pesca"
+                 required disabled pattern=".*\S.*">
+        </div>
+      </div>
       <div class="campo">
         <label for="descripcion">Detalle (opcional)</label>
         <textarea id="descripcion" name="descripcion" maxlength="300"></textarea>
