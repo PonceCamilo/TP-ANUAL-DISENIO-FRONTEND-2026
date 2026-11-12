@@ -46,4 +46,15 @@ public class IncentivosApi {
     public List<Map<String, Object>> insignias(UUID donanteId) {
         return api.lista(incentivos + "/api/incentivos/donantes/{id}/insignias", donanteId);
     }
+
+    /** Periodos (anio/mes) que ya tienen un ranking cerrado, para el selector de Rankings de admin. */
+    public List<Map<String, Object>> rankingMesesDisponibles() {
+        return api.lista(incentivos + "/api/incentivos/admin/rankings/meses");
+    }
+
+    /** Ranking de un mes puntual (paginado). Si es el mes actual y no hay cierre, viene "provisional". */
+    public Map<String, Object> rankingDeMes(int anio, int mes, int pagina, int tamanio) {
+        return api.objeto(incentivos + "/api/incentivos/admin/rankings/{anio}/{mes}?page={pagina}&size={tamanio}",
+                anio, mes, pagina, tamanio);
+    }
 }

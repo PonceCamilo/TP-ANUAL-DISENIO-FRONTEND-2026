@@ -26,4 +26,8 @@ public class LogisticaApi {
     public List<Map<String, Object>> camiones() {
         return api.lista(logistica + "/api/logistica/camiones");
     }
+
+    public Map<String, Object> crearCamion(Map<String, Object> cuerpo) {
+        return api.crear(logistica + "/api/logistica/camiones", cuerpo);
+    }
 }

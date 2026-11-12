@@ -50,6 +50,7 @@
         <li><a th:href="@{/admin/camiones}" th:aria-current="${seccion == 'camiones'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Camiones</a></li>
         <li><a th:href="@{/admin/donantes}" th:aria-current="${seccion == 'donantes'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Donantes</a></li>
         <li><a th:href="@{/admin/rankings}" th:aria-current="${seccion == 'rankings'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('medal')}"></svg>Rankings</a></li>
+        <li><a th:href="@{/admin/notificaciones}" th:aria-current="${seccion == 'notificaciones'} ? 'page'" data-carga><span class="nav-icono"><svg th:replace="~{comun/fragmentos/componentes :: ic('bell')}"></svg><span class="badge-no-leidas" th:if="${noLeidas > 0}" th:text="${noLeidas}">3</span></span>Avisos</a></li>
       </ul>
       <div class="usuario">
         <span class="avatar" aria-hidden="true" th:text="${#strings.toUpperCase(#strings.substring(usuario.primerNombre, 0, 1))}">C</span>

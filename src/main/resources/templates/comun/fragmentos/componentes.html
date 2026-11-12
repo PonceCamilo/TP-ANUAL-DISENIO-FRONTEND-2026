@@ -42,7 +42,11 @@
     <div class="item-cuerpo">
       <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('bell')}"></svg></span>
       <div>
-        <p class="item-titulo" th:text="${n.mensaje}">Mensaje</p>
+        <p class="item-titulo" th:if="${!#strings.contains(n.mensaje, 'Motivo:')}" th:text="${n.mensaje}">Mensaje</p>
+        <p class="item-titulo" th:if="${#strings.contains(n.mensaje, 'Motivo:')}">
+          <span th:text="${#strings.substringBefore(n.mensaje, 'Motivo:')}">Intro</span><br>
+          <span th:text="'Motivo:' + ${#strings.substringAfter(n.mensaje, 'Motivo:')}">Motivo</span>
+        </p>
         <p class="suave chico" style="margin:0">
           <span th:text="${n.medio}">EMAIL</span> ·
           <time th:datetime="${n.fechaCreacion}" th:text="${#strings.replace(#strings.substring(n.fechaCreacion, 0, 16), 'T', ' ')}">2026-06-24 19:07</time>

@@ -69,6 +69,16 @@ public class NotificacionesController {
         return "notificaciones/donante";
     }
 
+    @GetMapping("/admin/notificaciones")
+    public String notificacionesAdmin(HttpSession sesion, Model model) {
+        SesionUsuario u = usuario(sesion);
+        List<String> destinatarios = List.of(u.getEmail());
+        model.addAttribute("notificaciones", notificaciones.notificacionesDe(destinatarios));
+        notificaciones.marcarLeidas(destinatarios);
+        model.addAttribute("seccion", "notificaciones");
+        return "notificaciones/admin";
+    }
+
     @GetMapping("/entidad/notificaciones")
     public String notificacionesEntidad(HttpSession sesion, Model model) {
         UUID id = entidadId(sesion);

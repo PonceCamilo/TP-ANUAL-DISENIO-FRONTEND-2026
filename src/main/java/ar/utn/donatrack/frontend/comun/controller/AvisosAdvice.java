@@ -43,10 +43,10 @@ public class AvisosAdvice {
 
     /**
      * Cantidad de notificaciones sin leer del usuario logueado, para el
-     * numerito de la campanita. Administrador y chofer todavía no tienen
-     * notificaciones propias (ni donanteId ni entidadId), así que dan 0.
-     * Si algo falla acá, no tiene que romper el resto de la página: se
-     * devuelve 0 y listo.
+     * numerito de la campanita. El administrador recibe avisos por su propio
+     * email (ej: entrega no satisfactoria); el chofer todavía no tiene
+     * notificaciones propias. Si algo falla acá, no tiene que romper el
+     * resto de la página: se devuelve 0 y listo.
      */
     @ModelAttribute("noLeidas")
     public long noLeidas(HttpSession sesion) {
@@ -63,7 +63,7 @@ public class AvisosAdvice {
             } else if (u.getEntidadId() != null) {
                 Mapas.lista(donaciones.entidad(u.getEntidadId()).get("contactos"))
                         .forEach(c -> destinatarios.add(Mapas.texto(c, "valor")));
-            } else {
+            } else if (!SesionUsuario.ADMINISTRADOR.equals(u.getRol())) {
                 return 0L;
             }
             return notificaciones.notificacionesDe(destinatarios).stream()

@@ -251,12 +251,88 @@ public class PanelController {
         return "autenticacion/admin-camiones";
     }
 
+    @PostMapping("/admin/camiones")
+    public String crearCamion(@RequestParam String patente,
+                               @RequestParam double capacidadVolumenM3,
+                               @RequestParam double alturaM,
+                               @RequestParam double capacidadCargaKg,
+                               RedirectAttributes flash) {
+        try {
+            Map<String, Object> cuerpo = new LinkedHashMap<>();
+            cuerpo.put("patente", patente.trim());
+            cuerpo.put("capacidadVolumenM3", capacidadVolumenM3);
+            cuerpo.put("alturaM", alturaM);
+            cuerpo.put("capacidadCargaKg", capacidadCargaKg);
+            logisticaApi.crearCamion(cuerpo);
+            flash.addFlashAttribute("toastTipo", "ok");
+            flash.addFlashAttribute("toast", "Camión registrado.");
+        } catch (ApiException e) {
+            flash.addFlashAttribute("toastTipo", "error");
+            flash.addFlashAttribute("toast", e.getMessage());
+        }
+        return "redirect:/admin/camiones";
+    }
+
     @GetMapping("/admin/rankings")
-    public String adminRankings(Model model) {
+    public String adminRankings(@RequestParam(required = false) Integer anio,
+                                 @RequestParam(required = false) Integer mes,
+                                 @RequestParam(defaultValue = "0") int pagina,
+                                 Model model) {
         model.addAttribute("area", "Rankings");
         model.addAttribute("descripcionArea", "Mes actual e historial de rankings.");
         model.addAttribute("seccion", "rankings");
-        return "autenticacion/admin-placeholder";
+
+        java.time.LocalDate hoy = java.time.LocalDate.now();
+        int anioSel = anio != null ? anio : hoy.getYear();
+        int mesSel = mes != null ? mes : hoy.getMonthValue();
+        model.addAttribute("anioSel", anioSel);
+        model.addAttribute("mesSel", mesSel);
+
+        try {
+            model.addAttribute("periodos", incentivos.rankingMesesDisponibles());
+        } catch (ApiException e) {
+            model.addAttribute("periodos", List.of());
+        }
+
+        model.addAttribute("rankingNoDisponible", false);
+        try {
+            Map<String, Object> ranking = incentivos.rankingDeMes(anioSel, mesSel, pagina, 20);
+            model.addAttribute("rankingProvisional", Boolean.TRUE.equals(ranking.get("provisional")));
+            model.addAttribute("rankingPagina", ranking.getOrDefault("pagina", 0));
+            model.addAttribute("rankingTotalPaginas", ranking.getOrDefault("totalPaginas", 1));
+            model.addAttribute("rankingTotalElementos", ranking.getOrDefault("totalElementos", 0));
+            model.addAttribute("ranking", Mapas.lista(ranking.get("contenido")).stream().map(puesto -> {
+                Map<String, Object> fila = new LinkedHashMap<>(puesto);
+                fila.put("nombre", nombreDonante(UUID.fromString(String.valueOf(puesto.get("donanteId")))));
+                return fila;
+            }).toList());
+        } catch (ApiException e) {
+            model.addAttribute("rankingNoDisponible", true);
+            model.addAttribute("ranking", List.of());
+            if (!model.containsAttribute("toast")) {
+                model.addAttribute("toast", e.getMessage());
+                model.addAttribute("toastTipo", "error");
+            }
+        }
+        return "autenticacion/admin-rankings";
+    }
+
+    private String nombreDonante(UUID id) {
+        try {
+            Map<String, Object> donante = donaciones.donante(id);
+            if (donante.get("razonSocial") instanceof String razonSocial && !razonSocial.isBlank()) {
+                return razonSocial;
+            }
+            if (donante.get("nombre") instanceof String nombre && !nombre.isBlank()) {
+                if (donante.get("apellido") instanceof String apellido && !apellido.isBlank()) {
+                    return nombre + " " + apellido;
+                }
+                return nombre;
+            }
+        } catch (ApiException e) {
+            return "Donante";
+        }
+        return "Donante";
     }
 
     @GetMapping({"/chofer/panel", "/transporte/panel"})

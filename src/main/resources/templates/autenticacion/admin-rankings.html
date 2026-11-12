@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina(${area}, ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <section class="portada" aria-labelledby="titulo-area">
+      <h1 id="titulo-area" th:text="${area}">Rankings</h1>
+      <p th:text="${descripcionArea}">Mes actual e historial de rankings.</p>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-periodo">
+      <h2 id="titulo-periodo">Elegí el período</h2>
+      <div class="fila" style="flex-wrap: wrap; gap: .5rem;">
+        <a class="btn btn-secundario btn-chico" th:href="@{/admin/rankings}">Mes actual</a>
+        <a th:each="p : ${periodos}"
+           class="btn btn-secundario btn-chico"
+           th:href="@{/admin/rankings(anio=${p['anio']},mes=${p['mes']})}"
+           th:text="${p['mes']} + '/' + ${p['anio']}">Mes/Año</a>
+      </div>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="titulo-ranking">
+      <h2 id="titulo-ranking">
+        Ranking <span th:text="${mesSel} + '/' + ${anioSel}">Mes/Año</span>
+        <span class="suave chico" th:if="${rankingProvisional}">(provisional, mes todavía en curso)</span>
+      </h2>
+
+      <th:block th:if="${rankingNoDisponible}">
+        <div th:replace="~{comun/fragmentos/componentes :: vacio('medal', 'No pudimos cargar el ranking', 'Probá de nuevo en un momento.', null, null)}"></div>
+      </th:block>
+
+      <th:block th:if="${!rankingNoDisponible and #lists.isEmpty(ranking)}">
+        <div th:replace="~{comun/fragmentos/componentes :: vacio('medal', 'Sin datos para este período', 'Todavía no hay misiones completadas registradas en este mes.', null, null)}"></div>
+      </th:block>
+
+      <ol class="lista-ranking" th:if="${!rankingNoDisponible and !#lists.isEmpty(ranking)}">
+        <li th:each="r : ${ranking}">
+          <span class="puesto" th:text="${r.puesto}">1</span>
+          <span th:text="${r.nombre}">Donante</span>
+          <span class="suave chico" th:text="${r.misionesCompletadas} + ' misiones'">0 misiones</span>
+        </li>
+      </ol>
+
+      <p class="suave chico" th:if="${!rankingNoDisponible and rankingTotalPaginas > 1}">
+        Página <span th:text="${rankingPagina + 1}">1</span> de <span th:text="${rankingTotalPaginas}">1</span>
+        (<span th:text="${rankingTotalElementos}">0</span> en total)
+      </p>
+      <div class="fila" th:if="${!rankingNoDisponible and rankingTotalPaginas > 1}">
+        <a th:if="${rankingPagina > 0}" class="btn btn-secundario btn-chico"
+           th:href="@{/admin/rankings(anio=${anioSel},mes=${mesSel},pagina=${rankingPagina - 1})}">« Anterior</a>
+        <a th:if="${rankingPagina + 1 < rankingTotalPaginas}" class="btn btn-secundario btn-chico"
+           th:href="@{/admin/rankings(anio=${anioSel},mes=${mesSel},pagina=${rankingPagina + 1})}">Siguiente »</a>
+      </div>
+    </section>
+  </div>
+</main>
+</body>
+</html>
