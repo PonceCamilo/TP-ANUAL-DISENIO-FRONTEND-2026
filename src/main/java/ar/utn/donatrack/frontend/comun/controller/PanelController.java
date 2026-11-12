@@ -10,10 +10,14 @@ import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 
 import java.time.Month;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Controller;
@@ -283,15 +287,44 @@ public class PanelController {
         model.addAttribute("seccion", "rankings");
 
         java.time.LocalDate hoy = java.time.LocalDate.now();
-        int anioSel = anio != null ? anio : hoy.getYear();
-        int mesSel = mes != null ? mes : hoy.getMonthValue();
+        int anioHoy = hoy.getYear();
+        int mesHoy = hoy.getMonthValue();
+        int anioSel = anio != null ? anio : anioHoy;
+        int mesSel = mes != null ? mes : mesHoy;
         model.addAttribute("anioSel", anioSel);
         model.addAttribute("mesSel", mesSel);
 
+        List<Map<String, Object>> periodos;
         try {
-            model.addAttribute("periodos", incentivos.rankingMesesDisponibles());
+            periodos = incentivos.rankingMesesDisponibles();
         } catch (ApiException e) {
-            model.addAttribute("periodos", List.of());
+            periodos = List.of();
+        }
+
+        List<Integer> anios = new ArrayList<>();
+        anios.add(anioHoy);
+        Set<String> periodosDisponibles = new LinkedHashSet<>();
+        periodosDisponibles.add(anioHoy + "-" + mesHoy);
+        for (Map<String, Object> p : periodos) {
+            if (p.get("anio") instanceof Number a && p.get("mes") instanceof Number m) {
+                if (!anios.contains(a.intValue())) {
+                    anios.add(a.intValue());
+                }
+                periodosDisponibles.add(a.intValue() + "-" + m.intValue());
+            }
+        }
+        anios.sort(Comparator.reverseOrder());
+        model.addAttribute("anios", anios);
+        model.addAttribute("periodosDisponibles", periodosDisponibles);
+
+        model.addAttribute("podioNoDisponible", false);
+        try {
+            Map<String, Object> actual = incentivos.rankingDeMes(anioHoy, mesHoy, 0, 3);
+            model.addAttribute("podioProvisional", Boolean.TRUE.equals(actual.get("provisional")));
+            model.addAttribute("podio", conNombres(Mapas.lista(actual.get("contenido"))));
+        } catch (ApiException e) {
+            model.addAttribute("podioNoDisponible", true);
+            model.addAttribute("podio", List.of());
         }
 
         model.addAttribute("rankingNoDisponible", false);
@@ -301,11 +334,7 @@ public class PanelController {
             model.addAttribute("rankingPagina", ranking.getOrDefault("pagina", 0));
             model.addAttribute("rankingTotalPaginas", ranking.getOrDefault("totalPaginas", 1));
             model.addAttribute("rankingTotalElementos", ranking.getOrDefault("totalElementos", 0));
-            model.addAttribute("ranking", Mapas.lista(ranking.get("contenido")).stream().map(puesto -> {
-                Map<String, Object> fila = new LinkedHashMap<>(puesto);
-                fila.put("nombre", nombreDonante(UUID.fromString(String.valueOf(puesto.get("donanteId")))));
-                return fila;
-            }).toList());
+            model.addAttribute("ranking", conNombres(Mapas.lista(ranking.get("contenido"))));
         } catch (ApiException e) {
             model.addAttribute("rankingNoDisponible", true);
             model.addAttribute("ranking", List.of());
@@ -315,6 +344,14 @@ public class PanelController {
             }
         }
         return "autenticacion/admin-rankings";
+    }
+
+    private List<Map<String, Object>> conNombres(List<Map<String, Object>> puestos) {
+        return puestos.stream().map(puesto -> {
+            Map<String, Object> fila = new LinkedHashMap<>(puesto);
+            fila.put("nombre", nombreDonante(UUID.fromString(String.valueOf(puesto.get("donanteId")))));
+            return fila;
+        }).toList();
     }
 
     private String nombreDonante(UUID id) {
