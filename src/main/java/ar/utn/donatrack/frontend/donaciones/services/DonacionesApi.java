@@ -164,6 +164,12 @@ public class DonacionesApi {
         return api.objeto(donaciones + "/publico/donaciones-entregadas?page=1&size={size}", cantidad);
     }
 
+    /** Una página de las entregadas del último mes, para la galería pública de fotos (requisito 1). */
+    public Pagina paginaDeEntregadas(int numero, int tamanio) {
+        return Pagina.desde(api.objeto(donaciones + "/publico/donaciones-entregadas?page={page}&size={size}",
+                Math.max(PRIMERA_PAGINA, numero), tamanio));
+    }
+
     /** Las entidades con lo que necesitan hoy, para que las personas donantes las conozcan (requisito 6). */
     public Pagina entidadesPublicas(int numero) {
         return Pagina.desde(api.objeto(donaciones + "/publico/entidades?page={page}&size={size}",

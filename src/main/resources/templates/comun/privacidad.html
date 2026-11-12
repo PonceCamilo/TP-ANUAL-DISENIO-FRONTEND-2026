@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Privacidad', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor" style="max-width: 48rem">
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Inicio</a></nav>
+    <h1>Política de privacidad</h1>
+
+    <section class="seccion" aria-labelledby="t-datos">
+      <h2 id="t-datos">Qué datos guardamos</h2>
+      <ul>
+        <li><strong>Personas donantes:</strong> nombre o razón social, documento, email, medios de contacto y dirección,
+          y las donaciones que registran.</li>
+        <li><strong>Entidades beneficiarias:</strong> razón social, dirección (y su ubicación en el mapa, si la cargan),
+          contactos y representantes, campañas y necesidades.</li>
+        <li><strong>Cuentas:</strong> el email con el que se ingresa y el rol de la cuenta. Si se ingresa con Google,
+          recibimos de Google solo el nombre y el email.</li>
+      </ul>
+    </section>
+
+    <section class="seccion" aria-labelledby="t-para-que">
+      <h2 id="t-para-que">Para qué los usamos</h2>
+      <ul>
+        <li>Asignar cada donación a la entidad que la necesita y coordinar su entrega.</li>
+        <li>Avisarte, por el medio que elegiste, cuando tu donación avanza o llega.</li>
+        <li>Calcular las misiones, insignias y rankings de la sección de incentivos.</li>
+      </ul>
+    </section>
+
+    <section class="seccion" aria-labelledby="t-publico">
+      <h2 id="t-publico">Qué se muestra sin iniciar sesión</h2>
+      <p>En la página de inicio, en la galería de entregas y en el listado de entidades se muestra qué se entregó,
+        cuándo, y el nombre y la zona de la entidad que lo recibió. Nunca se muestran el nombre, el email ni la
+        dirección de las personas donantes, ni los contactos o la calle de las entidades.</p>
+    </section>
+
+    <section class="seccion" aria-labelledby="t-derechos">
+      <h2 id="t-derechos">Tus derechos</h2>
+      <p>Podés pedir acceder a tus datos, corregirlos o darlos de baja, en los términos de la Ley 25.326 de Protección
+        de los Datos Personales, escribiendo a <a href="mailto:admin@donatrack.org">admin@donatrack.org</a>.</p>
+      <p>Las condiciones de uso están en la <a th:href="@{/legal}" data-carga>información legal</a>.</p>
+    </section>
+  </div>
+</main>
+</body>
+</html>

@@ -68,7 +68,13 @@
 <th:block th:replace="${contenido}">contenido</th:block>
 
 <footer class="pie">
-  <div class="contenedor">DonaTrack · Diseño de Sistemas · UTN FRBA · Cada donación, con seguimiento.</div>
+  <div class="contenedor">DonaTrack · Diseño de Sistemas · UTN FRBA · Cada donación, con seguimiento.
+    <nav aria-label="Información" style="margin-top: var(--s-2)">
+      <a th:href="@{/entregas}" style="display:inline-block; min-height:48px; min-width:48px; line-height:48px">Entregas</a> ·
+      <a th:href="@{/legal}" style="display:inline-block; min-height:48px; min-width:48px; line-height:48px">Información legal</a> ·
+      <a th:href="@{/privacidad}" style="display:inline-block; min-height:48px; min-width:48px; line-height:48px">Privacidad</a>
+    </nav>
+  </div>
 </footer>
 
 <!-- Toasts: mensajes breves tras una acción (role=status los anuncia a lectores de pantalla) -->

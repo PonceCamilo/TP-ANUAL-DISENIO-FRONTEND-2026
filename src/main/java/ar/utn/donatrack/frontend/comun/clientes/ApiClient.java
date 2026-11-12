@@ -1,6 +1,7 @@
 package ar.utn.donatrack.frontend.comun.clientes;
 
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
+import ar.utn.donatrack.frontend.comun.exceptions.SesionVencidaException;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 
 import java.io.IOException;
@@ -94,6 +95,11 @@ public class ApiClient {
         try {
             return llamada.get();
         } catch (RestClientResponseException e) {
+            // Entrega 6: los servicios validan el JWT. Un 401 es un token vencido o
+            // inválido: hay que volver a ingresar (SesionVencidaAdvice), no mostrar un aviso.
+            if (e.getStatusCode().value() == 401) {
+                throw new SesionVencidaException();
+            }
             throw new ApiException(mensajeDe(e), e.getStatusCode().value());
         } catch (ResourceAccessException e) {
             throw new ApiException(
@@ -115,7 +121,7 @@ public class ApiClient {
         }
         return switch (e.getStatusCode().value()) {
             case 400 -> "Los datos enviados no son válidos.";
-            case 401, 403 -> "No tenés permiso para hacer esto.";
+            case 403 -> "No tenés permiso para hacer esto.";
             case 404 -> "No encontramos lo que buscabas.";
             case 409 -> "La operación no se puede realizar en el estado actual.";
             default -> "El servicio respondió con un error (" + e.getStatusCode().value() + ").";

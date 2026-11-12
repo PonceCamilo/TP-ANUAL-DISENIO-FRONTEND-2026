@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Entregas', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Inicio</a></nav>
+    <div class="encabezado-pagina">
+      <div><h1>Donaciones que ya llegaron</h1>
+        <p>Las entregas del último mes, con las fotos que cargaron las entidades al recibirlas.</p></div>
+      <a class="btn btn-sol" th:href="@{/login(rol='DONANTE')}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Quiero donar</a>
+    </div>
+
+    <ul th:if="${!entregadas.isEmpty()}" class="lista"
+        style="display:grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: var(--s-4)">
+      <li class="tarjeta" th:each="d : ${entregadas}" th:with="e=${d.entidad}">
+        <img th:if="${d.foto != null}" th:src="${d.foto}" loading="lazy"
+             th:alt="'Foto de la entrega de ' + ${d.subcategoria}"
+             style="width:100%; height:12rem; object-fit:cover; border-radius: var(--r-md); margin-bottom: var(--s-3)">
+        <div th:if="${d.foto == null}" aria-hidden="true" class="icono-circulo" style="margin-bottom: var(--s-3)">
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('box')}"></svg></div>
+        <p class="item-titulo" style="margin:0"
+           th:text="${d.cantidad} + ' ' + (${d.unidad} ?: '') + ' de ' + ${d.subcategoria}">5 kg de Arroz</p>
+        <p class="suave chico" style="margin:0" th:if="${e != null}"
+           th:text="'Para ' + ${e.razonSocial} + (${e.localidad != null} ? ' · ' + ${e.localidad} : '')">Para Comedor Los Pibes</p>
+        <p class="suave chico" style="margin:0">
+          <time th:datetime="${d.fechaEntrega}" th:text="${#strings.substring(d.fechaEntrega, 0, 10)}">2026-11-10</time></p>
+      </li>
+    </ul>
+
+    <nav th:replace="~{donaciones/admin/fragmentos :: paginador(${pagina}, ${urlAnterior}, ${urlSiguiente})}"></nav>
+    <th:block th:if="${entregadas.isEmpty()}">
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('box', 'Este mes todavía no hay entregas', 'Cuando las entidades reciban donaciones, las vas a ver acá.', '/', 'Volver al inicio')}"></div>
+    </th:block>
+  </div>
+</main>
+</body>
+</html>

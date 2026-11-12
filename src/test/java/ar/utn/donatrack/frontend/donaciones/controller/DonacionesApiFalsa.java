@@ -148,10 +148,23 @@ class DonacionesApiFalsa extends DonacionesApi {
         return catalogo;
     }
 
+    /** Si no es null, las lecturas públicas fallan con esta excepción (por ejemplo, un token vencido). */
+    RuntimeException fallaDeLectura;
+    Pagina paginaDeEntregadas = new Pagina(List.of(), 1, 0, 0);
+
     @Override
     public Pagina entidadesPublicas(int numero) {
+        if (fallaDeLectura != null) {
+            throw fallaDeLectura;
+        }
         paginaPedida = numero;
         return paginaDeEntidadesPublicas;
+    }
+
+    @Override
+    public Pagina paginaDeEntregadas(int numero, int tamanio) {
+        paginaPedida = numero;
+        return paginaDeEntregadas;
     }
 
     @Override
