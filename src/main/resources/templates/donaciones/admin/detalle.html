@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Donación', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/donaciones}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Donaciones</a></nav>
+
+    <section class="portada" aria-labelledby="titulo">
+      <div class="fila espaciado">
+        <h1 id="titulo" style="font-size: var(--t-2xl)" th:text="${donacion.descripcion}">Ropa de abrigo</h1>
+        <span th:replace="~{comun/fragmentos/componentes :: estado(${donacion.estado})}"></span>
+      </div>
+      <p>
+        <span th:text="${donacion.subcategoria}">Abrigo</span>
+        <th:block th:if="${donacion['fechaDonacion'] != null}"> · registrada el
+          <time th:datetime="${donacion.fechaDonacion}" th:text="${#strings.substring(donacion.fechaDonacion, 0, 10)}">2026-06-24</time></th:block>
+      </p>
+      <ol th:replace="~{comun/fragmentos/componentes :: recorrido(${donacion.estado})}"></ol>
+    </section>
+
+    <div class="grilla-2 seccion">
+      <section class="tarjeta" aria-labelledby="t-quien">
+        <h2 id="t-quien" style="font-size: var(--t-lg)">Quién donó</h2>
+        <th:block th:if="${donante != null}">
+          <p class="item-titulo" th:text="${nombreDonante}">Ana Pérez</p>
+          <p class="suave chico" style="margin:0" th:text="${donante.email}">ana@example.com</p>
+        </th:block>
+        <p class="suave" th:if="${donante == null}">No encontramos a la persona donante.</p>
+
+        <h2 style="font-size: var(--t-lg); margin-top: var(--s-5)">Destino</h2>
+        <p class="item-titulo" th:if="${entidad != null}" th:text="${entidad.razonSocial}">Comedor Los Pibes</p>
+        <p class="suave" th:if="${entidad == null}">Todavía no tiene entidad asignada.</p>
+        <a class="btn btn-sol" th:if="${donacion.estado == 'EN_DEPOSITO'}" th:href="@{/admin/donaciones/{id}/candidatos(id=${donacion.id})}" data-carga>
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('pin')}"></svg>Elegir entidad</a>
+        <p class="chico suave" style="margin-top: var(--s-3)" th:if="${donacion['proveedorLogistica'] != null}">
+          Transporte: <strong th:text="${donacion.proveedorLogistica}">DONATRACK</strong>
+          <span th:if="${donacion['idSeguimientoLogistica'] != null}"> · seguimiento <code th:text="${donacion.idSeguimientoLogistica}"></code></span>
+        </p>
+      </section>
+
+      <section class="tarjeta" aria-labelledby="t-bienes">
+        <h2 id="t-bienes" style="font-size: var(--t-lg)">Bienes</h2>
+        <ul class="lista">
+          <li th:each="b : ${donacion.bienes}">
+            <p class="item-titulo" th:text="${b.descripcion}">Campera</p>
+            <p class="suave chico" style="margin:0">
+              <span th:text="${b.cantidad} + ' ' + ${b.unidad}">3 unidades</span>
+              <span th:if="${b['esNuevo'] != null}" th:text="${b.esNuevo} ? ' · nuevo' : ' · usado'"></span>
+              <span th:if="${b['fechaVencimiento'] != null}" th:text="' · vence el ' + ${b.fechaVencimiento}"></span>
+            </p>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="grilla-2 seccion">
+      <section class="tarjeta pila" aria-labelledby="t-acciones">
+        <h2 id="t-acciones" style="font-size: var(--t-lg)">Acciones</h2>
+
+        <form th:if="${donacion.estado == 'ASIGNACION_REALIZADA'}" method="post" th:action="@{/admin/donaciones/despachos}" class="pila" data-carga>
+          <input type="hidden" name="ids" th:value="${donacion.id}">
+          <div class="campo">
+            <label for="proveedor">Despachar a logística con</label>
+            <select id="proveedor" name="proveedor">
+              <option value="">El que esté disponible</option>
+              <option value="DONATRACK">Flota de DonaTrack</option>
+              <option value="EXTERNA">Logística externa</option>
+            </select>
+          </div>
+          <button class="btn btn-sol" type="submit" data-cargando="Despachando…"><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Despachar</button>
+        </form>
+
+        <form th:if="${!destinos.isEmpty()}" method="post" th:action="@{/admin/donaciones/{id}/estado(id=${donacion.id})}" class="pila" data-carga>
+          <fieldset class="campo">
+            <legend>Cambiar el estado a</legend>
+            <div class="opciones">
+              <label class="opcion" th:each="d, i : ${destinos}">
+                <input type="radio" name="estado" th:value="${d}" th:checked="${i.first}" required>
+                <span th:text="${@etiquetas.estado(d)}">Vencida</span>
+              </label>
+            </div>
+          </fieldset>
+          <div class="campo">
+            <label for="justificacion">Motivo <span class="suave" style="font-weight:500">(obligatorio para una entrega fallida)</span></label>
+            <textarea id="justificacion" name="justificacion" maxlength="500" placeholder="Ej.: el producto venció el 10/11"></textarea>
+          </div>
+          <button class="btn" type="submit" data-cargando="Guardando…">Cambiar estado</button>
+        </form>
+
+        <p class="suave" th:if="${destinos.isEmpty() and donacion.estado != 'ASIGNACION_REALIZADA' and donacion.estado != 'EN_DEPOSITO'}">
+          Esta donación ya terminó su recorrido.</p>
+
+        <div>
+          <button type="button" class="btn btn-secundario" data-modal="confirmar-baja"
+                  th:data-accion="@{/admin/donaciones/{id}/eliminar(id=${donacion.id})}"
+                  data-detalle="La donación deja de aparecer en los listados. Queda guardada con su historial.">
+            <svg th:replace="~{comun/fragmentos/componentes :: ic('trash')}"></svg>Dar de baja</button>
+        </div>
+      </section>
+
+      <section class="tarjeta" aria-labelledby="t-hist">
+        <h2 id="t-hist" style="font-size: var(--t-lg)">Historial</h2>
+        <ol class="tiempo" th:if="${!historial.isEmpty()}">
+          <li th:each="h : ${historial}">
+            <p class="item-titulo" th:text="${@etiquetas.estado(h.estado)}">En depósito</p>
+            <p class="suave chico" style="margin:0" th:if="${h['fechaHora'] != null}"
+               th:text="${#strings.replace(#strings.substring(h.fechaHora, 0, 16), 'T', ' ')}">2026-06-24 19:07</p>
+            <p class="chico" style="margin:0" th:if="${h['justificacion'] != null and !h.justificacion.isBlank()}" th:text="${h.justificacion}"></p>
+          </li>
+        </ol>
+        <p class="suave" th:if="${historial.isEmpty()}">Todavía no hay movimientos.</p>
+      </section>
+    </div>
+
+    <dialog th:replace="~{comun/fragmentos/componentes :: confirmar('confirmar-baja', '¿Dar de baja esta donación?')}"></dialog>
+  </div>
+</main>
+</body>
+</html>

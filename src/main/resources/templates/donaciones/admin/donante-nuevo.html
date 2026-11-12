@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Registrar donante', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/donantes}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Donantes</a></nav>
+    <div class="encabezado-pagina"><div><h1>Registrar una persona donante</h1>
+      <p>Después puede ingresar a DonaTrack creando su cuenta con este mismo email.</p></div></div>
+
+    <form class="formulario tarjeta" method="post" th:action="@{/admin/donantes/nuevo}" data-carga>
+      <p class="ayuda">Los campos con <span class="requerido">*</span> son obligatorios.</p>
+
+      <fieldset class="campo">
+        <legend>Es una</legend>
+        <div class="opciones">
+          <label class="opcion"><input type="radio" name="tipo" value="HUMANA" checked> Persona</label>
+          <label class="opcion"><input type="radio" name="tipo" value="JURIDICA"> Organización</label>
+        </div>
+      </fieldset>
+
+      <div class="campo">
+        <label for="email">Email <span class="requerido" aria-hidden="true">*</span></label>
+        <input id="email" name="email" type="email" required maxlength="150" autocomplete="off">
+      </div>
+
+      <div class="grupo-2">
+        <div class="campo"><label for="tipoDocumento">Tipo de documento</label>
+          <select id="tipoDocumento" name="tipoDocumento">
+            <option value="DNI">DNI</option><option value="CUIT">CUIT</option><option value="CUIL">CUIL</option>
+            <option value="LE">LE</option><option value="LC">LC</option><option value="PASAPORTE">Pasaporte</option>
+          </select></div>
+        <div class="campo"><label for="numeroDocumento">Número <span class="requerido" aria-hidden="true">*</span></label>
+          <input id="numeroDocumento" name="numeroDocumento" required maxlength="20"></div>
+      </div>
+
+      <div data-muestra-si="tipo=HUMANA"><div class="pila">
+        <div class="grupo-2">
+          <div class="campo"><label for="nombre">Nombre <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="nombre" name="nombre" required maxlength="100"></div>
+          <div class="campo"><label for="apellido">Apellido <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="apellido" name="apellido" required maxlength="100"></div>
+        </div>
+        <div class="grupo-2">
+          <div class="campo"><label for="fechaNacimiento">Fecha de nacimiento <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="fechaNacimiento" name="fechaNacimiento" type="date" required></div>
+          <div class="campo"><label for="genero">Género</label>
+            <select id="genero" name="genero">
+              <option value="PREFIERO_NO_DECIR">Prefiere no decir</option><option value="FEMENINO">Femenino</option>
+              <option value="MASCULINO">Masculino</option><option value="NO_BINARIO">No binario</option><option value="OTRO">Otro</option>
+            </select></div>
+        </div>
+      </div></div>
+
+      <div data-muestra-si="tipo=JURIDICA" hidden><div class="pila">
+        <div class="campo"><label for="razonSocial">Razón social <span class="requerido" aria-hidden="true">*</span></label>
+          <input id="razonSocial" name="razonSocial" required maxlength="150"></div>
+        <div class="grupo-2">
+          <div class="campo"><label for="rubro">Rubro <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="rubro" name="rubro" required maxlength="100"></div>
+          <div class="campo"><label for="tipoOrganizacion">Tipo de organización</label>
+            <select id="tipoOrganizacion" name="tipoOrganizacion">
+              <option value="ONG">ONG</option><option value="EMPRESA">Empresa</option>
+              <option value="INSTITUCION">Institución</option><option value="GUBERNAMENTAL">Gubernamental</option>
+            </select></div>
+        </div>
+      </div></div>
+
+      <fieldset class="campo" style="border:0;padding:0;margin:0">
+        <legend>Dirección</legend>
+        <div class="grupo-2">
+          <div class="campo"><label for="calle">Calle <span class="requerido" aria-hidden="true">*</span></label><input id="calle" name="calle" required></div>
+          <div class="campo"><label for="numero">Número <span class="requerido" aria-hidden="true">*</span></label><input id="numero" name="numero" type="number" min="0" required></div>
+          <div class="campo"><label for="codigoPostal">Código postal <span class="requerido" aria-hidden="true">*</span></label><input id="codigoPostal" name="codigoPostal" required></div>
+          <div class="campo"><label for="localidad">Localidad <span class="requerido" aria-hidden="true">*</span></label><input id="localidad" name="localidad" required></div>
+          <div class="campo"><label for="provincia">Provincia <span class="requerido" aria-hidden="true">*</span></label><input id="provincia" name="provincia" required></div>
+        </div>
+      </fieldset>
+
+      <div class="fila">
+        <button type="submit" class="btn btn-grande" data-cargando="Guardando…">Registrar</button>
+        <a class="btn btn-secundario btn-grande" th:href="@{/admin/donantes}" data-carga>Cancelar</a>
+      </div>
+    </form>
+  </div>
+</main>
+</body>
+</html>

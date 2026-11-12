@@ -17,7 +17,7 @@
       </li>
     </ul>
     <th:block th:if="${donaciones.isEmpty()}">
-      <div th:replace="~{comun/fragmentos/componentes :: vacio('truck', 'Aún no recibiste donaciones', 'Mirá las donaciones disponibles y aceptá las que te sirvan.', '/entidad/disponibles', 'Ver donaciones disponibles')}"></div>
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('truck', 'Aún no recibiste donaciones', 'El equipo de DonaTrack asigna las donaciones según las necesidades que cargues. Cuando te asigne una, la vas a ver acá.', '/entidad/panel', 'Ver mis necesidades')}"></div>
     </th:block>
   </div>
 </main>

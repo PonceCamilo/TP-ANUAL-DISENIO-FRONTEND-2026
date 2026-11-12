@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--/* Secciones de administración de donaciones. Van dentro de la página porque
+       la barra de arriba es común a todo el front y solo conoce donante y entidad. */-->
+<nav th:fragment="pestanias(activa)" class="fila" aria-label="Administración" style="margin-bottom: var(--s-5)">
+  <a th:href="@{/admin/donaciones}" th:class="${activa == 'donaciones'} ? 'btn' : 'btn btn-secundario'"
+     th:aria-current="${activa == 'donaciones'} ? 'page'" data-carga>
+    <svg th:replace="~{comun/fragmentos/componentes :: ic('list')}"></svg>Donaciones</a>
+  <a th:href="@{/admin/donaciones/por-asignar}" th:class="${activa == 'por-asignar'} ? 'btn' : 'btn btn-secundario'"
+     th:aria-current="${activa == 'por-asignar'} ? 'page'" data-carga>
+    <svg th:replace="~{comun/fragmentos/componentes :: ic('pin')}"></svg>Por asignar</a>
+  <a th:href="@{/admin/donaciones/despachos}" th:class="${activa == 'despachos'} ? 'btn' : 'btn btn-secundario'"
+     th:aria-current="${activa == 'despachos'} ? 'page'" data-carga>
+    <svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Despachos</a>
+  <a th:href="@{/admin/donantes}" th:class="${activa == 'donantes'} ? 'btn' : 'btn btn-secundario'"
+     th:aria-current="${activa == 'donantes'} ? 'page'" data-carga>
+    <svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Donantes</a>
+  <a th:href="@{/admin/entidades}" th:class="${activa == 'entidades'} ? 'btn' : 'btn btn-secundario'"
+     th:aria-current="${activa == 'entidades'} ? 'page'" data-carga>
+    <svg th:replace="~{comun/fragmentos/componentes :: ic('building')}"></svg>Entidades</a>
+</nav>
+
+<!-- Paginador: anterior / siguiente conservando los filtros -->
+<nav th:fragment="paginador(pagina, anterior, siguiente)" class="fila espaciado seccion" aria-label="Páginas"
+     th:if="${pagina.totalPaginas > 1}">
+  <a class="btn btn-secundario" th:if="${pagina.hayAnterior}" th:href="${anterior}" data-carga>
+    <svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Anterior</a>
+  <span th:unless="${pagina.hayAnterior}"></span>
+  <span class="suave chico" th:text="'Página ' + ${pagina.numero} + ' de ' + ${pagina.totalPaginas}">Página 1 de 3</span>
+  <a class="btn btn-secundario" th:if="${pagina.haySiguiente}" th:href="${siguiente}" data-carga>
+    Siguiente<svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-right')}"></svg></a>
+  <span th:unless="${pagina.haySiguiente}"></span>
+</nav>
+
+<!-- Estado de una persona donante, con ícono y texto -->
+<span th:fragment="estadoDonante(codigo)" class="estado"
+      th:classappend="${codigo == 'ACTIVO'} ? 'estado-ok' : (${codigo == 'BLOQUEADO'} ? 'estado-error' : 'estado-warn')">
+  <svg th:replace="${codigo == 'BLOQUEADO'} ? ~{comun/fragmentos/componentes :: ic('alert')} : ~{comun/fragmentos/componentes :: ic('check')}"></svg>
+  <span th:text="${codigo == 'ACTIVO'} ? 'Activa' : (${codigo == 'BLOQUEADO'} ? 'Bloqueada' : 'Inactiva')">Activa</span>
+</span>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Información legal', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor" style="max-width: 48rem">
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Inicio</a></nav>
+    <h1>Información legal</h1>
+
+    <section class="seccion" aria-labelledby="t-que-es">
+      <h2 id="t-que-es">Qué es DonaTrack</h2>
+      <p>DonaTrack es una plataforma para registrar donaciones de bienes, asignarlas a entidades beneficiarias
+        según sus necesidades y seguir cada entrega hasta que llega a destino. Este sitio es un desarrollo
+        académico del Trabajo Práctico Anual de Diseño de Sistemas de la UTN FRBA.</p>
+    </section>
+
+    <section class="seccion" aria-labelledby="t-uso">
+      <h2 id="t-uso">Condiciones de uso</h2>
+      <ul>
+        <li>Las personas donantes declaran que los bienes que registran son suyos y están en condiciones de ser donados.</li>
+        <li>Los bienes perecederos se registran con su fecha de vencimiento; los vencidos no se asignan.</li>
+        <li>El equipo de DonaTrack asigna cada donación a una entidad según sus necesidades y puede rechazar o dar de baja
+          donaciones que no cumplan estas condiciones.</li>
+        <li>Las entidades beneficiarias se comprometen a usar lo que reciben para los fines que declararon en sus campañas.</li>
+        <li>Las fotos que se publican de una entrega no muestran datos de las personas donantes.</li>
+      </ul>
+    </section>
+
+    <section class="seccion" aria-labelledby="t-contacto">
+      <h2 id="t-contacto">Contacto</h2>
+      <p>Para consultas sobre la plataforma o sobre una donación, escribinos a
+        <a href="mailto:admin@donatrack.org">admin@donatrack.org</a>.</p>
+      <p>Sobre el uso de tus datos personales, leé la <a th:href="@{/privacidad}" data-carga>política de privacidad</a>.</p>
+    </section>
+  </div>
+</main>
+</body>
+</html>

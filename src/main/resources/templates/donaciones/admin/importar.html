@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Importar donantes', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/donantes}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Donantes</a></nav>
+    <div class="encabezado-pagina"><div><h1>Importar donantes desde un CSV</h1>
+      <p>Para cargar de una vez a las personas que ya colaboraban antes de DonaTrack.</p></div></div>
+
+    <section class="seccion" th:if="${resumen != null}" aria-labelledby="t-resumen">
+      <h2 id="t-resumen" style="font-size: var(--t-lg)">Resultado</h2>
+      <div class="franja">
+        <div><div class="valor" th:text="${resumen['totalProcesadas']}">10</div><div class="rotulo">filas procesadas</div></div>
+        <div><div class="valor" th:text="${resumen['creadas']}">7</div><div class="rotulo">personas nuevas</div></div>
+        <div><div class="valor" th:text="${resumen['actualizadas']}">2</div><div class="rotulo">ya existían y se actualizaron</div></div>
+        <div><div class="valor" th:text="${resumen['conError']}">1</div><div class="rotulo">filas con error</div></div>
+      </div>
+      <div class="tarjeta seccion" th:if="${resumen['errores'] != null and !resumen['errores'].isEmpty()}">
+        <h3 style="font-size: var(--t-base)">Filas que no se pudieron importar</h3>
+        <ul class="lista">
+          <li th:each="e : ${resumen['errores']}">
+            <p class="item-titulo" style="margin:0">
+              <span th:text="'Línea ' + ${e['numeroLinea']}">Línea 5</span>
+              <span class="suave" th:if="${e['email'] != null and !e['email'].isBlank()}" th:text="' · ' + ${e['email']}"></span>
+            </p>
+            <p class="chico" style="margin:0" th:text="${e['detalle']}">Falta el documento</p>
+          </li>
+        </ul>
+        <p class="suave chico" th:if="${resumen['erroresOmitidos'] != null and resumen['erroresOmitidos'] > 0}"
+           th:text="'Y ' + ${resumen['erroresOmitidos']} + ' filas más con error que no se muestran.'"></p>
+      </div>
+    </section>
+
+    <div class="grilla-2 seccion">
+      <form class="tarjeta pila" method="post" th:action="@{/admin/donantes/importar}" enctype="multipart/form-data" data-carga>
+        <div class="campo">
+          <label for="archivo">Archivo CSV <span class="requerido" aria-hidden="true">*</span></label>
+          <input id="archivo" name="archivo" type="file" accept=".csv,text/csv" required aria-describedby="archivo-ayuda">
+          <p id="archivo-ayuda" class="ayuda">Hasta 5 MB. Si una persona ya existe (mismo email), se actualizan sus datos.</p>
+        </div>
+        <button class="btn btn-sol" type="submit" data-cargando="Importando…">Importar</button>
+      </form>
+
+      <section class="tarjeta" aria-labelledby="t-formato">
+        <h2 id="t-formato" style="font-size: var(--t-lg)">Formato</h2>
+        <p>Una fila por persona, con encabezado y estas columnas en orden:</p>
+        <p><code>TipoPersona, TipoDoc, Documento, Nombre, Email, Telefono</code></p>
+        <ul class="chico">
+          <li><strong>TipoPersona:</strong> HUMANA o JURIDICA.</li>
+          <li><strong>TipoDoc:</strong> DNI, CUIT, CUIL, LE, LC o PASAPORTE.</li>
+          <li><strong>Telefono</strong> es opcional.</li>
+        </ul>
+        <p class="chico suave">Las cuentas de acceso de las personas importadas las da el Servicio de Autenticación: al importar, Donaciones le avisa quiénes son (cuando ese aviso está habilitado) y cada persona recibe cómo entrar en su email.</p>
+      </section>
+    </div>
+  </div>
+</main>
+</body>
+</html>

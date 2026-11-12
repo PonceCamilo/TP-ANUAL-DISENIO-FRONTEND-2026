@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Entidades', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/donante/panel}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Inicio</a></nav>
+    <div class="encabezado-pagina">
+      <div><h1>Entidades que reciben donaciones</h1>
+        <p>Conocé quiénes están en DonaTrack y qué necesitan hoy. La asignación de cada donación la hace el equipo de DonaTrack según estas necesidades.</p></div>
+      <a class="btn btn-sol" th:href="@{/donante/donar}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Hacer una donación</a>
+    </div>
+
+    <p class="suave chico" th:if="${pagina.totalElementos > 0}" role="status"
+       th:text="${pagina.totalElementos == 1} ? 'Una entidad' : ${pagina.totalElementos} + ' entidades'">12 entidades</p>
+
+    <ul class="lista" th:if="${!entidades.isEmpty()}">
+      <li th:each="e : ${entidades}" class="tarjeta" th:with="u=${e.ubicacion}">
+        <div class="fila espaciado">
+          <div class="item-cuerpo">
+            <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('building')}"></svg></span>
+            <div>
+              <h2 class="item-titulo" style="font-size: var(--t-lg); margin:0" th:text="${u.razonSocial}">Comedor Los Pibes</h2>
+              <p class="suave chico" style="margin:0" th:if="${u.localidad != null}">
+                <svg th:replace="~{comun/fragmentos/componentes :: ic('pin')}"></svg>
+                <span th:text="${u.localidad} + (${u.provincia != null} ? ', ' + ${u.provincia} : '')">Lanús, Buenos Aires</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <th:block th:if="${!e.necesidadesAbiertas.isEmpty()}">
+          <h3 class="chico" style="margin-top: var(--s-3)">Qué necesita hoy</h3>
+          <ul class="lista">
+            <li th:each="n : ${e.necesidadesAbiertas}">
+              <p class="item-titulo" style="margin:0" th:text="${n.nombre}">Frazadas</p>
+              <p class="suave chico" style="margin:0">
+                <span th:if="${n.subcategoria != null}" th:text="${n.subcategoria} + ' · '">Abrigo · </span>
+                <span th:text="${n.cantidadRecibida} + ' de ' + ${n.cantidadObjetivo} + ' recibidas'">10 de 30 recibidas</span>
+                <span th:if="${n.campania != null}" th:text="' · Campaña: ' + ${n.campania}"> · Campaña: Invierno</span>
+              </p>
+              <progress th:value="${n.cantidadRecibida}" th:max="${n.cantidadObjetivo}"
+                        th:aria-label="'Avance de ' + ${n.nombre}" style="width:100%"></progress>
+            </li>
+          </ul>
+        </th:block>
+        <p class="suave chico" th:if="${e.necesidadesAbiertas.isEmpty()}" style="margin-top: var(--s-2)">Por ahora no tiene necesidades abiertas.</p>
+      </li>
+    </ul>
+
+    <nav th:replace="~{donaciones/admin/fragmentos :: paginador(${pagina}, ${urlAnterior}, ${urlSiguiente})}"></nav>
+    <th:block th:if="${entidades.isEmpty()}">
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('building', 'Todavía no hay entidades registradas', 'Cuando se sumen entidades, las vas a ver acá.', '/donante/panel', 'Volver al inicio')}"></div>
+    </th:block>
+  </div>
+</main>
+</body>
+</html>

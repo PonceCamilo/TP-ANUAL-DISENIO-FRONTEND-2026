@@ -31,12 +31,46 @@
           <div class="campo"><label for="provincia">Provincia <span class="requerido" aria-hidden="true">*</span></label><input id="provincia" name="provincia" required></div>
         </div>
       </fieldset>
+      <fieldset class="campo">
+        <legend class="fila">Ubicación en el mapa <span class="suave" style="font-weight:500">(opcional)</span>
+          <span th:replace="~{comun/fragmentos/componentes :: ayuda('ubicacion', 'Con la ubicación, las donaciones que recibas aparecen en el mapa de la página de inicio. Podés usar tu ubicación actual o copiar las coordenadas desde un mapa.')}"></span></legend>
+        <div class="grupo-2">
+          <div class="campo"><label for="latitud">Latitud</label>
+            <input id="latitud" name="latitud" inputmode="decimal" placeholder="Ej.: -34.6037" aria-describedby="ubicacion-estado"></div>
+          <div class="campo"><label for="longitud">Longitud</label>
+            <input id="longitud" name="longitud" inputmode="decimal" placeholder="Ej.: -58.3816" aria-describedby="ubicacion-estado"></div>
+        </div>
+        <button type="button" class="btn btn-secundario" id="usar-ubicacion">
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('pin')}"></svg>Usar mi ubicación actual</button>
+        <p id="ubicacion-estado" class="ayuda" role="status" aria-live="polite"></p>
+      </fieldset>
       <div class="campo">
         <label for="telefono">Teléfono <span class="suave" style="font-weight:500">(opcional)</span></label>
         <input id="telefono" name="telefono" type="tel" autocomplete="tel">
       </div>
       <button type="submit" class="btn btn-sol btn-grande" data-cargando="Guardando…">Guardar y continuar</button>
     </form>
+    <script>
+      // Completa latitud y longitud con la ubicación del navegador, si la persona lo permite.
+      (function () {
+        var boton = document.getElementById('usar-ubicacion');
+        var estado = document.getElementById('ubicacion-estado');
+        if (!boton || !navigator.geolocation) {
+          if (boton) { boton.hidden = true; }
+          return;
+        }
+        boton.addEventListener('click', function () {
+          estado.textContent = 'Buscando tu ubicación…';
+          navigator.geolocation.getCurrentPosition(function (posicion) {
+            document.getElementById('latitud').value = posicion.coords.latitude.toFixed(6);
+            document.getElementById('longitud').value = posicion.coords.longitude.toFixed(6);
+            estado.textContent = 'Listo: cargamos tu ubicación actual.';
+          }, function () {
+            estado.textContent = 'No pudimos obtener tu ubicación. Podés escribir las coordenadas a mano.';
+          }, { timeout: 10000 });
+        });
+      })();
+    </script>
   </div>
 </main>
 </body>
