@@ -69,6 +69,15 @@ public class ApiClient {
         });
     }
 
+    public Object leer(String url, Object... variables) {
+        return ejecutar(() -> rest.get().uri(url, variables).retrieve().body(Object.class));
+    }
+
+    public Map<String, Object> crear(String url, Object cuerpo) {
+        return ejecutar(() -> rest.post().uri(url).contentType(MediaType.APPLICATION_JSON)
+                .body(cuerpo).retrieve().body(OBJETO));
+    }
+
     public void enviar(HttpMethod metodo, String url, Object cuerpo, Object... variables) {
         ejecutar(() -> {
             RestClient.RequestBodySpec spec = rest.method(metodo).uri(url, variables)

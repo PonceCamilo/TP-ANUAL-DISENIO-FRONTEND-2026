@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{comun/fragmentos/base :: pagina('Ingreso a ' + ${area}, ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <div class="centrado">
+      <h1 th:text="|Ingresá a ${area}|">Ingresá</h1>
+      <p class="suave">Ingresá con la cuenta que te asignó DonaTrack.</p>
+      <div class="banner banner-info" th:if="${param.sesion != null}">
+        <svg th:replace="~{comun/fragmentos/componentes :: ic('info')}"></svg>
+        <div>Ingresá para acceder a esta sección.</div>
+      </div>
+      <div class="tarjeta">
+        <th:block th:replace="~{autenticacion/formulario-ingreso :: formulario(${accionIngreso}, null)}"></th:block>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

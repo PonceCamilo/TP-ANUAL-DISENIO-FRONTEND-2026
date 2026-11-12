@@ -2,7 +2,6 @@ package ar.utn.donatrack.frontend.donaciones.services;
 
 import ar.utn.donatrack.frontend.comun.clientes.ApiClient;
 import ar.utn.donatrack.frontend.comun.config.FrontendProperties;
-import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
 
 import java.time.LocalDate;
@@ -58,40 +57,24 @@ public class DonacionesApi {
         return elementos;
     }
 
-    /** Busca al donante cuyo email es el del login. Devuelve null si todavía no se registró. */
-    public UUID buscarDonante(String email) {
-        return idDelPrimero(paginado(donaciones + "/donantes?email={email}", email));
-    }
-
     /**
-     * Busca la entidad que tiene como contacto o representante el email del login.
-     * Si esa persona figura en más de una entidad, se toma la primera por razón
-     * social (el orden en que las devuelve el servicio).
+     * La persona donante con ese email, o null si no está registrada. Lo usa la
+     * administración para registrar una donación a nombre de alguien (requisito
+     * 15): la búsqueda por email es solo de la administración en servicio-donaciones.
+     * Las pantallas de donante y entidad no la usan: su perfil sale del perfilId
+     * del token (SesionUsuario).
      */
-    public UUID buscarEntidad(String email) {
-        return idDelPrimero(paginado(donaciones + "/entidades?email={email}", email));
-    }
-
-    private UUID idDelPrimero(List<Map<String, Object>> encontrados) {
+    public UUID buscarDonante(String email) {
+        List<Map<String, Object>> encontrados = paginado(donaciones + "/donantes?email={email}", email);
         return encontrados.isEmpty() ? null : UUID.fromString(Mapas.texto(encontrados.get(0), "id"));
-    }
-
-    public void resolverIdentidad(SesionUsuario u) {
-        if (u.esDonante()) {
-            if (u.getDonanteId() == null) {
-                u.setDonanteId(buscarDonante(u.getEmail()));
-            }
-        } else if (u.getEntidadId() == null) {
-            u.setEntidadId(buscarEntidad(u.getEmail()));
-        }
     }
 
     public Map<String, Object> donante(UUID id) {
         return api.objeto(donaciones + "/donantes/{id}", id);
     }
 
-    public void registrarDonante(Map<String, Object> cuerpo) {
-        api.enviar(HttpMethod.POST, donaciones + "/donantes", cuerpo);
+    public UUID registrarDonante(Map<String, Object> cuerpo) {
+        return UUID.fromString(Mapas.texto(api.crear(donaciones + "/donantes", cuerpo), "id"));
     }
 
     public List<Map<String, Object>> donacionesDe(UUID donanteId) {
@@ -113,8 +96,8 @@ public class DonacionesApi {
         return paginado(donaciones + "/entidades");
     }
 
-    public void crearEntidad(Map<String, Object> cuerpo) {
-        api.enviar(HttpMethod.POST, donaciones + "/entidades", cuerpo);
+    public UUID crearEntidad(Map<String, Object> cuerpo) {
+        return UUID.fromString(Mapas.texto(api.crear(donaciones + "/entidades", cuerpo), "id"));
     }
 
     public Map<String, Object> entidad(UUID id) {

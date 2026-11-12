@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 /** Cliente REST de servicio-incentivos: métricas, misiones e insignias del donante. */
@@ -27,6 +28,19 @@ public class IncentivosApi {
 
     public List<Map<String, Object>> misiones(UUID donanteId) {
         return api.lista(incentivos + "/api/incentivos/donantes/{id}/misiones", donanteId);
+    }
+
+    public Map<String, Object> perfilPublico(UUID donanteId) {
+        return api.objeto(incentivos + "/api/incentivos/donantes/{id}/perfil-publico", donanteId);
+    }
+
+    public Map<String, Object> podio() {
+        return api.objeto(incentivos + "/api/incentivos/rankings/podio");
+    }
+
+    public void cambiarVisibilidad(UUID donanteId, long insigniaId, boolean visible) {
+        api.enviar(HttpMethod.PATCH, incentivos + "/api/incentivos/donantes/{id}/insignias/{insignia}/visibilidad",
+                Map.of("visible", visible), donanteId, insigniaId);
     }
 
     public List<Map<String, Object>> insignias(UUID donanteId) {

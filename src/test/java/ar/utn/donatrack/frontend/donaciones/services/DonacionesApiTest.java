@@ -2,9 +2,7 @@ package ar.utn.donatrack.frontend.donaciones.services;
 
 import ar.utn.donatrack.frontend.comun.clientes.ApiClient;
 import ar.utn.donatrack.frontend.comun.config.FrontendProperties;
-import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -157,8 +155,12 @@ class DonacionesApiTest {
     }
 
     @Nested
-    @DisplayName("Identidad de quien inició sesión")
-    class Identidad {
+    @DisplayName("Búsqueda de una persona donante por email (solo administración)")
+    class BusquedaPorEmail {
+
+        // Entrega 6: las pantallas de donante y entidad ya no buscan por email (su
+        // perfil sale del perfilId del token). La búsqueda queda para que la
+        // administración registre una donación a nombre de alguien (requisito 15).
 
         @Test
         @DisplayName("Busca al donante por email, sin recorrer el listado completo")
@@ -171,40 +173,9 @@ class DonacionesApiTest {
         }
 
         @Test
-        @DisplayName("Si nadie tiene ese email devuelve null: la persona todavía no se registró")
+        @DisplayName("Si nadie tiene ese email devuelve null")
         void donanteSinRegistrar() {
             assertThat(donaciones.buscarDonante("nueva@example.com")).isNull();
-        }
-
-        @Test
-        @DisplayName("Busca la entidad por el email de su contacto o representante")
-        void buscaEntidadPorEmail() {
-            UUID id = UUID.randomUUID();
-            api.elementos.put(BASE + "/entidades?email={email}", List.of(conId(id)));
-
-            assertThat(donaciones.buscarEntidad("ana@comedor.org")).isEqualTo(id);
-            assertThat(api.variablesPedidas).containsExactly("ana@comedor.org");
-        }
-
-        @Test
-        @DisplayName("Si el email figura en varias entidades toma la primera que devuelve el servicio")
-        void variasEntidadesTomaLaPrimera() {
-            UUID primera = UUID.randomUUID();
-            api.elementos.put(BASE + "/entidades?email={email}", List.of(conId(primera), conId(UUID.randomUUID())));
-
-            assertThat(donaciones.buscarEntidad("ana@comedor.org")).isEqualTo(primera);
-        }
-
-        @Test
-        @DisplayName("resolverIdentidad() no vuelve a consultar si la sesión ya conoce al donante")
-        void noRepiteLaBusqueda() {
-            SesionUsuario sesion = new SesionUsuario("juan@example.com", "Juan", SesionUsuario.DONANTE,
-                    "token", Instant.now().plusSeconds(60));
-            sesion.setDonanteId(UUID.randomUUID());
-
-            donaciones.resolverIdentidad(sesion);
-
-            assertThat(api.urlsPedidas).isEmpty();
         }
     }
 

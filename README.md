@@ -4,7 +4,7 @@ Cliente liviano de DonaTrack: Spring Boot + Thymeleaf. No tiene base de datos ni
 
 ## Cómo se conecta con el back
 - Es un repo aparte; solo conoce las URLs de los servicios (`SERVICIOS_*_URL`).
-- Cuentas e ingreso: `servicio-autenticacion` (`/api/auth/registro`, `/api/auth/login`, `/api/auth/token` para Google).
+- Cuentas e ingreso: `servicio-autenticacion` (`/api/autenticacion/registro`, `/api/autenticacion/ingreso`, `/api/autenticacion/ingreso-social` para Google).
 - Cada pedido a los demás servicios lleva `Authorization: Bearer <JWT>`.
 - Rutas `/donante/**` y `/entidad/**` se protegen en el front según el rol de la sesión.
 

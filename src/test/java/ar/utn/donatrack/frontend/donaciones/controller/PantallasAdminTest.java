@@ -76,20 +76,21 @@ class PantallasAdminTest {
     class Acceso {
 
         @Test
-        @DisplayName("Sin sesión no se ve ninguna pantalla de administración")
+        @DisplayName("Sin sesión no se ve ninguna pantalla de administración: lleva al ingreso de la administración")
         void sinSesion() throws Exception {
-            mvc.perform(get("/admin/donaciones")).andExpect(redirectedUrl("/?sesion=expirada"));
-            mvc.perform(get("/admin/donantes/importar")).andExpect(redirectedUrl("/?sesion=expirada"));
-            mvc.perform(get("/admin/entidades")).andExpect(redirectedUrl("/?sesion=expirada"));
+            // Con el login real (rama de Lucía), SesionInterceptor manda las rutas /admin al ingreso interno.
+            mvc.perform(get("/admin/donaciones")).andExpect(redirectedUrl("/admin/ingreso?sesion=expirada"));
+            mvc.perform(get("/admin/donantes/importar")).andExpect(redirectedUrl("/admin/ingreso?sesion=expirada"));
+            mvc.perform(get("/admin/entidades")).andExpect(redirectedUrl("/admin/ingreso?sesion=expirada"));
         }
 
         @Test
-        @DisplayName("Un donante que escribe la dirección a mano vuelve al inicio")
+        @DisplayName("Un donante que escribe la dirección a mano vuelve a su panel")
         void donante() throws Exception {
             SesionUsuario donante = new SesionUsuario("ana@example.com", "Ana", "DONANTE", "jwt",
                     Instant.now().plusSeconds(600));
             mvc.perform(get("/admin/donaciones/despachos").sessionAttr(SesionUsuario.ATRIBUTO, donante))
-                    .andExpect(redirectedUrl("/"));
+                    .andExpect(redirectedUrl("/donante/panel"));
         }
     }
 

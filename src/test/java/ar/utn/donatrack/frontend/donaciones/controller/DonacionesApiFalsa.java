@@ -146,10 +146,12 @@ class DonacionesApiFalsa extends DonacionesApi {
         registrar("crearDonacion");
     }
 
+    /** Desde la rama de Lucía, el alta devuelve el id de la persona creada (para vincular el perfil). */
     @Override
-    public void registrarDonante(Map<String, Object> cuerpo) {
+    public UUID registrarDonante(Map<String, Object> cuerpo) {
         cuerpoEnviado = cuerpo;
         registrar("registrarDonante");
+        return UUID.randomUUID();
     }
 
     @Override

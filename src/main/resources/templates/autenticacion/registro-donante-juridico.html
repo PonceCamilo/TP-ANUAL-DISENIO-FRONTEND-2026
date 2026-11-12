@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Registrar donante jurídico', ~{::main})}">
+<body><main id="contenido" tabindex="-1"><div class="contenedor">
+  <div class="encabezado-pagina"><div><h1>Registrá a tu organización como donante</h1><p>Completá los datos de la organización y de su representante.</p></div></div>
+  <form class="formulario tarjeta" th:action="@{/donante/registro-juridico}" method="post" data-carga>
+    <div class="grilla-2">
+      <div class="campo"><label for="razonSocial">Razón social</label><input id="razonSocial" name="razonSocial" required></div>
+      <div class="campo"><label for="numeroDocumento">CUIT (11 dígitos)</label><input id="numeroDocumento" name="numeroDocumento" inputmode="numeric" pattern="[0-9]{11}" required></div>
+      <div class="campo"><label for="rubro">Rubro</label><input id="rubro" name="rubro" required></div>
+      <div class="campo"><label for="tipoOrganizacion">Tipo de organización</label><select id="tipoOrganizacion" name="tipoOrganizacion" required>
+        <option value="EMPRESA">Empresa</option><option value="ONG">ONG</option><option value="INSTITUCION">Institución</option><option value="GUBERNAMENTAL">Gubernamental</option>
+      </select></div>
+      <div class="campo"><label for="nombre">Nombre del representante</label><input id="nombre" name="nombre" required></div>
+      <div class="campo"><label for="apellido">Apellido del representante</label><input id="apellido" name="apellido" required></div>
+      <div class="campo"><label for="calle">Calle</label><input id="calle" name="calle" required></div>
+      <div class="campo"><label for="numero">Número</label><input id="numero" name="numero" type="number" min="1" required></div>
+      <div class="campo"><label for="codigoPostal">Código postal</label><input id="codigoPostal" name="codigoPostal" required></div>
+      <div class="campo"><label for="localidad">Localidad</label><input id="localidad" name="localidad" required></div>
+      <div class="campo"><label for="provincia">Provincia</label><input id="provincia" name="provincia" required></div>
+    </div>
+    <button class="btn btn-sol" type="submit">Registrar organización</button>
+  </form>
+</div></main></body></html>
