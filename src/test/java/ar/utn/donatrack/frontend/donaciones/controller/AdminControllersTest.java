@@ -66,7 +66,7 @@ class AdminControllersTest {
         @Test
         @DisplayName("Un rango de fechas invertido no se manda: se avisa y se lista sin rango")
         void rangoInvertido() {
-            controller.listado(null, null, "2026-11-10", "2026-10-01", false, 0, model);
+            controller.listado(null, null, "2026-11-10", "2026-10-01", false, 1, model);
 
             assertThat(api.filtrosPedidos.get("desde")).isNull();
             assertThat(api.filtrosPedidos.get("hasta")).isNull();
@@ -76,7 +76,7 @@ class AdminControllersTest {
         @Test
         @DisplayName("Una fecha mal escrita se ignora con un aviso, en lugar de mostrar un error del servicio")
         void fechaInvalida() {
-            controller.listado(null, null, "10/10/2026", null, false, 0, model);
+            controller.listado(null, null, "10/10/2026", null, false, 1, model);
 
             assertThat(api.filtrosPedidos.get("desde")).isNull();
             assertThat((String) model.get("aviso")).contains("no es válida");
@@ -261,9 +261,9 @@ class AdminControllersTest {
         void listado() {
             api.pagina = new Pagina(List.of(
                     Map.of("id", "1", "nombre", "Ana", "apellido", "Pérez", "estado", "ACTIVO"),
-                    Map.of("id", "2", "razonSocial", "Fundación Sur", "estado", "BLOQUEADO")), 0, 1, 2);
+                    Map.of("id", "2", "razonSocial", "Fundación Sur", "estado", "BLOQUEADO")), 1, 1, 2);
 
-            controller.listado(null, null, 0, model);
+            controller.listado(null, null, 1, model);
 
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> donantes = (List<Map<String, Object>>) model.get("donantes");
@@ -372,11 +372,11 @@ class AdminControllersTest {
         @Test
         @DisplayName("La búsqueda por email se conserva en los links de página")
         void listado() {
-            api.pagina = new Pagina(List.of(Map.of("id", "e1")), 0, 2, 25);
+            api.pagina = new Pagina(List.of(Map.of("id", "e1")), 1, 2, 25);
 
-            controller.listado("ana+comedor@example.com", 0, model);
+            controller.listado("ana+comedor@example.com", 1, model);
 
-            assertThat((String) model.get("urlSiguiente")).isEqualTo("/admin/entidades?email=ana%2Bcomedor%40example.com&page=1");
+            assertThat((String) model.get("urlSiguiente")).isEqualTo("/admin/entidades?email=ana%2Bcomedor%40example.com&page=2");
         }
 
         @Test

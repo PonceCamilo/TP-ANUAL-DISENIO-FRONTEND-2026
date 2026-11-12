@@ -28,7 +28,7 @@
   <a class="btn btn-secundario" th:if="${pagina.hayAnterior}" th:href="${anterior}" data-carga>
     <svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Anterior</a>
   <span th:unless="${pagina.hayAnterior}"></span>
-  <span class="suave chico" th:text="'Página ' + ${pagina.numero + 1} + ' de ' + ${pagina.totalPaginas}">Página 1 de 3</span>
+  <span class="suave chico" th:text="'Página ' + ${pagina.numero} + ' de ' + ${pagina.totalPaginas}">Página 1 de 3</span>
   <a class="btn btn-secundario" th:if="${pagina.haySiguiente}" th:href="${siguiente}" data-carga>
     Siguiente<svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-right')}"></svg></a>
   <span th:unless="${pagina.haySiguiente}"></span>

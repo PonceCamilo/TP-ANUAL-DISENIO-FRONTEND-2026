@@ -25,6 +25,8 @@ public class DonacionesApi {
     static final int TAMANIO_DE_PAGINA = 100;
     /** Tope de viajes por listado, para que un listado enorme no cuelgue una pantalla. */
     static final int MAXIMO_DE_PAGINAS = 10;
+    /** servicio-donaciones numera las páginas desde 1 (Entrega 6). */
+    public static final int PRIMERA_PAGINA = 1;
     /** Elementos por página en las pantallas de administración. */
     public static final int TAMANIO_ADMINISTRACION = 20;
 
@@ -45,12 +47,12 @@ public class DonacionesApi {
     List<Map<String, Object>> paginado(String url, Object... variables) {
         String separador = url.contains("?") ? "&" : "?";
         List<Map<String, Object>> elementos = new ArrayList<>();
-        for (int pagina = 0; pagina < MAXIMO_DE_PAGINAS; pagina++) {
+        for (int pagina = PRIMERA_PAGINA; pagina < PRIMERA_PAGINA + MAXIMO_DE_PAGINAS; pagina++) {
             Map<String, Object> respuesta =
                     api.objeto(url + separador + "page=" + pagina + "&size=" + TAMANIO_DE_PAGINA, variables);
             elementos.addAll(Mapas.lista(respuesta.get("contenido")));
             int totalPaginas = respuesta.get("totalPaginas") instanceof Number n ? n.intValue() : 0;
-            if (pagina + 1 >= totalPaginas) {
+            if (pagina >= totalPaginas) {
                 break;
             }
         }
@@ -132,7 +134,7 @@ public class DonacionesApi {
      * interesa el total, que calcula el servicio.
      */
     public long cantidadDeDonacionesDesde(LocalDate desde) {
-        Map<String, Object> respuesta = api.objeto(donaciones + "/donaciones?desde={desde}&page=0&size=1", desde);
+        Map<String, Object> respuesta = api.objeto(donaciones + "/donaciones?desde={desde}&page=1&size=1", desde);
         return respuesta.get("totalElementos") instanceof Number n ? n.longValue() : 0;
     }
 
@@ -169,7 +171,7 @@ public class DonacionesApi {
             url.append(filtro.getKey()).append("={").append(filtro.getKey()).append("}&");
             valores.add(valor instanceof String texto ? texto.strip() : valor);
         }
-        url.append("page=").append(Math.max(0, numero)).append("&size=").append(TAMANIO_ADMINISTRACION);
+        url.append("page=").append(Math.max(PRIMERA_PAGINA, numero)).append("&size=").append(TAMANIO_ADMINISTRACION);
         return Pagina.desde(api.objeto(url.toString(), valores.toArray()));
     }
 

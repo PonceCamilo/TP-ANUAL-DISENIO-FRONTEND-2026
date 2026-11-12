@@ -42,6 +42,7 @@ public final class Pagina {
     public long getTotalElementos() { return totalElementos; }
 
     public boolean isVacia() { return contenido.isEmpty(); }
-    public boolean isHayAnterior() { return numero > 0; }
-    public boolean isHaySiguiente() { return numero + 1 < totalPaginas; }
+    /** Las páginas empiezan en 1, como las numera servicio-donaciones (Entrega 6). */
+    public boolean isHayAnterior() { return numero > DonacionesApi.PRIMERA_PAGINA; }
+    public boolean isHaySiguiente() { return numero < totalPaginas; }
 }

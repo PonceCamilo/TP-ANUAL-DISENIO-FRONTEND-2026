@@ -2,6 +2,7 @@ package ar.utn.donatrack.frontend.donaciones.controller;
 
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
+import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -44,7 +45,8 @@ final class Administracion {
                 valores.put(clave, String.valueOf(valor).strip());
             }
         });
-        if (pagina > 0) {
+        // La primera página (la 1) no lleva el parámetro.
+        if (pagina > DonacionesApi.PRIMERA_PAGINA) {
             url.queryParam("page", pagina);
         }
         return url.encode().buildAndExpand(valores).toUriString();

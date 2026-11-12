@@ -53,7 +53,7 @@ public class AdminDonacionesController {
                           @RequestParam(required = false) String desde,
                           @RequestParam(required = false) String hasta,
                           @RequestParam(defaultValue = "false") boolean vencidas,
-                          @RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "1") int page,
                           Model model) {
         LocalDate fechaDesde = Administracion.fecha(desde);
         LocalDate fechaHasta = Administracion.fecha(hasta);

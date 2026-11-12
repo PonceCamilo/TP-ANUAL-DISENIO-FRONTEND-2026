@@ -53,7 +53,7 @@ public class AdminDonantesController {
     @GetMapping
     public String listado(@RequestParam(required = false) String estado,
                           @RequestParam(required = false) String email,
-                          @RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "1") int page,
                           Model model) {
         Pagina pagina = api.paginaDeDonantes(estado, email, page);
         Map<String, Object> filtros = new LinkedHashMap<>();

@@ -53,7 +53,8 @@ class DonacionesApiTest {
                 return respuestaFija;
             }
             String ruta = url.replaceAll("[?&]page=\\d+&size=\\d+$", "");
-            int pagina = Integer.parseInt(url.replaceAll(".*[?&]page=(\\d+)&size=\\d+$", "$1"));
+            // servicio-donaciones numera desde 1 (Entrega 6): la página 1 es la primera tanda.
+            int pagina = Integer.parseInt(url.replaceAll(".*[?&]page=(\\d+)&size=\\d+$", "$1")) - 1;
             List<Map<String, Object>> todos = elementos.getOrDefault(ruta, List.of());
             int tamanio = DonacionesApi.TAMANIO_DE_PAGINA;
             List<Map<String, Object>> contenido = totalPaginasForzado != null
@@ -101,11 +102,11 @@ class DonacionesApiTest {
             api.elementos.put(BASE + "/entidades", List.of(conId("a"), conId("b")));
 
             assertThat(donaciones.entidades()).extracting(e -> e.get("id")).containsExactly("a", "b");
-            assertThat(api.urlsPedidas).containsExactly(BASE + "/entidades?page=0&size=100");
+            assertThat(api.urlsPedidas).containsExactly(BASE + "/entidades?page=1&size=100");
         }
 
         @Test
-        @DisplayName("Si hay más de una página las recorre todas y junta los elementos")
+        @DisplayName("Si hay más de una página las recorre todas, desde la 1, y junta los elementos")
         void recorreTodasLasPaginas() {
             List<Map<String, Object>> muchas = new ArrayList<>();
             for (int i = 0; i < 150; i++) {
@@ -114,7 +115,8 @@ class DonacionesApiTest {
             api.elementos.put(BASE + "/entidades", muchas);
 
             assertThat(donaciones.entidades()).hasSize(150);
-            assertThat(api.urlsPedidas).hasSize(2);
+            assertThat(api.urlsPedidas).containsExactly(
+                    BASE + "/entidades?page=1&size=100", BASE + "/entidades?page=2&size=100");
         }
 
         @Test
@@ -122,7 +124,7 @@ class DonacionesApiTest {
         void conservaFiltros() {
             donaciones.donacionesEnDeposito();
 
-            assertThat(api.urlsPedidas).containsExactly(BASE + "/donaciones?estado=EN_DEPOSITO&page=0&size=100");
+            assertThat(api.urlsPedidas).containsExactly(BASE + "/donaciones?estado=EN_DEPOSITO&page=1&size=100");
         }
 
         @Test
@@ -205,13 +207,13 @@ class DonacionesApiTest {
         }
 
         @Test
-        @DisplayName("Sin filtros pide la página sin parámetros extra; un número negativo se toma como 0")
+        @DisplayName("Sin filtros pide la página sin parámetros extra; un número menor a 1 se toma como la primera")
         void paginaSinFiltros() {
-            api.respuestaFija = Map.of("contenido", List.of(), "pagina", 0, "totalPaginas", 0, "totalElementos", 0);
+            api.respuestaFija = Map.of("contenido", List.of(), "pagina", 1, "totalPaginas", 0, "totalElementos", 0);
 
             Pagina pagina = donaciones.paginaDeEntidades(null, -3);
 
-            assertThat(api.urlsPedidas).containsExactly(BASE + "/entidades?page=0&size=20");
+            assertThat(api.urlsPedidas).containsExactly(BASE + "/entidades?page=1&size=20");
             assertThat(pagina.isVacia()).isTrue();
             assertThat(pagina.isHayAnterior()).isFalse();
             assertThat(pagina.isHaySiguiente()).isFalse();
@@ -301,7 +303,7 @@ class DonacionesApiTest {
             api.respuestaFija = Map.of("contenido", List.of(), "totalElementos", 42, "totalPaginas", 42);
 
             assertThat(donaciones.cantidadDeDonacionesDesde(desde)).isEqualTo(42);
-            assertThat(api.urlsPedidas).containsExactly(BASE + "/donaciones?desde={desde}&page=0&size=1");
+            assertThat(api.urlsPedidas).containsExactly(BASE + "/donaciones?desde={desde}&page=1&size=1");
             assertThat(api.variablesPedidas).containsExactly(desde);
         }
 

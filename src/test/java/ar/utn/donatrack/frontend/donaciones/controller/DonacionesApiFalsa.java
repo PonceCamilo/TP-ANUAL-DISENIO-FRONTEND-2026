@@ -28,7 +28,7 @@ class DonacionesApiFalsa extends DonacionesApi {
     /** Si no es null, las acciones fallan con esta excepción, como si el servicio la rechazara. */
     ApiException falla;
 
-    Pagina pagina = new Pagina(List.of(), 0, 0, 0);
+    Pagina pagina = new Pagina(List.of(), 1, 0, 0);
     Map<String, Object> donacion = donacion(UUID.randomUUID(), "EN_DEPOSITO");
     Map<String, Object> donante = Map.of("id", UUID.randomUUID().toString(), "email", "ana@example.com",
             "nombre", "Ana", "apellido", "Pérez", "estado", "ACTIVO");

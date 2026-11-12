@@ -58,7 +58,7 @@ class PantallasAdminTest {
 
     @BeforeEach
     void datosBase() {
-        api.pagina = new Pagina(List.of(), 0, 0, 0);
+        api.pagina = new Pagina(List.of(), 1, 0, 0);
         api.donacion = DonacionesApiFalsa.donacion(UUID.randomUUID(), "EN_DEPOSITO");
         api.candidatos = Map.of("rankings", List.of(), "coincidencias", List.of());
         api.pendientes = List.of();
@@ -101,7 +101,7 @@ class PantallasAdminTest {
         @Test
         @DisplayName("Listado con resultados, filtros y paginador")
         void listado() throws Exception {
-            api.pagina = new Pagina(List.of(api.donacion), 0, 2, 21);
+            api.pagina = new Pagina(List.of(api.donacion), 1, 2, 21);
 
             mvc.perform(comoAdmin("/admin/donaciones").param("estado", "EN_DEPOSITO"))
                     .andExpect(status().isOk())
@@ -207,7 +207,7 @@ class PantallasAdminTest {
                     Map.of("id", UUID.randomUUID().toString(), "nombre", "Ana", "apellido", "Pérez", "email", "ana@example.com",
                             "tipoDocumento", "DNI", "numeroDocumento", "30111222", "estado", "ACTIVO"),
                     Map.of("id", UUID.randomUUID().toString(), "razonSocial", "Fundación Sur", "email", "info@sur.org",
-                            "tipoDocumento", "CUIT", "numeroDocumento", "30712345678", "estado", "BLOQUEADO")), 0, 1, 2);
+                            "tipoDocumento", "CUIT", "numeroDocumento", "30712345678", "estado", "BLOQUEADO")), 1, 1, 2);
 
             mvc.perform(comoAdmin("/admin/donantes"))
                     .andExpect(status().isOk())
@@ -244,7 +244,7 @@ class PantallasAdminTest {
         @DisplayName("Listado de entidades con su localidad y la baja")
         void entidades() throws Exception {
             api.pagina = new Pagina(List.of(Map.of("id", UUID.randomUUID().toString(), "razonSocial", "Comedor Los Pibes",
-                    "direccion", Map.of("localidad", Map.of("nombre", "Lanús")), "campanias", List.of(Map.of()))), 0, 1, 1);
+                    "direccion", Map.of("localidad", Map.of("nombre", "Lanús")), "campanias", List.of(Map.of()))), 1, 1, 1);
 
             mvc.perform(comoAdmin("/admin/entidades"))
                     .andExpect(status().isOk())
