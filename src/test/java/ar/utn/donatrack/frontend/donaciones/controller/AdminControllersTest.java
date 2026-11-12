@@ -224,7 +224,7 @@ class AdminControllersTest {
         @DisplayName("Registrar una donación para un email sin donante avisa que hay que registrarlo primero")
         void nuevaSinDonante() {
             String destino = controller.registrar("nadie@example.com", "Camperas", "Abrigo", null, null, 2,
-                    "unidades", true, null, flash);
+                    "unidades", true, null, null, flash);
 
             assertThat(api.acciones).isEmpty();
             assertThat((String) toast()).contains("nadie@example.com");
@@ -232,19 +232,21 @@ class AdminControllersTest {
         }
 
         @Test
-        @DisplayName("Registrar una donación la crea a nombre del donante encontrado")
+        @DisplayName("Registrar una donación la crea a nombre del donante encontrado, con su foto")
         void nueva() {
             api.donanteEncontrado = UUID.randomUUID();
 
             String destino = controller.registrar(" ana@example.com ", "Camperas", "Otro", "Equipo de pesca", null, 2,
-                    "unidades", false, "2027-01-01", flash);
+                    "unidades", false, "2027-01-01", "https://fotos.org/equipo.jpg", flash);
 
             assertThat(api.cuerpoEnviado).containsEntry("idDonante", api.donanteEncontrado);
             @SuppressWarnings("unchecked")
             Map<String, Object> bien = ((List<Map<String, Object>>) api.cuerpoEnviado.get("bienes")).getFirst();
+            // Con vencimiento es perecedero y va sin esNuevo: servicio-donaciones rechaza los dos datos juntos.
             assertThat(bien).containsEntry("subcategoria", "Equipo de pesca")
-                    .containsEntry("esNuevo", false)
-                    .containsEntry("fechaVencimiento", "2027-01-01");
+                    .containsEntry("fechaVencimiento", "2027-01-01")
+                    .containsEntry("foto", "https://fotos.org/equipo.jpg")
+                    .doesNotContainKey("esNuevo");
             assertThat(destino).isEqualTo("redirect:/admin/donaciones");
         }
     }

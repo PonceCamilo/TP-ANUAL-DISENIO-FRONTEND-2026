@@ -142,6 +142,40 @@ public class DonacionesApi {
         return paginado(donaciones + "/donaciones?estado=EN_DEPOSITO");
     }
 
+    /**
+     * "Mis donaciones" de una persona donante, una página por vez y filtradas en
+     * el servicio por estado y por una o más subcategorías (requisito 5).
+     */
+    public Pagina paginaDeDonacionesDe(UUID donanteId, String estado, List<String> subcategorias, int numero) {
+        Map<String, Object> filtros = new java.util.LinkedHashMap<>();
+        filtros.put("idDonante", donanteId);
+        filtros.put("estado", estado);
+        filtros.put("subcategoria", subcategorias == null ? List.of() : subcategorias);
+        return pagina("/donaciones", filtros, numero);
+    }
+
+    // ── Datos públicos (Entrega 6): no piden token y no traen datos personales ──
+
+    /**
+     * Las entregadas del último mes para la landing: la página más reciente y el
+     * total del período en totalElementos (requisitos 1 y 2).
+     */
+    public Map<String, Object> entregadasRecientes(int cantidad) {
+        return api.objeto(donaciones + "/publico/donaciones-entregadas?page=1&size={size}", cantidad);
+    }
+
+    /** Las entidades con lo que necesitan hoy, para que las personas donantes las conozcan (requisito 6). */
+    public Pagina entidadesPublicas(int numero) {
+        return Pagina.desde(api.objeto(donaciones + "/publico/entidades?page={page}&size={size}",
+                Math.max(PRIMERA_PAGINA, numero), TAMANIO_ADMINISTRACION));
+    }
+
+    /** Las subcategorías que ya tienen donaciones o necesidades, en orden alfabético. */
+    public List<String> subcategorias() {
+        Object respuesta = api.leer(donaciones + "/publico/subcategorias");
+        return respuesta instanceof List<?> lista ? lista.stream().map(String::valueOf).toList() : List.of();
+    }
+
     public Map<String, Object> candidatos(UUID donacionId) {
         return api.objeto(donaciones + "/donaciones/{id}/candidatos", donacionId);
     }
@@ -165,6 +199,17 @@ public class DonacionesApi {
         List<Object> valores = new ArrayList<>();
         for (Map.Entry<String, Object> filtro : filtros.entrySet()) {
             Object valor = filtro.getValue();
+            if (valor instanceof java.util.Collection<?> varios) {
+                // Un filtro con varios valores (Entrega 6: varias subcategorías) se repite en la URL.
+                int i = 0;
+                for (Object uno : varios) {
+                    if (uno != null && !String.valueOf(uno).isBlank()) {
+                        url.append(filtro.getKey()).append("={").append(filtro.getKey()).append(i++).append("}&");
+                        valores.add(String.valueOf(uno).strip());
+                    }
+                }
+                continue;
+            }
             if (valor == null || valor instanceof String texto && texto.isBlank()) {
                 continue;
             }

@@ -19,6 +19,21 @@
       <div><strong>La entrega no se pudo concretar.</strong> Si se puede reprogramar, te avisamos por tus medios de contacto.</div>
     </div>
 
+    <section class="tarjeta seccion" aria-labelledby="t-entrega" th:if="${donacion.fechaEntrega != null}">
+      <h2 id="t-entrega" style="font-size: var(--t-lg)">¡Llegó a destino!</h2>
+      <p>Entregada el <time th:datetime="${donacion.fechaEntrega}"
+            th:text="${#strings.substring(donacion.fechaEntrega, 0, 10)}">2026-11-10</time>.</p>
+      <ul th:if="${donacion.fotosEntrega != null and !donacion.fotosEntrega.isEmpty()}" aria-label="Fotos de la recepción"
+          style="display:flex; flex-wrap:wrap; gap: var(--s-3); list-style:none; padding:0; margin: var(--s-3) 0 0">
+        <li th:each="foto, i : ${donacion.fotosEntrega}">
+          <a th:href="${foto}" target="_blank" rel="noopener noreferrer" style="display:block; min-width:48px; min-height:48px">
+            <img th:src="${foto}" th:alt="'Foto ' + ${i.count} + ' de la recepción de la donación'" loading="lazy"
+                 style="width:9rem; height:9rem; object-fit:cover; border-radius: var(--r-md)">
+          </a>
+        </li>
+      </ul>
+    </section>
+
     <div class="grilla-2 seccion">
       <section class="tarjeta" aria-labelledby="t-bienes">
         <h2 id="t-bienes" style="font-size: var(--t-lg)">Qué donaste</h2>

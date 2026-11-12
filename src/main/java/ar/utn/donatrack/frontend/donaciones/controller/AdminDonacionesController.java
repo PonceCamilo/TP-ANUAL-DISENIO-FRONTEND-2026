@@ -229,6 +229,7 @@ public class AdminDonacionesController {
                             @RequestParam String unidad,
                             @RequestParam(defaultValue = "true") boolean esNuevo,
                             @RequestParam(required = false) String fechaVencimiento,
+                            @RequestParam(required = false) String foto,
                             RedirectAttributes flash) {
         String volver = LISTADO + "/nueva";
         try {
@@ -238,7 +239,7 @@ public class AdminDonacionesController {
                         + ". Registrala primero en Donantes.", volver);
             }
             api.crearDonacion(FormularioDonacion.cuerpo(idDonante, descripcion, subcategoria, subcategoriaOtra,
-                    detalle, cantidad, unidad, esNuevo, fechaVencimiento));
+                    detalle, cantidad, unidad, esNuevo, fechaVencimiento, foto));
         } catch (ApiException e) {
             return error(flash, e.getMessage(), volver);
         }

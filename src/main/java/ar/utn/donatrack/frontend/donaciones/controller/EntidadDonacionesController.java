@@ -4,7 +4,6 @@ import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
-import ar.utn.donatrack.frontend.donaciones.services.Candidatos;
 import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
 
 import java.util.ArrayList;
@@ -150,53 +149,13 @@ public class EntidadDonacionesController {
         return "donaciones/entidad/recepciones";
     }
 
-    /**
-     * Algoritmo del back que compara la subcategoría de la donación con las
-     * necesidades abiertas de cada entidad. Es el único que mira qué necesita la
-     * entidad: PRIORIDAD_SUBATENDIDOS le da puntaje a todas, así que si se lo
-     * tuviera en cuenta a cualquier entidad le aparecería cualquier donación.
+    /*
+     * Entrega 6: "Disponibles" (la entidad veía las donaciones compatibles y podía
+     * aceptarlas) se eliminó. El requisito 17 dice que la entidad final la elige
+     * la administración a partir de los algoritmos, y servicio-donaciones solo
+     * deja asignar a la administración. Las donaciones asignadas a la entidad se
+     * ven en Recepciones.
      */
-    private static final String ALGORITMO_COMPATIBILIDAD = "COMPATIBILIDAD_SEMANTICA";
-
-    /**
-     * Donaciones en depósito para las que esta entidad tiene alguna necesidad
-     * compatible. El back responde {@code rankings: [{algoritmo, entidades}]}.
-     */
-    @GetMapping("/disponibles")
-    public String disponibles(HttpSession sesion, Model model) {
-        UUID id = entidadId(sesion);
-        if (id == null) {
-            return "redirect:/entidad/registro";
-        }
-        List<Map<String, Object>> aptas = new ArrayList<>();
-        for (Map<String, Object> d : api.donacionesEnDeposito()) {
-            Map<String, Object> cand = api.candidatos(UUID.fromString(Mapas.texto(d, "id")));
-            boolean candidata = Mapas.lista(cand.get("rankings")).stream()
-                    .filter(r -> ALGORITMO_COMPATIBILIDAD.equals(Mapas.texto(r, "algoritmo")))
-                    .flatMap(r -> Mapas.lista(r.get("entidades")).stream())
-                    .anyMatch(e -> String.valueOf(id).equals(Mapas.texto(e, "id")));
-            if (candidata) {
-                aptas.add(d);
-            }
-        }
-        model.addAttribute("donaciones", aptas);
-        model.addAttribute("seccion", "disponibles");
-        return "donaciones/entidad/disponibles";
-    }
-
-    @PostMapping("/disponibles/{donacionId}/aceptar")
-    public String aceptar(@PathVariable UUID donacionId, HttpSession sesion, RedirectAttributes flash) {
-        UUID id = entidadId(sesion);
-        if (id == null) {
-            return "redirect:/entidad/registro";
-        }
-        try {
-            api.asignar(donacionId, id);
-        } catch (ApiException e) {
-            return volverConError(flash, e, "/entidad/disponibles");
-        }
-        return conExito(flash, "Aceptaste la donación. Logística coordinará la entrega.", "/entidad/recepciones");
-    }
 
     @GetMapping("/registro")
     public String registro(HttpSession sesion, Model model) {
@@ -213,10 +172,21 @@ public class EntidadDonacionesController {
                             @RequestParam String calle, @RequestParam int numero, @RequestParam String codigoPostal,
                             @RequestParam String localidad, @RequestParam String provincia,
                             @RequestParam(required = false) String telefono,
+                            @RequestParam(required = false) String latitud,
+                            @RequestParam(required = false) String longitud,
                             HttpSession sesion, RedirectAttributes flash) {
         SesionUsuario u = usuario(sesion);
         if (u.getEntidadId() != null) {
             return "redirect:/entidad/panel";
+        }
+        // Entrega 6: la ubicación (opcional) pone a la entidad en el mapa de donaciones entregadas.
+        Map<String, Object> ubicacion;
+        try {
+            ubicacion = Ubicacion.desde(latitud, longitud);
+        } catch (IllegalArgumentException e) {
+            flash.addFlashAttribute("toastTipo", "error");
+            flash.addFlashAttribute("toast", e.getMessage());
+            return "redirect:/entidad/registro";
         }
         String clavePendiente = PERFIL_PENDIENTE + u.getRol() + u.getEmail();
         // El email de la cuenta queda como contacto y email del representante.
@@ -227,9 +197,11 @@ public class EntidadDonacionesController {
         }
         Map<String, Object> cuerpo = new LinkedHashMap<>();
         cuerpo.put("razonSocial", razonSocial.trim());
-        cuerpo.put("direccion", Map.of(
+        Map<String, Object> direccion = new LinkedHashMap<>(Map.of(
                 "calle", calle.trim(), "numero", numero, "codigoPostal", codigoPostal.trim(),
                 "localidad", Map.of("nombre", localidad.trim(), "provincia", Map.of("nombre", provincia.trim()))));
+        direccion.putAll(ubicacion);
+        cuerpo.put("direccion", direccion);
         cuerpo.put("contactos", contactos);
         cuerpo.put("representantes", List.of(Map.of(
                 "nombre", representanteNombre.trim(), "apellido", representanteApellido.trim(), "email", u.getEmail())));

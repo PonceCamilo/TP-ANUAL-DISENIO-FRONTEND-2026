@@ -124,6 +124,44 @@ class DonacionesApiFalsa extends DonacionesApi {
     @Override
     public UUID buscarDonante(String email) { return donanteEncontrado; }
 
+    // ── Entrega 6: "Mis donaciones" filtrada y datos públicos ──────────────────
+
+    List<String> subcategoriasPedidas;
+    String estadoPedido;
+    List<String> catalogo = List.of("Abrigo", "Juguetes");
+    Pagina paginaDeEntidadesPublicas = new Pagina(List.of(), 1, 0, 0);
+    Map<String, Object> entregadas = Map.of("contenido", List.of(), "totalElementos", 0);
+
+    @Override
+    public Pagina paginaDeDonacionesDe(UUID donanteId, String estado, List<String> subcategorias, int numero) {
+        estadoPedido = estado;
+        subcategoriasPedidas = subcategorias;
+        paginaPedida = numero;
+        return pagina;
+    }
+
+    @Override
+    public List<String> subcategorias() {
+        if (falla != null) {
+            throw falla;
+        }
+        return catalogo;
+    }
+
+    @Override
+    public Pagina entidadesPublicas(int numero) {
+        paginaPedida = numero;
+        return paginaDeEntidadesPublicas;
+    }
+
+    @Override
+    public Map<String, Object> entregadasRecientes(int cantidad) {
+        if (falla != null) {
+            throw falla;
+        }
+        return entregadas;
+    }
+
     @Override
     public void cambiarEstado(UUID donacionId, String estado, String justificacion) {
         registrar("cambiarEstado " + estado);

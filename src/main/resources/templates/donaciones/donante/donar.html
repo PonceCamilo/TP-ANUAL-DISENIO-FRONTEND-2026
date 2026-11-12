@@ -78,6 +78,13 @@
         <input id="fechaVencimiento" name="fechaVencimiento" type="date">
       </div>
 
+      <div class="campo">
+        <label for="foto">Foto <span class="suave" style="font-weight:500">(opcional)</span>
+          <span th:replace="~{comun/fragmentos/componentes :: ayuda('foto', 'Pegá el enlace de una foto ya publicada (empieza con https://). Puede aparecer en la página de inicio cuando la donación se entregue.')}"></span>
+        </label>
+        <input id="foto" name="foto" type="url" maxlength="2048" inputmode="url" placeholder="https://…" pattern="https?://\S+">
+      </div>
+
       <div class="fila">
         <button type="submit" class="btn btn-sol btn-grande btn-bloque" data-cargando="Registrando…"><svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Registrar donación</button>
         <a class="btn btn-secundario btn-grande btn-bloque" th:href="@{/donante/panel}" data-carga>Cancelar</a>

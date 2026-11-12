@@ -72,6 +72,15 @@ class DonacionesApiTest {
             return List.of();
         }
 
+        /** Lo que devuelve leer(): por ejemplo, el catálogo de subcategorías. */
+        Object lectura = List.of();
+
+        @Override
+        public Object leer(String url, Object... variables) {
+            urlsPedidas.add(url);
+            return lectura;
+        }
+
         /** Lo que se mandó con enviar(): "MÉTODO url", el cuerpo y las variables. */
         final List<String> envios = new ArrayList<>();
         final List<Object> cuerpos = new ArrayList<>();
@@ -178,6 +187,51 @@ class DonacionesApiTest {
         @DisplayName("Si nadie tiene ese email devuelve null")
         void donanteSinRegistrar() {
             assertThat(donaciones.buscarDonante("nueva@example.com")).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("Entrega 6: \"Mis donaciones\" filtrada y datos públicos")
+    class Entrega6 {
+
+        @Test
+        @DisplayName("Mis donaciones repite el parámetro subcategoria, uno por cada elegida")
+        void variasSubcategorias() {
+            api.respuestaFija = Map.of("contenido", List.of(), "pagina", 1, "totalPaginas", 0, "totalElementos", 0);
+            UUID donante = UUID.randomUUID();
+
+            donaciones.paginaDeDonacionesDe(donante, "ENTREGADA", List.of("Abrigo", "Útiles escolares"), 1);
+
+            assertThat(api.urlsPedidas).containsExactly(BASE + "/donaciones?idDonante={idDonante}&estado={estado}"
+                    + "&subcategoria={subcategoria0}&subcategoria={subcategoria1}&page=1&size=20");
+            assertThat(api.variablesPedidas).containsExactly(donante, "ENTREGADA", "Abrigo", "Útiles escolares");
+        }
+
+        @Test
+        @DisplayName("Sin filtros, Mis donaciones pide solo las de la persona")
+        void sinFiltros() {
+            api.respuestaFija = Map.of("contenido", List.of(), "pagina", 1, "totalPaginas", 0, "totalElementos", 0);
+            UUID donante = UUID.randomUUID();
+
+            donaciones.paginaDeDonacionesDe(donante, "", List.of(), 1);
+
+            assertThat(api.urlsPedidas).containsExactly(BASE + "/donaciones?idDonante={idDonante}&page=1&size=20");
+        }
+
+        @Test
+        @DisplayName("Lee los datos públicos: entidades, entregadas del último mes y el catálogo")
+        void datosPublicos() {
+            api.respuestaFija = Map.of("contenido", List.of(), "pagina", 2, "totalPaginas", 2, "totalElementos", 21);
+            api.lectura = List.of("Abrigo", "Juguetes");
+
+            assertThat(donaciones.entidadesPublicas(2).getNumero()).isEqualTo(2);
+            donaciones.entregadasRecientes(6);
+            assertThat(donaciones.subcategorias()).containsExactly("Abrigo", "Juguetes");
+
+            assertThat(api.urlsPedidas).containsExactly(
+                    BASE + "/publico/entidades?page={page}&size={size}",
+                    BASE + "/publico/donaciones-entregadas?page=1&size={size}",
+                    BASE + "/publico/subcategorias");
         }
     }
 
