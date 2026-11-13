@@ -73,10 +73,16 @@ main:focus { outline: none; }
   line-height: 16px;
   text-align: center;
 }
-.usuario { display: flex; align-items: center; gap: var(--s-3); }
-.usuario form { margin: 0; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--c-sol); color: var(--c-tinta); font-weight: 800; display: inline-grid; place-items: center; font-family: var(--f-titulo); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--c-sol); color: var(--c-tinta); font-weight: 800; display: inline-grid; place-items: center; font-family: var(--f-titulo); flex: 0 0 auto; }
 .usuario-nombre { font-weight: 600; font-size: var(--t-sm); }
+.menu-cuenta { position: relative; margin-left: auto; }
+.menu-cuenta summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: var(--s-2); min-height: 48px; min-width: 48px; padding: 0 var(--s-2); border-radius: var(--r-pill); }
+.menu-cuenta summary::-webkit-details-marker { display: none; }
+.menu-cuenta summary:hover, .menu-cuenta[open] summary { background: var(--c-papel); }
+.menu-cuenta summary:focus-visible { outline: 3px solid var(--c-foco); outline-offset: 2px; }
+.menu-cuenta-panel { position: absolute; right: 0; top: calc(100% + 6px); z-index: 70; min-width: 14rem; padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-2); background: #fff; border: 1px solid var(--c-linea); border-radius: var(--r-lg); box-shadow: var(--sombra); }
+.menu-cuenta-panel .btn, .menu-cuenta-panel form { width: 100%; margin: 0; }
+.menu-cuenta-panel .btn { justify-content: flex-start; }
 
 /* ---------- botones ---------- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); min-height: var(--objetivo-min); min-width: var(--objetivo-min);
@@ -216,6 +222,10 @@ a.item:hover, .item:hover { border-color: var(--c-ruta); box-shadow: var(--sombr
 
 /* ---------- formularios ---------- */
 .formulario { display: flex; flex-direction: column; gap: var(--s-5); max-width: 42rem; }
+.bien-carga { display: flex; flex-direction: column; gap: var(--s-5); }
+.bien-carga > .fila { justify-content: space-between; }
+.bien-carga h2 { margin: 0; font-size: 1.15rem; }
+#lista-bienes { display: flex; flex-direction: column; gap: var(--s-5); }
 .campo { display: flex; flex-direction: column; gap: var(--s-1); }
 .campo label, .campo legend { font-weight: 700; display: flex; align-items: center; gap: var(--s-1); flex-wrap: wrap; }
 .campo-check { justify-content: center; }
@@ -345,9 +355,7 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
 .nav { min-width: 0; flex-wrap: wrap; row-gap: var(--s-1); }
 @media (min-width: 48.01rem) and (max-width: 90rem) {
   .nav a { padding: 0 var(--s-3); gap: var(--s-1); font-size: var(--t-sm); }
-  .barra-admin .avatar { display: none; }
   .barra .contenedor { gap: var(--s-3); }
-  .usuario-nombre { display: none; }
 }
 @media (min-width: 48.01rem) and (max-width: 64rem) {
   .marca { font-size: 1.25rem; }
@@ -404,11 +412,11 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
   .nav a { flex-direction: column; justify-content: center; gap: 2px; padding: var(--s-2) 0; min-height: 56px; width: 100%; font-size: var(--t-xs); border-radius: var(--r-md); }
   .nav a .ic { width: 1.5rem; height: 1.5rem; }
   .barra .contenedor { justify-content: space-between; }
-  .usuario { position: static; }
+  .nav-principal { display: block; flex: none; }
+  .menu-cuenta { margin-left: 0; }
   .usuario-nombre { display: none; }
-  .nav-principal { display: block; }
-  .nav-principal .usuario { display: none; }
-  .usuario-movil { display: flex !important; }
+  .acciones-ruta { display: flex; flex-direction: column; gap: var(--s-3); }
+  .acciones-ruta .btn { width: 100%; }
   .portada { padding: var(--s-5) var(--s-4) var(--s-4); }
   .hero { grid-template-columns: 1fr; padding-top: var(--s-4); }
   .tarjeta { padding: var(--s-4); }
@@ -426,7 +434,6 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
   .toast { max-width: none; }
 }
 @media (min-width: 48.01rem) {
-  .usuario-movil { display: none !important; }
   /* el desenfoque va solo en escritorio: en el celular crearía un bloque contenedor y la barra inferior fija quedaría atrapada en el header */
   .barra { background: rgba(255, 255, 255, .92); backdrop-filter: blur(10px); }
 }

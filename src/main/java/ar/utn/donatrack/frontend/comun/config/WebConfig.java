@@ -20,7 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(sesionInterceptor)
                 // Entrega 6: la recepción y el mapa de una ruta también piden sesión.
                 .addPathPatterns("/donante/**", "/entidad/**", "/admin/**", "/transporte/**", "/chofer/**",
-                        "/recepcion", "/tracking/**")
+                        "/recepcion", "/tracking/**", "/cuenta")
                 .excludePathPatterns("/admin/ingreso", "/transporte/ingreso");
     }
 }

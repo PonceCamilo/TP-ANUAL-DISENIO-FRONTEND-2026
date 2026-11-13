@@ -39,7 +39,7 @@ public class SesionInterceptor implements HandlerInterceptor {
             case "entidad", "recepcion" -> Set.of(SesionUsuario.ENTIDAD_BENEFICIARIA);
             case "admin" -> Set.of(SesionUsuario.ADMINISTRADOR);
             case "transporte", "chofer" -> Set.of(SesionUsuario.CHOFER);
-            case "tracking" -> CON_SESION;
+            case "tracking", "cuenta" -> CON_SESION;
             default -> Set.of();
         };
     }
@@ -76,6 +76,7 @@ public class SesionInterceptor implements HandlerInterceptor {
                 case "admin" -> "/admin/ingreso?sesion=expirada";
                 case "transporte", "chofer" -> "/transporte/ingreso?sesion=expirada";
                 case "recepcion" -> "/login?rol=ENTIDAD_BENEFICIARIA&sesion=expirada";
+                case "cuenta" -> "/login?sesion=expirada";
                 default -> "/?sesion=expirada";
             };
             response.sendRedirect(request.getContextPath() + ingreso);

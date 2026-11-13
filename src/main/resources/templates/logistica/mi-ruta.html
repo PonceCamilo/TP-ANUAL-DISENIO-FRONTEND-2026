@@ -32,13 +32,14 @@
         <strong th:text="${ruta['estado'] == 'PLANIFICADA' ? 'Planificada, sin iniciar' : (ruta['estado'] == 'INICIADA' ? 'En curso' : ruta['estado'])}">En curso</strong>
         <span th:if="${ruta['fechaInicio'] != null}" th:text="| · salió ${#strings.replace(#strings.substring(ruta['fechaInicio'], 0, 16), 'T', ' ')}|"> · salió</span>
       </p>
-      <p><a class="btn btn-secundario" th:href="@{/tracking/ruta/{id}(id=${ruta['id']})}" data-carga>Ver en el mapa</a></p>
+      <div class="acciones-ruta">
+        <a class="btn btn-secundario btn-grande" th:href="@{/tracking/ruta/{id}(id=${ruta['id']})}" data-carga>Ver en el mapa</a>
+        <form th:if="${ruta['estado'] == 'PLANIFICADA'}" method="post" th:action="@{/chofer/mi-ruta/iniciar}" data-carga>
+          <button class="btn btn-sol btn-grande" type="submit" data-cargando="Iniciando…">Iniciar ruta</button>
+        </form>
+      </div>
 
-      <form th:if="${ruta['estado'] == 'PLANIFICADA'}" method="post" th:action="@{/chofer/mi-ruta/iniciar}" data-carga>
-        <button class="btn btn-sol btn-grande" type="submit" data-cargando="Iniciando…">Iniciar ruta</button>
-      </form>
-
-      <form th:if="${ruta['estado'] == 'INICIADA'}" id="form-ubicacion" method="post" class="seccion"
+      <form th:if="${ruta['estado'] == 'INICIADA'}" id="form-ubicacion" method="post" class="seccion acciones-ruta"
             th:action="@{/chofer/mi-ruta/ubicacion}" data-carga>
         <input type="hidden" name="latitud" id="latitud">
         <input type="hidden" name="longitud" id="longitud">
@@ -62,7 +63,7 @@
                 </p>
                 <p th:if="${e['estado'] != 'EN_TRASLADO'}"
                    th:text="${e['estado'] == 'ENTREGADA' ? 'Entregada' : (e['estado'] == 'NO_RECIBIDA' ? 'No recibida' : (e['estado'] == 'LISTO_PARA_ENTREGAR' ? 'Lista para entregar' : e['estado']))}">En traslado</p>
-                <form th:if="${e['estado'] == 'EN_TRASLADO'}" method="post" class="formulario"
+                <form th:if="${e['estado'] == 'EN_TRASLADO'}" method="post" class="formulario acciones-ruta"
                       th:action="@{/chofer/mi-ruta/entregas/{entrega}/incidente(entrega=${e['id']})}" data-carga>
                   <div class="campo">
                     <label th:for="${'motivo-' + e['id']}">Registrar incidente</label>

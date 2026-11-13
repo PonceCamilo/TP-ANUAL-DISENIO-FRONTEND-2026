@@ -19,13 +19,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -118,7 +122,70 @@ class PantallasDonanteYEntidadTest {
     void donarConFoto() throws Exception {
         mvc.perform(get("/donante/donar").sessionAttr(SesionUsuario.ATRIBUTO, donante))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("name=\"foto\"")));
+                .andExpect(content().string(containsString("name=\"bienes[0].foto\"")))
+                .andExpect(content().string(containsString("Agregar otro bien")))
+                .andExpect(content().string(containsString("Bien 1")));
+    }
+
+    @Test
+    @DisplayName("Donar manda un solo pedido con los dos bienes y el alimento va con vencimiento, sin esNuevo")
+    @SuppressWarnings("unchecked")
+    void donarVariosBienes() throws Exception {
+        api.cuerpoEnviado = null;
+        MockHttpSession sesion = new MockHttpSession();
+        sesion.setAttribute(SesionUsuario.ATRIBUTO, donante);
+        CsrfToken csrf = (CsrfToken) mvc.perform(get("/donante/donar").session(sesion))
+                .andReturn().getRequest().getAttribute(CsrfToken.class.getName());
+
+        mvc.perform(post("/donante/donar").session(sesion)
+                        .param(csrf.getParameterName(), csrf.getToken())
+                        .param("descripcion", "Camperas y alimentos")
+                        .param("bienes[0].subcategoria", "Abrigo")
+                        .param("bienes[0].detalle", "Camperas de invierno")
+                        .param("bienes[0].cantidad", "3")
+                        .param("bienes[0].unidad", "unidades")
+                        .param("bienes[0].esNuevo", "false")
+                        .param("bienes[1].subcategoria", "Alimentos")
+                        .param("bienes[1].cantidad", "2")
+                        .param("bienes[1].unidad", "kg")
+                        .param("bienes[1].esNuevo", "true")
+                        .param("bienes[1].fechaVencimiento", "2026-12-31"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/donante/donaciones"));
+
+        assertThat(api.acciones).contains("crearDonacion");
+        assertThat(api.cuerpoEnviado).containsEntry("idDonante", idDonante)
+                .containsEntry("descripcion", "Camperas y alimentos");
+        List<Map<String, Object>> bienes = (List<Map<String, Object>>) api.cuerpoEnviado.get("bienes");
+        assertThat(bienes).hasSize(2);
+        assertThat(bienes.get(0)).containsEntry("esNuevo", false).containsEntry("cantidad", 3)
+                .doesNotContainKey("fechaVencimiento");
+        assertThat(bienes.get(1)).containsEntry("fechaVencimiento", "2026-12-31")
+                .containsEntry("unidad", "kg").doesNotContainKey("esNuevo");
+    }
+
+    @Test
+    @DisplayName("Si el servicio rechaza la carga, el formulario conserva lo escrito")
+    void donarRechazadoConservaLaCarga() throws Exception {
+        api.falla = new ApiException("El donante está bloqueado.", 422);
+        api.cuerpoEnviado = null;
+        MockHttpSession sesion = new MockHttpSession();
+        sesion.setAttribute(SesionUsuario.ATRIBUTO, donante);
+        CsrfToken csrf = (CsrfToken) mvc.perform(get("/donante/donar").session(sesion))
+                .andReturn().getRequest().getAttribute(CsrfToken.class.getName());
+
+        mvc.perform(post("/donante/donar").session(sesion)
+                        .param(csrf.getParameterName(), csrf.getToken())
+                        .param("descripcion", "Camperas y alimentos")
+                        .param("bienes[0].subcategoria", "Abrigo")
+                        .param("bienes[0].cantidad", "3")
+                        .param("bienes[0].unidad", "unidades")
+                        .param("bienes[0].esNuevo", "false"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Camperas y alimentos")))
+                .andExpect(content().string(containsString("bloqueado")))
+                .andExpect(content().string(containsString("value=\"Abrigo\" required checked=\"checked\"")))
+                .andExpect(content().string(containsString("name=\"_csrf\"")));
     }
 
     @Test

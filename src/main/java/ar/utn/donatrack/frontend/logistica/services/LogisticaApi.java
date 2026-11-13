@@ -102,6 +102,10 @@ public class LogisticaApi {
         return api.publicarLista(logistica + "/api/logistica/planificaciones/reintentos", null);
     }
 
+    public void eliminarCamion(UUID id) {
+        api.enviar(HttpMethod.DELETE, logistica + "/api/logistica/camiones/{id}", null, id);
+    }
+
     public void registrarCamion(String patente, double volumenM3, double alturaM, double cargaKg) {
         Map<String, Object> cuerpo = new LinkedHashMap<>();
         cuerpo.put("patente", patente);

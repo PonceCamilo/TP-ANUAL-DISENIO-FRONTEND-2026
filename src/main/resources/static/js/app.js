@@ -155,7 +155,9 @@
   });
 
   // ---- campos condicionales (necesidad recurrente → periodicidad) ----------------
+  // Los bienes de una donación se resuelven dentro de su bloque: cada grupo de radios es independiente.
   document.querySelectorAll('[data-muestra-si]').forEach(function (bloque) {
+    if (bloque.closest('[data-bien]')) return;
     var partes = bloque.dataset.muestraSi.split('=');
     var radios = document.querySelectorAll('input[name="' + partes[0] + '"]');
     function actualizar() {
@@ -168,8 +170,99 @@
     actualizar();
   });
 
+  function radiosDelBien(raiz, nombre) {
+    return Array.prototype.filter.call(raiz.querySelectorAll('input[type="radio"]'), function (r) {
+      return r.name === nombre || r.name.endsWith('.' + nombre);
+    });
+  }
+
+  function prepararBien(bloque) {
+    if (bloque.dataset.listo === '1') return;
+    bloque.dataset.listo = '1';
+    bloque.querySelectorAll('[data-muestra-si]').forEach(function (condicional) {
+      var partes = condicional.dataset.muestraSi.split('=');
+      var radios = radiosDelBien(bloque, partes[0]);
+      function actualizar() {
+        var elegido = radios.filter(function (r) { return r.checked; })[0];
+        var visible = elegido && elegido.value === partes[1];
+        condicional.hidden = !visible;
+        condicional.querySelectorAll('select,input,textarea').forEach(function (c) { c.disabled = !visible; });
+      }
+      radios.forEach(function (r) { r.addEventListener('change', actualizar); });
+      actualizar();
+    });
+    bloque.querySelectorAll('.cantidad').forEach(engancharCantidad);
+    bloque.querySelectorAll('input[type="date"][data-desde-hoy]').forEach(limitarFecha);
+    var quitar = bloque.querySelector('[data-quitar-bien]');
+    if (quitar) {
+      quitar.addEventListener('click', function () {
+        var lista = document.getElementById('lista-bienes');
+        if (!lista || lista.querySelectorAll('[data-bien]').length < 2) return;
+        bloque.remove();
+        reindexarBienes();
+      });
+    }
+  }
+
+  function reindexarBienes() {
+    var bloques = document.querySelectorAll('#lista-bienes [data-bien]');
+    bloques.forEach(function (bloque, i) {
+      var titulo = bloque.querySelector('[data-numero]');
+      if (titulo) titulo.textContent = 'Bien ' + (i + 1);
+      bloque.setAttribute('aria-label', 'Bien ' + (i + 1));
+      bloque.querySelectorAll('[name]').forEach(function (campo) {
+        var punto = campo.name.lastIndexOf('.');
+        var cola = punto === -1 ? campo.name : campo.name.slice(punto + 1);
+        campo.name = 'bienes[' + i + '].' + cola;
+      });
+      bloque.querySelectorAll('[id]').forEach(function (el) {
+        if (/-\d+$/.test(el.id)) el.id = el.id.replace(/-\d+$/, '-' + i);
+      });
+      bloque.querySelectorAll('label[for]').forEach(function (el) {
+        if (/-\d+$/.test(el.htmlFor)) el.htmlFor = el.htmlFor.replace(/-\d+$/, '-' + i);
+      });
+      bloque.querySelectorAll('[aria-describedby]').forEach(function (el) {
+        var ref = el.getAttribute('aria-describedby');
+        if (ref && /-\d+$/.test(ref)) el.setAttribute('aria-describedby', ref.replace(/-\d+$/, '-' + i));
+      });
+      var quitar = bloque.querySelector('[data-quitar-bien]');
+      if (quitar) quitar.hidden = bloques.length < 2;
+    });
+  }
+
+  function vaciarBien(bloque) {
+    bloque.querySelectorAll('input, textarea, select').forEach(function (campo) {
+      if (campo.type === 'radio' || campo.type === 'checkbox') campo.checked = false;
+      else if (campo.tagName === 'SELECT') campo.selectedIndex = 0;
+      else campo.value = campo.type === 'number' ? '1' : '';
+      campo.setCustomValidity('');
+    });
+    bloque.querySelectorAll('input[type="radio"][value="true"]').forEach(function (radio) {
+      if (radio.name.endsWith('.esNuevo')) radio.checked = true;
+    });
+  }
+
+  var agregarBien = document.getElementById('agregar-bien');
+  if (agregarBien) {
+    agregarBien.addEventListener('click', function () {
+      var lista = document.getElementById('lista-bienes');
+      var origen = lista && lista.querySelector('[data-bien]');
+      if (!origen) return;
+      var copia = origen.cloneNode(true);
+      copia.removeAttribute('data-listo');
+      vaciarBien(copia);
+      lista.appendChild(copia);
+      reindexarBienes();
+      prepararBien(copia);
+      var titulo = copia.querySelector('[data-numero]');
+      if (titulo) titulo.focus();
+    });
+    document.querySelectorAll('#lista-bienes [data-bien]').forEach(prepararBien);
+    reindexarBienes();
+  }
+
   // ---- cantidad con − / + ----------------------------------------------------------
-  document.querySelectorAll('.cantidad').forEach(function (grupo) {
+  function engancharCantidad(grupo) {
     var campo = grupo.querySelector('input');
     grupo.querySelectorAll('button[data-paso]').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -178,6 +271,10 @@
         campo.value = Math.max(min, nuevo);
       });
     });
+  }
+  document.querySelectorAll('.cantidad').forEach(function (grupo) {
+    if (grupo.closest('[data-bien]')) return;
+    engancharCantidad(grupo);
   });
 
   // ---- contraseña: mostrar / ocultar ------------------------------------------------
@@ -204,7 +301,7 @@
 
   // ---- fechas de vencimiento: no se puede donar algo vencido ----------------------------
   // El mínimo es hoy, en la fecha de quien usa el navegador (no la del servidor).
-  document.querySelectorAll('input[type="date"][data-desde-hoy]').forEach(function (campo) {
+  function limitarFecha(campo) {
     var hoy = new Date();
     hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
     campo.min = hoy.toISOString().slice(0, 10);
@@ -215,6 +312,10 @@
     campo.addEventListener('input', revisar);
     campo.addEventListener('change', revisar);
     revisar();
+  }
+  document.querySelectorAll('input[type="date"][data-desde-hoy]').forEach(function (campo) {
+    if (campo.closest('[data-bien]')) return;
+    limitarFecha(campo);
   });
 
   // ---- crear cuenta: las dos contraseñas tienen que coincidir ---------------------------

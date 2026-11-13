@@ -69,6 +69,15 @@ public class SesionUsuario implements Serializable {
         return nombre.trim().split("\\s+")[0];
     }
 
+    /** Misma sesión, con el nombre y el token nuevos después de guardar Mis datos. */
+    public SesionUsuario renovada(String nombreNuevo, String tokenNuevo, Instant expiraEnNuevo) {
+        SesionUsuario nueva = new SesionUsuario(email, nombreNuevo, rol, tokenNuevo, expiraEnNuevo, tipoDonante);
+        nueva.donanteId = donanteId;
+        nueva.entidadId = entidadId;
+        nueva.camionId = camionId;
+        return nueva;
+    }
+
     public String getEmail() { return email; }
     public String getNombre() { return nombre; }
     public String getRol() { return rol; }

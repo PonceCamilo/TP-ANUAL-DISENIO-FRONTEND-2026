@@ -3,7 +3,8 @@
 <body>
 <main id="contenido" tabindex="-1">
   <div class="contenedor">
-    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/panel}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Administración</a></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/donaciones}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Donaciones</a></nav>
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
     <div class="encabezado-pagina">
       <div>
         <h1>Entregas no recibidas</h1>
@@ -25,7 +26,28 @@
         </a>
       </li>
     </ul>
-    <div class="tarjeta vacio" th:if="${entregas.isEmpty()}">
+    <section class="seccion" th:if="${sinVolver != null and !sinVolver.isEmpty()}" aria-labelledby="t-fallidas">
+      <h2 id="t-fallidas" style="font-size: var(--t-lg)">Siguen como entrega fallida</h2>
+      <p class="suave">La logística ya las movió, pero Donaciones no las volvió a dejar en depósito.</p>
+      <ul class="lista">
+        <li th:each="d : ${sinVolver}">
+          <div class="item">
+            <div class="item-cuerpo">
+              <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg></span>
+              <div>
+                <p class="item-titulo" th:text="${d.descripcion != null and !#strings.isEmpty(d.descripcion)} ? ${d.descripcion} : 'Donación'">Carne</p>
+                <p class="suave chico" style="margin:0" th:text="${d.subcategoria}">Alimentos</p>
+              </div>
+            </div>
+            <form method="post" th:action="@{/admin/entregas/donacion/{id}/deposito(id=${d.id})}" data-carga>
+              <button class="btn btn-sol btn-chico" type="submit" data-cargando="Guardando…">Pasar a depósito</button>
+            </form>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <div class="tarjeta vacio" th:if="${entregas.isEmpty() and (sinVolver == null or sinVolver.isEmpty())}">
       <div class="circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('check')}"></svg></div>
       <h2>No hay entregas para revisar</h2>
       <p>Cuando un chofer registre un incidente, el caso aparece acá.</p>

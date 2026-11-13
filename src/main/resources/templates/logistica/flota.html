@@ -18,7 +18,8 @@
         <h2 id="t-lista" class="solo-lectores">Camiones registrados</h2>
         <ul class="lista" th:if="${!camiones.isEmpty()}">
           <li th:each="c : ${camiones}">
-            <a class="item" th:href="@{/admin/flota/{id}(id=${c['id']})}" data-carga>
+            <div class="item">
+            <a class="item-cuerpo" style="flex:1;text-decoration:none;color:inherit" th:href="@{/admin/flota/{id}(id=${c['id']})}" data-carga>
             <div class="item-cuerpo">
               <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg></span>
               <div>
@@ -35,6 +36,11 @@
               <span th:text="${c['estado'] == 'DISPONIBLE' ? 'Disponible' : (c['estado'] == 'EN_RUTA' ? 'En ruta' : (c['estado'] == 'MANTENIMIENTO' ? 'En mantenimiento' : c['estado']))}">Disponible</span>
             </span>
             </a>
+            <form method="post" th:action="@{/admin/flota/{id}/eliminar(id=${c['id']})}" data-carga
+                  th:attr="onsubmit=|return confirm('¿Eliminar el camión ${c['patente']}? No se puede si está en ruta o tiene un reparto armado.')|">
+              <button class="btn btn-peligro btn-chico" type="submit">Eliminar</button>
+            </form>
+            </div>
           </li>
         </ul>
         <div class="tarjeta vacio" th:if="${camiones.isEmpty()}">

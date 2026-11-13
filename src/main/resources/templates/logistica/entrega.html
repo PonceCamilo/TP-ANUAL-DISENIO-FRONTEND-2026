@@ -3,6 +3,7 @@
 <body>
 <main id="contenido" tabindex="-1">
   <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
     <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/entregas/no-recibidas}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>No recibidas</a></nav>
     <div class="encabezado-pagina">
       <div>

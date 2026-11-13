@@ -203,6 +203,9 @@ class DonacionesApiFalsa extends DonacionesApi {
 
     @Override
     public void crearDonacion(Map<String, Object> cuerpo) {
+        if (falla != null) {
+            throw falla;
+        }
         cuerpoEnviado = cuerpo;
         registrar("crearDonacion");
     }

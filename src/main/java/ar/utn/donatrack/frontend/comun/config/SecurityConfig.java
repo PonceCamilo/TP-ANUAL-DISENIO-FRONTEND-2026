@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 public class SecurityConfig {
@@ -30,6 +31,9 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(a -> a.anyRequest().permitAll())
                 .logout(l -> l.logoutUrl("/salir").logoutSuccessUrl("/").invalidateHttpSession(true))
+                // El token diferido de Spring Security 6 no queda guardado en la sesión
+                // hasta después del primer envío: el ingreso fallaba y al reintentar entraba.
+                .csrf(csrf -> csrf.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 // Entrega 6: un formulario vencido vuelve a su pantalla con un aviso, no a un 403.
                 .exceptionHandling(e -> e.accessDeniedHandler(new FormularioVencidoHandler()));
 

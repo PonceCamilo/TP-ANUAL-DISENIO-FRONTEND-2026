@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
+import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
 import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class PantallasInternasLogisticaTest {
 
     private final LogisticaApi api = mock(LogisticaApi.class);
+    private final DonacionesApi donaciones = mock(DonacionesApi.class);
     private final AuthClient authClient = mock(AuthClient.class);
     private MockMvc mvc;
 
@@ -42,7 +44,7 @@ class PantallasInternasLogisticaTest {
     void preparar() {
         mvc = MockMvcBuilders.standaloneSetup(
                 new FlotaController(api, authClient),
-                new RevisionEntregasController(api),
+                new RevisionEntregasController(api, donaciones),
                 new MiRutaController(api),
                 new RecepcionController(api),
                 new ReplanificacionController(api)).build();
@@ -52,6 +54,7 @@ class PantallasInternasLogisticaTest {
     void flotaYNoRecibidasCuelganDelAdministrador() throws Exception {
         when(api.camiones()).thenReturn(List.of());
         when(api.entregasPorEstado("NO_RECIBIDA")).thenReturn(List.of());
+        when(donaciones.donacionesPorEstado("ENTREGA_FALLIDA")).thenReturn(List.of());
 
         mvc.perform(get("/admin/flota"))
                 .andExpect(status().isOk())

@@ -128,7 +128,7 @@ public class PanelController {
         Map<String, Object> perfil = incentivos.perfilPublico(id);
         model.addAttribute("nombrePerfil", nombre);
         model.addAttribute("categoriaPerfil", perfil.get("categoria"));
-        model.addAttribute("insigniasVisibles", Mapas.lista(perfil.get("insignias")));
+        model.addAttribute("insigniasVisibles", IncentivosApi.sinRepetir(Mapas.lista(perfil.get("insignias"))));
         return "incentivos/perfil-publico";
     }
 

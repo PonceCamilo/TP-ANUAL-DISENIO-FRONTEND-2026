@@ -5,6 +5,7 @@ import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -59,12 +60,33 @@ public class FlotaController {
             model.addAttribute("toast", e.getMessage());
             model.addAttribute("toastTipo", "error");
         }
+        List<Map<String, Object>> camiones;
         try {
-            model.addAttribute("camiones", api.camiones());
+            camiones = api.camiones();
         } catch (ApiException e) {
-            model.addAttribute("camiones", List.of());
+            camiones = List.of();
         }
+        model.addAttribute("camiones", camiones);
+        Map<String, String> patentes = new HashMap<>();
+        for (Map<String, Object> camion : camiones) {
+            patentes.put(String.valueOf(camion.get("id")), String.valueOf(camion.get("patente")));
+        }
+        model.addAttribute("patentes", patentes);
         return "logistica/choferes";
+    }
+
+    @PostMapping("/choferes/{id}/eliminar")
+    public String eliminarChofer(@PathVariable UUID id, HttpSession sesion, RedirectAttributes flash) {
+        try {
+            authClient.eliminarChofer(usuario(sesion), id);
+        } catch (ApiException e) {
+            flash.addFlashAttribute("toastTipo", "error");
+            flash.addFlashAttribute("toast", e.getMessage());
+            return "redirect:/admin/flota/choferes";
+        }
+        flash.addFlashAttribute("toastTipo", "ok");
+        flash.addFlashAttribute("toast", "Chofer eliminado.");
+        return "redirect:/admin/flota/choferes";
     }
 
     @PostMapping
@@ -102,7 +124,22 @@ public class FlotaController {
         model.addAttribute("ruta", ruta);
         model.addAttribute("puedeMantenimiento", "DISPONIBLE".equals(estado) && !rutaAbierta);
         model.addAttribute("puedeDisponible", "MANTENIMIENTO".equals(estado) && !rutaAbierta);
+        model.addAttribute("puedeEliminar", !"EN_RUTA".equals(estado) && !rutaAbierta);
         return "logistica/camion";
+    }
+
+    @PostMapping("/{id}/eliminar")
+    public String eliminar(@PathVariable UUID id, RedirectAttributes flash) {
+        try {
+            api.eliminarCamion(id);
+        } catch (ApiException e) {
+            flash.addFlashAttribute("toastTipo", "error");
+            flash.addFlashAttribute("toast", e.getMessage());
+            return "redirect:/admin/flota/" + id;
+        }
+        flash.addFlashAttribute("toastTipo", "ok");
+        flash.addFlashAttribute("toast", "Camión eliminado.");
+        return "redirect:/admin/flota";
     }
 
     @PostMapping("/{id}/mantenimiento")

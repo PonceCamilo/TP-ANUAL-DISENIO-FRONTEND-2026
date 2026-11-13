@@ -253,6 +253,10 @@ public class DonacionesApi {
         return pagina("/entidades", filtros, numero);
     }
 
+    public List<Map<String, Object>> donacionesPorEstado(String estado) {
+        return paginado(donaciones + "/donaciones?estado=" + estado);
+    }
+
     /** Donaciones con entidad asignada que todavía no se mandaron a logística. */
     public List<Map<String, Object>> donacionesParaDespachar() {
         return paginado(donaciones + "/donaciones?estado=ASIGNACION_REALIZADA");

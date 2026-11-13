@@ -3,6 +3,8 @@ package ar.utn.donatrack.frontend.incentivos.services;
 import ar.utn.donatrack.frontend.comun.clientes.ApiClient;
 import ar.utn.donatrack.frontend.comun.config.FrontendProperties;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -44,7 +46,23 @@ public class IncentivosApi {
     }
 
     public List<Map<String, Object>> insignias(UUID donanteId) {
-        return api.lista(incentivos + "/api/incentivos/donantes/{id}/insignias", donanteId);
+        return sinRepetir(api.lista(incentivos + "/api/incentivos/donantes/{id}/insignias", donanteId));
+    }
+
+    /** Una insignia por nombre. El servicio a veces guardó la misma medalla más de una vez. */
+    public static List<Map<String, Object>> sinRepetir(List<Map<String, Object>> insignias) {
+        Map<String, Map<String, Object>> unicas = new LinkedHashMap<>();
+        for (Map<String, Object> insignia : insignias) {
+            Object nombre = insignia.get("nombre");
+            String clave = nombre == null || nombre.toString().isBlank()
+                    ? "id:" + insignia.get("id")
+                    : nombre.toString().strip().toLowerCase();
+            Map<String, Object> previa = unicas.get(clave);
+            if (previa == null || (!Boolean.TRUE.equals(previa.get("visible")) && Boolean.TRUE.equals(insignia.get("visible")))) {
+                unicas.put(clave, insignia);
+            }
+        }
+        return new ArrayList<>(unicas.values());
     }
 
     /** Periodos (anio/mes) que ya tienen un ranking cerrado, para el selector de Rankings de admin. */

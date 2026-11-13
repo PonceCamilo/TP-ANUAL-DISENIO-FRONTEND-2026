@@ -19,7 +19,7 @@
     </th:block>
     <table class="tabla" th:if="${!#lists.isEmpty(choferes)}">
       <thead>
-        <tr><th>Nombre</th><th>Email</th><th>Camión</th><th>Asignar</th></tr>
+        <tr><th>Nombre</th><th>Email</th><th>Camión</th><th>Asignar</th><th>Quitar</th></tr>
       </thead>
       <tbody>
         <tr th:each="chofer : ${choferes}">
@@ -27,15 +27,24 @@
           <td th:text="${chofer.email}">Email</td>
           <td>
             <span th:if="${chofer.camionId == null}">Sin asignar</span>
-            <span th:if="${chofer.camionId != null}">Asignado</span>
+            <span th:if="${chofer.camionId != null}"
+                  th:text="${patentes[chofer.camionId] != null} ? ${patentes[chofer.camionId]} : 'Camión dado de baja'">AB123CD</span>
           </td>
           <td>
             <form th:action="@{'/admin/choferes/' + ${chofer.id} + '/camion'}" method="post" class="formulario-inline" data-carga>
-              <select name="camionId" required>
-                <option value="" disabled selected>Elegir camión</option>
-                <option th:each="camion : ${camiones}" th:value="${camion.id}" th:text="${camion.patente}">Patente</option>
+              <label class="solo-lectores" th:for="'camion-' + ${chofer.id}">Camión</label>
+              <select th:id="'camion-' + ${chofer.id}" name="camionId" required>
+                <option value="" disabled th:selected="${chofer.camionId == null}">Elegir camión</option>
+                <option th:each="camion : ${camiones}" th:value="${camion.id}" th:text="${camion.patente}"
+                        th:selected="${camion.id == chofer.camionId}">Patente</option>
               </select>
               <button class="btn btn-secundario btn-chico" type="submit">Asignar</button>
+            </form>
+          </td>
+          <td>
+            <form method="post" th:action="@{/admin/flota/choferes/{id}/eliminar(id=${chofer.id})}" data-carga
+                  th:attr="onsubmit=|return confirm('¿Eliminar a ${chofer.nombre}? Va a dejar de poder ingresar.')|">
+              <button class="btn btn-peligro btn-chico" type="submit">Eliminar</button>
             </form>
           </td>
         </tr>

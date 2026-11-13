@@ -71,6 +71,11 @@
         <form th:if="${puedeDisponible}" method="post" th:action="@{/admin/flota/{id}/disponible(id=${camion['id']})}" data-carga>
           <button class="btn btn-sol btn-grande" type="submit" data-cargando="Guardando…">Volver a disponible</button>
         </form>
+        <form th:if="${puedeEliminar}" method="post" class="seccion" th:action="@{/admin/flota/{id}/eliminar(id=${camion['id']})}" data-carga
+              th:attr="onsubmit=|return confirm('¿Eliminar el camión ${camion['patente']}?')|">
+          <button class="btn btn-peligro btn-grande" type="submit">Eliminar camión</button>
+        </form>
+        <p th:if="${!puedeEliminar}">No se puede eliminar mientras está en ruta o tiene un reparto abierto.</p>
       </section>
     </div>
   </div>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Mis datos', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor" style="max-width: 36rem">
+    <nav class="migas" aria-label="Ruta">
+      <a th:href="${volver}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Volver</a>
+    </nav>
+    <h1>Mis datos</h1>
+    <p>Este nombre es el que se ve en la barra. El email de la cuenta no se cambia desde acá.</p>
+    <form class="formulario tarjeta" method="post" th:action="@{/cuenta}" data-carga>
+      <div class="campo">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" name="nombre" required maxlength="100" th:value="${usuario.nombre}">
+      </div>
+      <div class="campo">
+        <span class="rotulo">Email</span>
+        <p style="margin:0" th:text="${usuario.email}">ana@ejemplo.com</p>
+      </div>
+      <button class="btn btn-sol btn-grande btn-bloque" type="submit" data-cargando="Guardando…">Guardar nombre</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

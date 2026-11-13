@@ -109,6 +109,44 @@ public class AuthClient {
         }
     }
 
+    public SesionUsuario cambiarNombre(SesionUsuario usuario, String nombre) {
+        try {
+            Map<String, Object> r = rest.patch().uri(baseUrl + "/api/autenticacion/perfil")
+                    .headers(headers -> headers.setBearerAuth(usuario.getToken()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("nombre", nombre))
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+            if (r == null || r.get("accessToken") == null) {
+                throw new ApiException("No pudimos guardar el nombre.", 502);
+            }
+            long segundos = ((Number) r.get("expiresIn")).longValue();
+            return usuario.renovada(String.valueOf(r.get("nombre")), String.valueOf(r.get("accessToken")),
+                    Instant.now().plusSeconds(segundos));
+        } catch (RestClientResponseException e) {
+            String mensaje = detalle(e);
+            throw new ApiException(mensaje.isBlank() ? "No pudimos guardar el nombre." : mensaje,
+                    e.getStatusCode().value());
+        } catch (ResourceAccessException e) {
+            throw new ApiException("El servicio de autenticación no responde.", 503);
+        }
+    }
+
+    public void eliminarChofer(SesionUsuario admin, UUID choferId) {
+        try {
+            rest.delete().uri(baseUrl + "/api/autenticacion/choferes/{id}", choferId)
+                    .headers(headers -> headers.setBearerAuth(admin.getToken()))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientResponseException e) {
+            String mensaje = detalle(e);
+            throw new ApiException(mensaje.isBlank() ? "No pudimos eliminar el chofer." : mensaje,
+                    e.getStatusCode().value());
+        } catch (ResourceAccessException e) {
+            throw new ApiException("El servicio de autenticación no responde.", 503);
+        }
+    }
+
     public void asignarCamion(SesionUsuario admin, UUID choferId, UUID camionId) {
         try {
             rest.put().uri(baseUrl + "/api/autenticacion/choferes/{id}/camion", choferId)

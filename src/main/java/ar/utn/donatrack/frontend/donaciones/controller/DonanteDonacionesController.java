@@ -18,6 +18,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -169,44 +170,47 @@ public class DonanteDonacionesController {
         if (donanteId(sesion) == null) {
             return "redirect:/donante/registro";
         }
+        if (!model.containsAttribute("carga")) {
+            model.addAttribute("carga", CargaDeDonacion.vacia());
+        }
         model.addAttribute("seccion", "donar");
         return "donaciones/donante/donar";
     }
 
     @PostMapping("/donar")
-    public String enviarDonacion(@RequestParam String descripcion,
-                                 @RequestParam String subcategoria,
-                                 @RequestParam(required = false) String subcategoriaOtra,
-                                 @RequestParam(required = false) String detalle,
-                                 @RequestParam int cantidad,
-                                 @RequestParam String unidad,
-                                 @RequestParam(defaultValue = "true") boolean esNuevo,
-                                 @RequestParam(required = false) String fechaVencimiento,
-                                 @RequestParam(required = false) String foto,
-                                 HttpSession sesion, RedirectAttributes flash) {
+    public String enviarDonacion(@ModelAttribute("carga") CargaDeDonacion carga,
+                                 HttpSession sesion, Model model, RedirectAttributes flash) {
         UUID id = donanteId(sesion);
         if (id == null) {
             return "redirect:/donante/registro";
         }
-        // Validación de Lucía: "Otro" exige decir qué es. El cuerpo lo arma FormularioDonacion,
-        // el mismo que usa el formulario de la administración.
-        if ("Otro".equals(subcategoria) && (subcategoriaOtra == null || subcategoriaOtra.isBlank())) {
-            flash.addFlashAttribute("toastTipo", "error");
-            flash.addFlashAttribute("toast", "Indicá qué tipo de donación es al elegir Otro.");
-            return "redirect:/donante/donar";
+        if (carga.getBienes() == null) {
+            carga.setBienes(new ArrayList<>());
         }
-        Map<String, Object> cuerpo = FormularioDonacion.cuerpo(id, descripcion, subcategoria, subcategoriaOtra,
-                detalle, cantidad, unidad, esNuevo, fechaVencimiento, foto);
+        String error = FormularioDonacion.validar(carga);
+        if (error != null) {
+            return donarConError(carga, error, model);
+        }
         try {
-            api.crearDonacion(cuerpo);
+            api.crearDonacion(FormularioDonacion.cuerpo(id, carga));
         } catch (ApiException e) {
-            flash.addFlashAttribute("toastTipo", "error");
-            flash.addFlashAttribute("toast", e.getMessage());
-            return "redirect:/donante/donar";
+            return donarConError(carga, e.getMessage(), model);
         }
         flash.addFlashAttribute("toastTipo", "ok");
-        flash.addFlashAttribute("toast", "¡Gracias! Registramos tu donación y te avisaremos cada vez que avance.");
+        flash.addFlashAttribute("toast", "¡Gracias! Registramos tu donación. Si los bienes son de distinto tipo, los vas a ver separados en el listado.");
         return "redirect:/donante/donaciones";
+    }
+
+    /** Vuelve a mostrar el formulario con lo escrito y el mensaje, sin llamar al servicio. */
+    private String donarConError(CargaDeDonacion carga, String error, Model model) {
+        if (carga.getBienes().isEmpty()) {
+            carga.getBienes().add(new CargaDeDonacion.Bien());
+        }
+        model.addAttribute("carga", carga);
+        model.addAttribute("toast", error);
+        model.addAttribute("toastTipo", "error");
+        model.addAttribute("seccion", "donar");
+        return "donaciones/donante/donar";
     }
 
     @GetMapping("/registro")

@@ -14,6 +14,9 @@
   <a th:href="@{/admin/donaciones/despachos}" th:class="${activa == 'despachos'} ? 'btn' : 'btn btn-secundario'"
      th:aria-current="${activa == 'despachos'} ? 'page'" data-carga>
     <svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Despachos</a>
+  <a th:href="@{/admin/entregas/no-recibidas}" th:class="${activa == 'no-recibidas'} ? 'btn' : 'btn btn-secundario'"
+     th:aria-current="${activa == 'no-recibidas'} ? 'page'" data-carga>
+    <svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg>No recibidas</a>
   <a th:href="@{/admin/donantes}" th:class="${activa == 'donantes'} ? 'btn' : 'btn btn-secundario'"
      th:aria-current="${activa == 'donantes'} ? 'page'" data-carga>
     <svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Donantes</a>

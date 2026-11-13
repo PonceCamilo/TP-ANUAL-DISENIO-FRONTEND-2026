@@ -61,6 +61,52 @@ class FormularioYUbicacionTest {
 
             assertThat(bien(cuerpo)).containsEntry("subcategoria", "Pesca");
         }
+
+        @Test
+        @DisplayName("Tres camperas usadas y dos kilos de alimento salen en un solo pedido, y el alimento lleva vencimiento sin esNuevo")
+        void variosBienes() {
+            CargaDeDonacion carga = new CargaDeDonacion();
+            carga.setDescripcion("Camperas y alimentos");
+            CargaDeDonacion.Bien camperas = new CargaDeDonacion.Bien();
+            camperas.setSubcategoria("Abrigo");
+            camperas.setDetalle("Camperas de invierno");
+            camperas.setCantidad("3");
+            camperas.setUnidad("unidades");
+            camperas.setEsNuevo("false");
+            CargaDeDonacion.Bien alimentos = new CargaDeDonacion.Bien();
+            alimentos.setSubcategoria("Alimentos");
+            alimentos.setCantidad("2");
+            alimentos.setUnidad("kg");
+            alimentos.setEsNuevo("true");
+            alimentos.setFechaVencimiento("2026-12-31");
+            carga.setBienes(List.of(camperas, alimentos));
+
+            Map<String, Object> cuerpo = FormularioDonacion.cuerpo(UUID.randomUUID(), carga);
+
+            assertThat(cuerpo).containsEntry("descripcion", "Camperas y alimentos");
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> bienes = (List<Map<String, Object>>) cuerpo.get("bienes");
+            assertThat(bienes).hasSize(2);
+            assertThat(bienes.get(0)).containsEntry("subcategoria", "Abrigo")
+                    .containsEntry("cantidad", 3)
+                    .containsEntry("esNuevo", false)
+                    .doesNotContainKey("fechaVencimiento");
+            assertThat(bienes.get(1)).containsEntry("subcategoria", "Alimentos")
+                    .containsEntry("cantidad", 2)
+                    .containsEntry("unidad", "kg")
+                    .containsEntry("fechaVencimiento", "2026-12-31")
+                    .doesNotContainKey("esNuevo");
+        }
+
+        @Test
+        @DisplayName("Sin tipo no se arma el pedido")
+        void exigeElTipo() {
+            CargaDeDonacion carga = new CargaDeDonacion();
+            carga.setDescripcion("Sin tipo");
+            carga.setBienes(List.of(new CargaDeDonacion.Bien()));
+
+            assertThat(FormularioDonacion.validar(carga)).contains("elegí el tipo");
+        }
     }
 
     @Nested
