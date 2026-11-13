@@ -39,6 +39,8 @@
 
       <p class="pie-form">¿Todavía no tenés cuenta?
         <a th:href="@{/crear-cuenta(rol=${rol})}" th:text="${rol == 'ENTIDAD_BENEFICIARIA'} ? 'Creá la cuenta de tu entidad' : 'Creá tu cuenta'">Creá tu cuenta</a></p>
+      <p class="pie-form">¿La organización cargó tus datos o no recordás tu contraseña?
+        <a th:href="@{/activar(rol=${rol})}">Activá tu cuenta</a></p>
     </div>
   </div>
 </main>

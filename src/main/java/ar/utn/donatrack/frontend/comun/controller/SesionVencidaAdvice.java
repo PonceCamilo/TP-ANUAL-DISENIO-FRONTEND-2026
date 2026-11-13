@@ -24,6 +24,7 @@ public class SesionVencidaAdvice {
         if (sesion != null) {
             sesion.invalidate();
         }
+        ar.utn.donatrack.frontend.comun.seguridad.VolverA.recordar(pedido);
         String ruta = pedido.getRequestURI().substring(pedido.getContextPath().length());
         String ingreso = ruta.startsWith("/admin") ? "/admin/ingreso"
                 : ruta.startsWith("/transporte") || ruta.startsWith("/chofer") ? "/transporte/ingreso" : "/";

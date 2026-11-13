@@ -134,9 +134,44 @@ public class AuthClient {
         }
     }
 
+    /** La clave del front, para los servicios que la piden (Notificaciones). Vacía si no está configurada. */
+    public String claveFrontend() {
+        return claveFrontend;
+    }
+
     public SesionUsuario vincularPerfil(SesionUsuario usuario, UUID perfilId) {
         exigirVinculacionConfigurada();
         return pedir("/api/autenticacion/perfil", Map.of("perfilId", perfilId), usuario.getToken());
+    }
+
+    /**
+     * Entrega 6 (requisito 20): pide el enlace para elegir la contraseña. Autenticación
+     * responde lo mismo exista o no la cuenta, así que acá no hay nada que mostrar
+     * salvo un error del servicio.
+     */
+    public void pedirActivacion(String email, String rol) {
+        exigirVinculacionConfigurada();
+        try {
+            rest.post().uri(baseUrl + "/api/autenticacion/activaciones")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-DonaTrack-Frontend", claveFrontend)
+                    .body(Map.of("email", email, "rol", rol))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientResponseException e) {
+            String mensaje = detalle(e);
+            throw new ApiException(mensaje.isBlank() ? "No pudimos pedir el enlace. Probá de nuevo." : mensaje,
+                    e.getStatusCode().value());
+        } catch (ResourceAccessException e) {
+            throw new ApiException("El servicio de autenticación no responde. Intentá de nuevo en unos minutos.", 503);
+        }
+    }
+
+    /** Guarda la contraseña elegida con el código del enlace y deja la sesión iniciada. */
+    public SesionUsuario activar(String codigo, String password) {
+        exigirVinculacionConfigurada();
+        return pedir("/api/autenticacion/activaciones/confirmar", Map.of("codigo", codigo, "password", password),
+                null, true);
     }
 
     private SesionUsuario pedir(String ruta, Map<String, Object> pedido) {
@@ -144,10 +179,16 @@ public class AuthClient {
     }
 
     private SesionUsuario pedir(String ruta, Map<String, Object> pedido, String token) {
+        return pedir(ruta, pedido, token, token != null);
+    }
+
+    private SesionUsuario pedir(String ruta, Map<String, Object> pedido, String token, boolean conClave) {
         try {
             var solicitud = rest.post().uri(baseUrl + ruta).contentType(MediaType.APPLICATION_JSON);
             if (token != null) {
                 solicitud.headers(headers -> headers.setBearerAuth(token));
+            }
+            if (conClave) {
                 solicitud.header("X-DonaTrack-Frontend", claveFrontend);
             }
             Map<String, Object> r = solicitud.body(pedido)

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Activar tu cuenta', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <div class="centrado">
+      <nav class="migas" aria-label="Ruta"><a th:href="@{/login(rol=${rol})}"><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Volver al ingreso</a></nav>
+
+      <!-- Paso 1: pedir el enlace -->
+      <th:block th:if="${codigo == null}">
+        <h1>Activá tu cuenta</h1>
+        <p class="suave">Si la organización cargó tus datos, o si no recordás tu contraseña, te mandamos un enlace a tu email para que elijas una.</p>
+
+        <div class="banner banner-aviso" role="alert" th:if="${enlaceInvalido != null}">
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg>
+          <div><strong>Ese enlace ya no sirve.</strong> <span th:text="${enlaceInvalido}"></span></div>
+        </div>
+        <div class="banner banner-info" role="status" th:if="${enlaceEnviado != null}">
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('info')}"></svg>
+          <div><strong>Revisá tu correo.</strong> Si hay una cuenta con <span th:text="${emailIngresado}">ese email</span>, te mandamos un enlace. Vence en 24 horas y sirve una sola vez.</div>
+        </div>
+
+        <div class="segmentos" role="navigation" aria-label="Tipo de cuenta">
+          <a th:href="@{/activar(rol='DONANTE')}" th:aria-current="${rol == 'DONANTE'} ? 'page'"><svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Soy donante</a>
+          <a th:href="@{/activar(rol='ENTIDAD_BENEFICIARIA')}" th:aria-current="${rol == 'ENTIDAD_BENEFICIARIA'} ? 'page'"><svg th:replace="~{comun/fragmentos/componentes :: ic('building')}"></svg>Soy entidad</a>
+        </div>
+
+        <div class="tarjeta">
+          <form th:action="@{/activar/pedir}" method="post" class="formulario" data-carga>
+            <input type="hidden" name="rol" th:value="${rol}">
+            <div class="campo">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" required autocomplete="email" maxlength="150" th:value="${emailIngresado}">
+            </div>
+            <button class="btn btn-sol btn-grande" type="submit" data-cargando="Enviando…">Mandarme el enlace</button>
+          </form>
+        </div>
+      </th:block>
+
+      <!-- Paso 2: con el enlace del correo, elegir la contraseña -->
+      <th:block th:if="${codigo != null}">
+        <h1>Elegí tu contraseña</h1>
+        <p class="suave">Con esta contraseña vas a ingresar a DonaTrack desde ahora.</p>
+
+        <div class="tarjeta">
+          <form th:action="@{/activar}" method="post" class="formulario" data-carga data-repetir>
+            <input type="hidden" name="codigo" th:value="${codigo}">
+            <div class="campo">
+              <label for="password">Contraseña nueva</label>
+              <div class="clave">
+                <input id="password" name="password" type="password" required minlength="8" maxlength="72" autocomplete="new-password" aria-describedby="clave-ayuda">
+                <button type="button" data-mostrar-clave="password" aria-pressed="false">Mostrar</button>
+              </div>
+              <p id="clave-ayuda" class="ayuda">Al menos 8 caracteres.</p>
+            </div>
+            <div class="campo">
+              <label for="repetir">Repetí la contraseña</label>
+              <input id="repetir" name="repetir" type="password" required minlength="8" maxlength="72" autocomplete="new-password">
+            </div>
+            <button class="btn btn-sol btn-grande" type="submit" data-cargando="Guardando…">Guardar e ingresar</button>
+          </form>
+        </div>
+        <p class="pie-form">¿El enlace venció? <a th:href="@{/activar}">Pedí uno nuevo</a></p>
+      </th:block>
+    </div>
+  </div>
+</main>
+</body>
+</html>

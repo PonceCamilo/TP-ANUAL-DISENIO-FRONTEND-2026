@@ -14,6 +14,13 @@
       <h1 th:text="${rol == 'ENTIDAD_BENEFICIARIA'} ? 'Creá la cuenta de tu entidad' : 'Creá tu cuenta'">Creá tu cuenta</h1>
       <p class="suave" th:text="${rol == 'ENTIDAD_BENEFICIARIA'} ? 'Después te pedimos los datos de la entidad.' : 'Tarda menos de un minuto.'">Texto</p>
 
+      <div class="banner banner-aviso" role="alert" th:if="${cuentaExistente != null}">
+        <svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg>
+        <div><strong>Ya hay una cuenta con ese email.</strong>
+          Si la organización cargó tus datos, o si no recordás la contraseña,
+          <a th:href="@{/activar(rol=${rol})}">activá tu cuenta con un enlace por email</a>.</div>
+      </div>
+
       <div class="tarjeta">
         <form th:action="@{/crear-cuenta}" method="post" class="formulario" data-carga data-repetir>
           <input type="hidden" name="rol" th:value="${rol}">

@@ -4,6 +4,7 @@ import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.autenticacion.services.LoginGoogleHandler;
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
+import ar.utn.donatrack.frontend.comun.seguridad.VolverA;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -87,7 +88,8 @@ public class AutenticacionController {
         try {
             SesionUsuario usuario = authClient.ingresar(email.trim(), password, rol);
             sesion.setAttribute(SesionUsuario.ATRIBUTO, usuario);
-            return "redirect:" + LoginGoogleHandler.destino(usuario.getRol());
+            // Entrega 6: si venía de un enlace (mapa, recepción), vuelve ahí.
+            return "redirect:" + VolverA.destino(sesion, usuario);
         } catch (ApiException e) {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", e.getMessage());
@@ -120,6 +122,10 @@ public class AutenticacionController {
         try {
             sesion.setAttribute(SesionUsuario.ATRIBUTO, authClient.registrar(nombre.trim(), email.trim(), password, rolOk, tipoDonante));
         } catch (ApiException e) {
+            if (e.getStatus() == 409) {
+                // Entrega 6: puede ser una persona que cargó la administración; se la manda a activar.
+                flash.addFlashAttribute("cuentaExistente", true);
+            }
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", e.getMessage());
             flash.addFlashAttribute("nombreIngresado", nombre.trim());

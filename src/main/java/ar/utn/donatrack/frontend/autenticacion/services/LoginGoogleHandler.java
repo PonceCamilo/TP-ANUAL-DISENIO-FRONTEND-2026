@@ -44,7 +44,7 @@ public class LoginGoogleHandler implements AuthenticationSuccessHandler {
             sesion.removeAttribute(TIPO_ELEGIDO);
             SesionUsuario usuario = authClient.canjearGoogle(google.getIdToken().getTokenValue(), rol, tipo);
             sesion.setAttribute(SesionUsuario.ATRIBUTO, usuario);
-            response.sendRedirect(destino(usuario.getRol()));
+            response.sendRedirect(ar.utn.donatrack.frontend.comun.seguridad.VolverA.destino(sesion, usuario));
         } catch (ApiException e) {
             sesion.setAttribute("errorLogin", e.getMessage());
             response.sendRedirect("/login?rol=" + rol);

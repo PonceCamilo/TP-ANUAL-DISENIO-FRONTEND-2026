@@ -18,7 +18,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(sesionInterceptor)
-                .addPathPatterns("/donante/**", "/entidad/**", "/admin/**", "/transporte/**", "/chofer/**")
+                // Entrega 6: la recepción y el mapa de una ruta también piden sesión.
+                .addPathPatterns("/donante/**", "/entidad/**", "/admin/**", "/transporte/**", "/chofer/**",
+                        "/recepcion", "/tracking/**")
                 .excludePathPatterns("/admin/ingreso", "/transporte/ingreso");
     }
 }

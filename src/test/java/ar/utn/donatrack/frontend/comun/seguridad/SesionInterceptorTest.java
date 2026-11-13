@@ -94,4 +94,31 @@ class SesionInterceptorTest {
         assertTrue(interceptor.preHandle(pedido("/chofer/panel", chofer), new MockHttpServletResponse(), new Object()));
         assertEquals(camion, chofer.getCamionId());
     }
+
+    @Test
+    void laRecepcionEsDeLaEntidadYSinSesionGuardaADondeIba() throws Exception {
+        MockHttpServletRequest pedido = pedido("/recepcion", null);
+        pedido.setQueryString("donacion=abc");
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        assertFalse(interceptor.preHandle(pedido, res, new Object()));
+        assertEquals("/login?rol=ENTIDAD_BENEFICIARIA&sesion=expirada", res.getRedirectedUrl());
+        assertEquals("/recepcion?donacion=abc", pedido.getSession().getAttribute(VolverA.ATRIBUTO));
+
+        MockHttpServletResponse donante = new MockHttpServletResponse();
+        assertFalse(interceptor.preHandle(pedido("/recepcion", usuario("DONANTE", 600)), donante, new Object()));
+        assertEquals("/donante/panel", donante.getRedirectedUrl());
+        assertTrue(interceptor.preHandle(pedido("/recepcion", usuario("ENTIDAD_BENEFICIARIA", 600)),
+                new MockHttpServletResponse(), new Object()));
+    }
+
+    @Test
+    void elMapaLoVeCualquieraConSesion() throws Exception {
+        for (String rol : new String[]{"DONANTE", "ENTIDAD_BENEFICIARIA", "ADMINISTRADOR", "CHOFER"}) {
+            assertTrue(interceptor.preHandle(pedido("/tracking/ruta/1", usuario(rol, 600)),
+                    new MockHttpServletResponse(), new Object()));
+        }
+        MockHttpServletResponse posicion = new MockHttpServletResponse();
+        assertFalse(interceptor.preHandle(pedido("/tracking/ruta/1/posicion", null), posicion, new Object()));
+        assertEquals(401, posicion.getStatus());
+    }
 }
