@@ -31,7 +31,9 @@ public class AuthClient {
         this.claveFrontend = claveFrontend;
         SimpleClientHttpRequestFactory fabrica = new SimpleClientHttpRequestFactory();
         fabrica.setConnectTimeout(3000);
-        fabrica.setReadTimeout(10000);
+        // Entrega 6: 20 s. Con el servicio recién levantado (o la máquina cargada), el
+        // primer ingreso tardaba más de 10 s y fallaba; al reintentar ya entraba.
+        fabrica.setReadTimeout(20000);
         this.rest = RestClient.builder().requestFactory(fabrica).build();
         this.baseUrl = props.servicios().autenticacion();
     }
@@ -53,7 +55,16 @@ public class AuthClient {
         pedido.put("email", email);
         pedido.put("password", password);
         pedido.put("rol", rol);
-        return pedir("/api/autenticacion/ingreso", pedido);
+        try {
+            return pedir("/api/autenticacion/ingreso", pedido);
+        } catch (ApiException e) {
+            // Entrega 6: si el servicio no respondió a tiempo (por ejemplo, recién
+            // levantado), se reintenta una vez: ingresar no cambia nada del lado del servicio.
+            if (e.getStatus() != 503) {
+                throw e;
+            }
+            return pedir("/api/autenticacion/ingreso", pedido);
+        }
     }
 
     public SesionUsuario canjearGoogle(String idToken, String rol, String tipoDonante) {

@@ -60,14 +60,14 @@ public class ApiClient {
     }
 
     public List<Map<String, Object>> lista(String url, Object... variables) {
-        return ejecutar(() -> {
+        return consultar(() -> {
             List<Map<String, Object>> r = rest.get().uri(url, variables).retrieve().body(LISTA);
             return r == null ? List.of() : r;
         });
     }
 
     public Map<String, Object> objeto(String url, Object... variables) {
-        return ejecutar(() -> {
+        return consultar(() -> {
             Map<String, Object> r = rest.get().uri(url, variables).retrieve().body(OBJETO);
             return r == null ? Map.of() : r;
         });
@@ -84,7 +84,7 @@ public class ApiClient {
     }
 
     public Object leer(String url, Object... variables) {
-        return ejecutar(() -> rest.get().uri(url, variables).retrieve().body(Object.class));
+        return consultar(() -> rest.get().uri(url, variables).retrieve().body(Object.class));
     }
 
     /** POST que devuelve una lista. El cuerpo puede ir vacío. */
@@ -139,6 +139,23 @@ public class ApiClient {
             return rest.post().uri(url).contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(body).retrieve().body(OBJETO);
         });
+    }
+
+    /**
+     * Entrega 6: una consulta (GET) que no llegó a tener respuesta se reintenta una
+     * vez. Con los servicios recién levantados la primera llamada a veces no llega a
+     * tiempo y la pantalla fallaba solo la primera vez. Los cambios (POST, PATCH,
+     * DELETE) no se reintentan.
+     */
+    private <T> T consultar(Supplier<T> llamada) {
+        try {
+            return ejecutar(llamada);
+        } catch (ApiException e) {
+            if (e.getStatus() != 503) {
+                throw e;
+            }
+            return ejecutar(llamada);
+        }
     }
 
     private <T> T ejecutar(Supplier<T> llamada) {

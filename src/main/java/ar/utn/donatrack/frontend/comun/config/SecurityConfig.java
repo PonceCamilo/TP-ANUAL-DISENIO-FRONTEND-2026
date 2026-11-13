@@ -29,7 +29,9 @@ public class SecurityConfig {
                                 LoginGoogleHandler loginGoogle) throws Exception {
         http
                 .authorizeHttpRequests(a -> a.anyRequest().permitAll())
-                .logout(l -> l.logoutUrl("/salir").logoutSuccessUrl("/").invalidateHttpSession(true));
+                .logout(l -> l.logoutUrl("/salir").logoutSuccessUrl("/").invalidateHttpSession(true))
+                // Entrega 6: un formulario vencido vuelve a su pantalla con un aviso, no a un 403.
+                .exceptionHandling(e -> e.accessDeniedHandler(new FormularioVencidoHandler()));
 
         if (clientes.getIfAvailable() != null) {
             http.oauth2Login(o -> o
