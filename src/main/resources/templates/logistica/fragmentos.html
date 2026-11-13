@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--/* Pestañas de la sección Camiones (Flota / Choferes). */-->
+<nav th:fragment="pestanias(activa)" class="fila" aria-label="Camiones" style="margin-bottom: var(--s-5)">
+  <a th:href="@{/admin/flota}" th:class="${activa == 'flota'} ? 'btn' : 'btn btn-secundario'"
+     th:aria-current="${activa == 'flota'} ? 'page'" data-carga>
+    <svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Flota</a>
+  <a th:href="@{/admin/flota/choferes}" th:class="${activa == 'choferes'} ? 'btn' : 'btn btn-secundario'"
+     th:aria-current="${activa == 'choferes'} ? 'page'" data-carga>
+    <svg th:replace="~{comun/fragmentos/componentes :: ic('user')}"></svg>Choferes</a>
+</nav>
+
+</body>
+</html>

@@ -36,7 +36,7 @@
               </p>
             </div>
           </div>
-          <a class="btn btn-sol btn-chico" th:href="@{/admin/asignacion/{id}(id=${p.idDonacion})}" data-carga>Asignar</a>
+          <a class="btn btn-sol btn-chico" th:href="@{/admin/donaciones/por-asignar}" data-carga>Asignar</a>
         </li>
       </ul>
     </section>
@@ -44,7 +44,7 @@
     <section class="tarjeta seccion" aria-labelledby="t-flota">
       <div class="fila espaciado">
         <h2 id="t-flota">Flota</h2>
-        <a th:href="@{/admin/camiones}" data-carga>Administrar</a>
+        <a th:href="@{/admin/flota}" data-carga>Administrar</a>
       </div>
       <p class="suave chico" th:if="${#lists.isEmpty(flotaPreview)}">Todavía no hay camiones cargados.</p>
       <ul class="lista" th:if="${!#lists.isEmpty(flotaPreview)}">

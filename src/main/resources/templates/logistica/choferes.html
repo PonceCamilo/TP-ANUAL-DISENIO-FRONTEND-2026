@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Camiones', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/panel}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Administración</a></nav>
+    <nav th:replace="~{logistica/fragmentos :: pestanias('choferes')}"></nav>
+
+    <div class="encabezado-pagina">
+      <div>
+        <h1>Choferes</h1>
+        <p>Cuentas de chofer y el camión que tiene asignado cada uno.</p>
+      </div>
+      <button type="button" class="btn btn-sol" data-modal="modal-crear-chofer"><svg th:replace="~{comun/fragmentos/componentes :: ic('plus')}"></svg>Agregar chofer</button>
+    </div>
+
+    <th:block th:if="${#lists.isEmpty(choferes)}">
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('home', 'Todavía no creaste ninguna cuenta de chofer', 'Agregá la primera con el botón de arriba.', null, null)}"></div>
+    </th:block>
+    <table class="tabla" th:if="${!#lists.isEmpty(choferes)}">
+      <thead>
+        <tr><th>Nombre</th><th>Email</th><th>Camión</th><th>Asignar</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="chofer : ${choferes}">
+          <td th:text="${chofer.nombre}">Nombre</td>
+          <td th:text="${chofer.email}">Email</td>
+          <td>
+            <span th:if="${chofer.camionId == null}">Sin asignar</span>
+            <span th:if="${chofer.camionId != null}">Asignado</span>
+          </td>
+          <td>
+            <form th:action="@{'/admin/choferes/' + ${chofer.id} + '/camion'}" method="post" class="formulario-inline" data-carga>
+              <select name="camionId" required>
+                <option value="" disabled selected>Elegir camión</option>
+                <option th:each="camion : ${camiones}" th:value="${camion.id}" th:text="${camion.patente}">Patente</option>
+              </select>
+              <button class="btn btn-secundario btn-chico" type="submit">Asignar</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+<dialog id="modal-crear-chofer" class="modal" aria-labelledby="modal-crear-chofer-t">
+  <h2 id="modal-crear-chofer-t">Agregar chofer</h2>
+  <p>Creá la cuenta con su email y una contraseña que puedas compartirle. El camión se asigna por separado.</p>
+  <form th:action="@{/admin/choferes}" method="post" class="formulario" data-carga>
+    <div class="campo">
+      <label for="nombre-chofer">Nombre</label>
+      <input id="nombre-chofer" name="nombre" required maxlength="100" th:value="${nombreChofer}">
+    </div>
+    <div class="campo">
+      <label for="email-chofer">Email</label>
+      <input id="email-chofer" name="email" type="email" required maxlength="150" th:value="${emailChofer}">
+    </div>
+    <div class="campo">
+      <label for="clave-chofer">Contraseña</label>
+      <div class="clave">
+        <input id="clave-chofer" name="password" type="password" required minlength="8" maxlength="72"
+               autocomplete="new-password" aria-describedby="ayuda-clave-chofer">
+        <button type="button" data-mostrar-clave="clave-chofer" aria-pressed="false">Mostrar</button>
+      </div>
+      <p id="ayuda-clave-chofer" class="ayuda">Al menos 8 caracteres.</p>
+    </div>
+    <div class="fila">
+      <button type="button" class="btn btn-secundario" data-cancelar>Cancelar</button>
+      <button class="btn btn-sol" type="submit" data-cargando="Creando cuenta…">Crear cuenta</button>
+    </div>
+  </form>
+</dialog>
+<script th:if="${nombreChofer != null}">document.getElementById('modal-crear-chofer').showModal();</script>
+</main>
+</body>
+</html>

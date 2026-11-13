@@ -4,6 +4,7 @@
 <main id="contenido" tabindex="-1">
   <div class="contenedor">
     <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/panel}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Administración</a></nav>
+    <nav th:replace="~{logistica/fragmentos :: pestanias('flota')}"></nav>
     <div class="encabezado-pagina">
       <div>
         <h1>Flota</h1>

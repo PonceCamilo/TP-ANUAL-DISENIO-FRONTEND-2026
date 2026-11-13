@@ -145,7 +145,7 @@ public class AutenticacionController {
             flash.addFlashAttribute("nombreChofer", nombre.trim());
             flash.addFlashAttribute("emailChofer", email.trim());
         }
-        return "redirect:/admin/camiones";
+        return "redirect:/admin/flota/choferes";
     }
 
     /** El camión queda en la cuenta del chofer. Logística no guarda esa relación. */
@@ -161,7 +161,7 @@ public class AutenticacionController {
             flash.addFlashAttribute("toastTipo", "error");
             flash.addFlashAttribute("toast", e.getMessage());
         }
-        return "redirect:/admin/panel";
+        return "redirect:/admin/flota/choferes";
     }
 
     private static String rolPublico(String rol) {
