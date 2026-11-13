@@ -11,11 +11,12 @@
     <section aria-labelledby="t-numeros">
       <h2 id="t-numeros" class="solo-lectores">Operación de hoy</h2>
       <div class="franja">
-        <div><div class="valor" th:text="${totalEnDeposito}">0</div><div class="rotulo">En depósito</div></div>
-        <div><div class="valor" th:text="${totalPendientes}">0</div><div class="rotulo">Pendientes de asignar</div></div>
-        <div><div class="valor" th:text="${totalCamionesDisponibles}">0</div><div class="rotulo">Camiones disponibles</div></div>
-        <div><div class="valor" th:text="${totalDonantes}">0</div><div class="rotulo">Donantes registrados</div></div>
+        <div><div class="valor" th:text="${totalEnDeposito} ?: '—'">0</div><div class="rotulo">En depósito</div></div>
+        <div><div class="valor" th:text="${totalPendientes} ?: '—'">0</div><div class="rotulo">Pendientes de asignar</div></div>
+        <div><div class="valor" th:text="${totalCamionesDisponibles} ?: '—'">0</div><div class="rotulo">Camiones disponibles</div></div>
+        <div><div class="valor" th:text="${totalDonantes} ?: '—'">0</div><div class="rotulo">Donantes registrados</div></div>
       </div>
+      <p class="suave chico" role="status" th:if="${donantesNoDisponibles}">No pudimos cargar el total de donantes.</p>
     </section>
 
     <section class="tarjeta seccion" aria-labelledby="t-pendientes">
@@ -23,7 +24,8 @@
         <h2 id="t-pendientes">Pendientes de asignación</h2>
         <a th:href="@{/admin/donaciones/por-asignar}" data-carga>Ver todas</a>
       </div>
-      <p class="suave chico" th:if="${#lists.isEmpty(pendientesPreview)}">No hay donaciones pendientes de asignar.</p>
+      <p class="suave chico" role="status" th:if="${pendientesNoDisponibles}">No pudimos cargar las donaciones pendientes. Recargá para volver a intentar.</p>
+      <p class="suave chico" th:if="${pendientesNoDisponibles != true and #lists.isEmpty(pendientesPreview)}">No hay donaciones pendientes de asignar.</p>
       <ul class="lista" th:if="${!#lists.isEmpty(pendientesPreview)}">
         <li class="item" th:each="p : ${pendientesPreview}">
           <div class="item-cuerpo">
@@ -47,7 +49,8 @@
         <h2 id="t-flota">Flota</h2>
         <a th:href="@{/admin/flota}" data-carga>Administrar</a>
       </div>
-      <p class="suave chico" th:if="${#lists.isEmpty(flotaPreview)}">Todavía no hay camiones cargados.</p>
+      <p class="suave chico" role="status" th:if="${flotaNoDisponible}">No pudimos cargar la flota. Recargá para volver a intentar.</p>
+      <p class="suave chico" th:if="${flotaNoDisponible != true and #lists.isEmpty(flotaPreview)}">Todavía no hay camiones cargados.</p>
       <ul class="lista" th:if="${!#lists.isEmpty(flotaPreview)}">
         <li class="item" th:each="c : ${flotaPreview}">
           <div class="item-cuerpo">

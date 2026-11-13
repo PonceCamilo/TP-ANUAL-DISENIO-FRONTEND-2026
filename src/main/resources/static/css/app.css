@@ -362,16 +362,10 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
   .nav a { padding: 0 var(--s-2); }
 }
 .badge-no-leidas { box-shadow: 0 0 0 2px #fff; }
-/* La administración tiene 8 secciones: en escritorio la barra usa más ancho que el
-   contenido y el menú va sin íconos (salvo la campanita), así entra en una fila. */
+/* La barra de administración usa más ancho que el contenido en escritorio. */
 @media (min-width: 48.01rem) {
   .barra-admin .contenedor { max-width: 90rem; }
   .nav-admin a { white-space: nowrap; }
-  .nav-admin a > .ic { display: none; }
-}
-/* En tableta (hasta 1024 px) el menú de la administración puede bajar a una segunda fila. */
-@media (min-width: 64.01rem) {
-  .nav-admin { flex-wrap: nowrap; }
 }
 
 /* qué lleva cada parada y qué le falta a cada entidad candidata */

@@ -322,6 +322,30 @@ class PantallasCorregidasTest {
     }
 
     @Test
+    @DisplayName("El ingreso de administración abre el panel aunque Logística no responda")
+    void ingresoAdminConFlotaNoDisponible() throws Exception {
+        SesionUsuario admin = sesion(SesionUsuario.ADMINISTRADOR);
+        when(autenticacion.ingresar(admin.getEmail(), "clave", SesionUsuario.ADMINISTRADOR)).thenReturn(admin);
+        when(logistica.camiones()).thenThrow(new ApiException("No pudimos conectarnos con el servicio.", 503));
+        when(donaciones.paginaDeDonantes(null, null, 1))
+                .thenReturn(new ar.utn.donatrack.frontend.donaciones.services.Pagina(List.of(), 1, 0, 7));
+        MockHttpSession sesion = new MockHttpSession();
+        CsrfToken csrf = (CsrfToken) mvc.perform(get("/admin/ingreso").session(sesion))
+                .andExpect(status().isOk()).andReturn().getRequest().getAttribute(CsrfToken.class.getName());
+
+        mvc.perform(post("/admin/ingreso").session(sesion).param(csrf.getParameterName(), csrf.getToken())
+                        .param("email", admin.getEmail()).param("password", "clave"))
+                .andExpect(redirectedUrl("/admin/panel"));
+
+        mvc.perform(get("/admin/panel").session(sesion))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("No pudimos cargar la flota")))
+                .andExpect(content().string(containsString(">7</div>")))
+                .andExpect(content().string(not(containsString("toast-error"))))
+                .andExpect(content().string(not(containsString("Todavía no hay camiones cargados"))));
+    }
+
+    @Test
     @DisplayName("Campanita: la cantidad de avisos sin leer, en rojo")
     void campanita() throws Exception {
         when(notificaciones.cantidadSinLeer(anyList())).thenReturn(3L);

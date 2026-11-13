@@ -203,20 +203,10 @@ public class PanelController {
         model.addAttribute("area", "Administración");
         model.addAttribute("descripcionArea", "Área interna para la gestión de DonaTrack.");
         try {
-            // Entrega 6: "pendientes de asignar" son todas las que están en depósito (antes
-            // solo las del cálculo nocturno, y las recién cargadas no aparecían).
             List<Map<String, Object>> enDeposito = donaciones.donacionesEnDeposito();
-            List<Map<String, Object>> pendientes = enDeposito;
-            List<Map<String, Object>> camiones = logistica.camiones();
-            long totalDonantes = donaciones.paginaDeDonantes(null, null, 1).getTotalElementos();
-
             model.addAttribute("totalEnDeposito", enDeposito.size());
-            model.addAttribute("totalPendientes", pendientes.size());
-            model.addAttribute("totalCamionesDisponibles",
-                    camiones.stream().filter(c -> Mapas.igual(Mapas.texto(c, "estado"), "DISPONIBLE")).count());
-            model.addAttribute("totalDonantes", totalDonantes);
-
-            model.addAttribute("pendientesPreview", pendientes.stream().limit(3).map(p -> {
+            model.addAttribute("totalPendientes", enDeposito.size());
+            model.addAttribute("pendientesPreview", enDeposito.stream().limit(3).map(p -> {
                 Map<String, Object> fila = new LinkedHashMap<>();
                 fila.put("idDonacion", Mapas.texto(p, "id"));
                 fila.put("donacion", p);
@@ -230,16 +220,23 @@ public class PanelController {
                 }
                 return fila;
             }).toList());
+        } catch (ApiException e) {
+            model.addAttribute("pendientesNoDisponibles", true);
+        }
+
+        try {
+            List<Map<String, Object>> camiones = logistica.camiones();
+            model.addAttribute("totalCamionesDisponibles",
+                    camiones.stream().filter(c -> Mapas.igual(Mapas.texto(c, "estado"), "DISPONIBLE")).count());
             model.addAttribute("flotaPreview", camiones.stream().limit(3).toList());
         } catch (ApiException e) {
-            model.addAttribute("totalEnDeposito", 0);
-            model.addAttribute("totalPendientes", 0);
-            model.addAttribute("totalCamionesDisponibles", 0);
-            model.addAttribute("totalDonantes", 0);
-            model.addAttribute("pendientesPreview", List.of());
-            model.addAttribute("flotaPreview", List.of());
-            model.addAttribute("toast", e.getMessage());
-            model.addAttribute("toastTipo", "error");
+            model.addAttribute("flotaNoDisponible", true);
+        }
+
+        try {
+            model.addAttribute("totalDonantes", donaciones.paginaDeDonantes(null, null, 1).getTotalElementos());
+        } catch (ApiException e) {
+            model.addAttribute("donantesNoDisponibles", true);
         }
         return "autenticacion/admin-panel";
     }
