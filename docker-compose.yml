@@ -16,11 +16,10 @@ services:
       SERVICIOS_NOTIFICACIONES_URL: ${SERVICIOS_NOTIFICACIONES_URL:-http://host.docker.internal:8084}
       SERVICIOS_LOGISTICA_URL: ${SERVICIOS_LOGISTICA_URL:-http://host.docker.internal:8085}
       SERVICIOS_AUTENTICACION_URL: ${SERVICIOS_AUTENTICACION_URL:-http://host.docker.internal:8088}
+      # La misma clave que en donatrack/.env del back (se lee del .env del front).
       AUTH_FRONTEND_KEY: ${AUTH_FRONTEND_KEY:-}
       # Login con Google (opcional). Se leen del archivo .env, que NO se sube al repo.
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      # Acceso de prueba sin Google. En un entorno real: false.
-      DONATRACK_DEMO: ${DONATRACK_DEMO:-false}
     extra_hosts:
       - "host.docker.internal:host-gateway"
