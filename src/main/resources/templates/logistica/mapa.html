@@ -20,7 +20,7 @@
 
     <div class="grilla-2">
       <div id="mapa" style="height: 420px; border-radius: var(--r-md); border: 1px solid var(--c-linea);"
-           th:attr="data-lat=${camion != null ? camion['latitud'] : ''}, data-lng=${camion != null ? camion['longitud'] : ''}, data-patente=${camion != null ? camion['patente'] : ''}, data-seguir=${ruta['estado'] == 'INICIADA'}, data-posicion=@{/tracking/ruta/{id}/posicion(id=${ruta['id']})}"></div>
+           th:attr="data-lat=${camion != null ? camion['latitud'] : ''}, data-lng=${camion != null ? camion['longitud'] : ''}, data-patente=${camion != null ? camion['patente'] : ''}, data-seguir=${ruta['estado'] == 'INICIADA'}, data-posicion=@{/tracking/ruta/{id}/posicion(id=${ruta['id']},donacion=${donacion})}"></div>
       <section aria-labelledby="t-paradas">
         <h2 id="t-paradas" style="font-size: var(--t-lg)">Paradas</h2>
         <ol class="lista" th:if="${ruta['paradas'] != null}">
@@ -67,8 +67,27 @@
         poner(lat, lng, caja.dataset.patente);
       }
       if (caja.dataset.seguir === 'true') {
-        setInterval(function () {
-          fetch(caja.dataset.posicion).then(function (r) { return r.json(); }).then(function (p) {
+        var seguimiento = setInterval(function () {
+          fetch(caja.dataset.posicion, { headers: { 'Accept': 'application/json' } }).then(function (r) {
+            if (r.status === 401) {
+              // La sesión venció: al recargar se vuelve a ingresar y se regresa a este mapa.
+              clearInterval(seguimiento);
+              window.location.reload();
+              return null;
+            }
+            if (r.status === 403) {
+              clearInterval(seguimiento);
+              var aviso = document.getElementById('ultima');
+              if (aviso) {
+                aviso.textContent = 'Ya no podés seguir esta ruta.';
+              }
+              return null;
+            }
+            return r.ok ? r.json() : null;
+          }).then(function (p) {
+            if (!p) {
+              return;
+            }
             if (p.latitud == null || p.longitud == null) {
               return;
             }

@@ -12,6 +12,10 @@
       </div>
       <p>Registrada el <time th:datetime="${donacion.fechaDonacion}" th:text="${#strings.substring(donacion.fechaDonacion, 0, 10)}">2026-06-24</time></p>
       <ol th:replace="~{comun/fragmentos/componentes :: recorrido(${donacion.estado})}"></ol>
+      <p th:if="${rutaId != null}" style="margin-top: var(--s-4)">
+        <a class="btn btn-secundario" th:href="@{/tracking/ruta/{ruta}(ruta=${rutaId},donacion=${donacion.id})}" data-carga>
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('pin')}"></svg>Ver en el mapa</a>
+      </p>
     </section>
 
     <div class="banner banner-error" role="alert" th:if="${donacion.estado == 'ENTREGA_FALLIDA'}" style="margin-top: var(--s-4)">

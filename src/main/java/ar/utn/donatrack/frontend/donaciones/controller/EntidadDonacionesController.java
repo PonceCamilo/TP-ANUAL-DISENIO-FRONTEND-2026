@@ -139,12 +139,17 @@ public class EntidadDonacionesController {
     }
 
     @GetMapping("/recepciones")
-    public String recepciones(HttpSession sesion, Model model) {
+    public String recepciones(@RequestParam(defaultValue = "") String estado, HttpSession sesion, Model model) {
         UUID id = entidadId(sesion);
         if (id == null) {
             return "redirect:/entidad/registro";
         }
-        model.addAttribute("donaciones", api.donacionesHaciaEntidad(id));
+        // Entrega 6: filtro por estado; desde cada fila se sigue la entrega y se confirma la recepción.
+        List<Map<String, Object>> todas = api.donacionesHaciaEntidad(id);
+        model.addAttribute("donaciones", estado.isBlank() ? todas
+                : todas.stream().filter(d -> estado.equals(Mapas.texto(d, "estado"))).toList());
+        model.addAttribute("estado", estado);
+        model.addAttribute("hayAlguna", !todas.isEmpty());
         model.addAttribute("seccion", "recepciones");
         return "donaciones/entidad/recepciones";
     }

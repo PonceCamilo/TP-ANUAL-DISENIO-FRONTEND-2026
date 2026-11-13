@@ -58,7 +58,7 @@
                  th:text="|${p['direccion']['localidad']} · ${p['direccion']['provincia']}|">Localidad</p>
               <div th:each="e : ${p['entregas']}" style="margin-top: var(--s-3)">
                 <p class="suave chico" style="margin:0">
-                  Donación <a th:href="@{/recepcion(donacion=${e['idDonacion']})}" th:text="${e['idDonacion']}" data-carga>id</a>
+                  Donación <span th:text="${e['idDonacion']}">id</span>
                 </p>
                 <p th:if="${e['estado'] != 'EN_TRASLADO'}"
                    th:text="${e['estado'] == 'ENTREGADA' ? 'Entregada' : (e['estado'] == 'NO_RECIBIDA' ? 'No recibida' : (e['estado'] == 'LISTO_PARA_ENTREGAR' ? 'Lista para entregar' : e['estado']))}">En traslado</p>

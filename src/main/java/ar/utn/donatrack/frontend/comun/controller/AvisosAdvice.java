@@ -76,8 +76,10 @@ public class AvisosAdvice {
 
     @ExceptionHandler(ApiException.class)
     public String falloDeServicio(ApiException e, Model model, HttpServletResponse respuesta) {
-        respuesta.setStatus(e.getStatus() == 404 ? 404 : 502);
-        model.addAttribute("titulo", e.getStatus() == 404 ? "No encontramos eso" : "Algo no salió como esperábamos");
+        // Entrega 6: un 403 es que eso no es de la persona (los servicios validan el dueño), no una falla.
+        respuesta.setStatus(e.getStatus() == 404 || e.getStatus() == 403 ? e.getStatus() : 502);
+        model.addAttribute("titulo", e.getStatus() == 404 ? "No encontramos eso"
+                : e.getStatus() == 403 ? "No podés ver esto" : "Algo no salió como esperábamos");
         model.addAttribute("detalle", e.getMessage());
         return "comun/error";
     }

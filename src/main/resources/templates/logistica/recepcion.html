@@ -3,14 +3,14 @@
 <body>
 <main id="contenido" tabindex="-1">
   <div class="contenedor">
-    <nav class="migas" aria-label="Ruta"><a th:href="@{/}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Inicio</a></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/entidad/recepciones}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Recepciones</a></nav>
     <div class="encabezado-pagina">
       <div>
         <h1 th:if="${entrega == null}">Recepción</h1>
         <p th:if="${entrega == null}">Buscá una donación para ver cómo está su entrega.</p>
         <h1 th:if="${entrega != null}"
             th:text="${entrega['estado'] == 'EN_TRASLADO' ? 'Confirmar recepción' : (entrega['estado'] == 'ENTREGADA' ? 'Entrega confirmada' : (entrega['estado'] == 'NO_RECIBIDA' ? 'Entrega no concretada' : 'Entrega pendiente'))}">Recepción</h1>
-        <p th:if="${entrega != null and entrega['estado'] == 'EN_TRASLADO'}">La donación está en camino. Si ya llegó, confirmala con un comprobante.</p>
+        <p th:if="${entrega != null and entrega['estado'] == 'EN_TRASLADO'}">La donación está en camino. Si ya llegó, confirmala con una o más fotos de lo que recibieron.</p>
         <p th:if="${entrega != null and entrega['estado'] == 'ENTREGADA'}">La entidad ya registró que la donación llegó.</p>
         <p th:if="${entrega != null and entrega['estado'] == 'LISTO_PARA_ENTREGAR'}">El camión todavía no salió. Todavía no hay nada que confirmar.</p>
         <p th:if="${entrega != null and entrega['estado'] == 'NO_RECIBIDA' and replanificable}">El chofer informó que no se pudo entregar. La organización va a revisar si la donación puede salir de nuevo.</p>
@@ -25,6 +25,7 @@
       </div>
       <button class="btn btn-sol" type="submit">Buscar</button>
       <p class="suave" th:if="${noEncontrada}">Esta donación no tiene una entrega.</p>
+      <p class="suave" role="alert" th:if="${ajena}">Esta donación no es para tu entidad.</p>
     </form>
 
     <div th:if="${entrega != null}">
@@ -39,16 +40,24 @@
       </p>
       <p th:if="${entrega['fechaEntrega'] != null}" class="suave"
          th:text="|Recibida ${#strings.replace(#strings.substring(entrega['fechaEntrega'], 0, 16), 'T', ' ')}|">Fecha</p>
-      <ul th:if="${entrega['fotosComprobante'] != null and !entrega['fotosComprobante'].isEmpty()}">
-        <li th:each="foto : ${entrega['fotosComprobante']}" th:text="${foto}">comprobante</li>
+      <ul th:if="${entrega['fotosComprobante'] != null and !entrega['fotosComprobante'].isEmpty()}" aria-label="Fotos de la recepción"
+          style="display:flex; flex-wrap:wrap; gap: var(--s-3); list-style:none; padding:0; margin: var(--s-3) 0 0">
+        <li th:each="foto, i : ${entrega['fotosComprobante']}">
+          <a th:href="${foto}" target="_blank" rel="noopener noreferrer" style="display:block; min-width:48px; min-height:48px">
+            <img th:src="${foto}" th:alt="'Foto ' + ${i.count} + ' de la recepción'" loading="lazy"
+                 style="width:9rem; height:9rem; object-fit:cover; border-radius: var(--r-md)">
+          </a>
+        </li>
       </ul>
 
       <form th:if="${entrega['estado'] == 'EN_TRASLADO'}" method="post" class="formulario tarjeta seccion" th:action="@{/recepcion}" data-carga>
         <input type="hidden" name="donacion" th:value="${entrega['idDonacion']}">
         <input type="hidden" name="entrega" th:value="${entrega['id']}">
         <div class="campo">
-          <label for="comprobante">Comprobante <span class="requerido" aria-hidden="true">*</span></label>
-          <input id="comprobante" name="comprobante" required maxlength="200" placeholder="comprobante-1 o una URL">
+          <label for="fotos">Fotos de lo que recibieron <span class="requerido" aria-hidden="true">*</span></label>
+          <textarea id="fotos" name="fotos" required rows="3" aria-describedby="fotos-ayuda"
+                    placeholder="https://..." th:text="${fotosIngresadas}"></textarea>
+          <p id="fotos-ayuda" class="ayuda">La dirección web de cada foto, una por renglón (hasta 10). Se muestran en el inicio de DonaTrack.</p>
         </div>
         <button class="btn btn-sol btn-grande" type="submit" data-cargando="Confirmando…">Confirmar recepción</button>
       </form>

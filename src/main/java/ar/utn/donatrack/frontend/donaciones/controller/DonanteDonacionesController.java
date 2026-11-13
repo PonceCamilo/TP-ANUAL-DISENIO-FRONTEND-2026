@@ -6,6 +6,7 @@ import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.comun.util.Mapas;
 import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
 import ar.utn.donatrack.frontend.donaciones.services.Pagina;
+import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,10 +32,12 @@ public class DonanteDonacionesController {
 
     private final DonacionesApi api;
     private final AuthClient autenticacion;
+    private final LogisticaApi logistica;
     private static final String PERFIL_PENDIENTE = "perfilPendienteDeVincular";
 
-    public DonanteDonacionesController(DonacionesApi api, AuthClient autenticacion) {
+    public DonanteDonacionesController(DonacionesApi api, AuthClient autenticacion, LogisticaApi logistica) {
         this.autenticacion = autenticacion;
+        this.logistica = logistica;
         this.api = api;
     }
 
@@ -141,7 +144,22 @@ public class DonanteDonacionesController {
         model.addAttribute("donacion", donacion);
         model.addAttribute("historial", Mapas.lista(donacion.get("historialEstados")));
         model.addAttribute("seccion", "donaciones");
+        // Entrega 6 (requisito 9): lista para salir o en camino, se puede seguir en el mapa.
+        String estado = Mapas.texto(donacion, "estado");
+        if ("LISTA_PARA_ENTREGAR".equals(estado) || "EN_TRASLADO".equals(estado)) {
+            model.addAttribute("rutaId", rutaDe(id));
+        }
         return "donaciones/donante/detalle";
+    }
+
+    /** La ruta de la entrega en Logística. Si la lleva el proveedor externo o Logística no responde, no hay mapa. */
+    private String rutaDe(UUID donacion) {
+        try {
+            Object ruta = logistica.entregaPorDonacion(donacion).get("rutaId");
+            return ruta == null ? null : String.valueOf(ruta);
+        } catch (ApiException e) {
+            return null;
+        }
     }
 
     @GetMapping("/donar")
