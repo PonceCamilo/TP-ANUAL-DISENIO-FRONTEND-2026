@@ -57,7 +57,7 @@ main:focus { outline: none; }
 .formulario-inline { display: flex; gap: var(--s-2); align-items: center; }
 .formulario-inline select { min-height: var(--objetivo-min); border-radius: var(--r-md); border: 1px solid var(--c-linea); padding: 0 var(--s-2); }
 
-.nav-icono { position: relative; display: inline-flex; }
+.nav-icono { position: relative; display: inline-flex; margin-right: 6px; }
 .badge-no-leidas {
   position: absolute;
   top: -6px;
@@ -345,6 +345,9 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
 .nav { min-width: 0; flex-wrap: wrap; row-gap: var(--s-1); }
 @media (min-width: 48.01rem) and (max-width: 90rem) {
   .nav a { padding: 0 var(--s-3); gap: var(--s-1); font-size: var(--t-sm); }
+  /* Los íconos del menú se ocultan (el texto alcanza); la campanita queda por el número. */
+  .nav a > .ic { display: none; }
+  .barra-admin .avatar { display: none; }
   .barra .contenedor { gap: var(--s-3); }
   .usuario-nombre { display: none; }
 }
@@ -353,6 +356,17 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
   .nav a { padding: 0 var(--s-2); }
 }
 .badge-no-leidas { box-shadow: 0 0 0 2px #fff; }
+/* La administración tiene 8 secciones: en escritorio la barra usa más ancho que el
+   contenido y el menú va sin íconos (salvo la campanita), así entra en una fila. */
+@media (min-width: 48.01rem) {
+  .barra-admin .contenedor { max-width: 90rem; }
+  .nav-admin a { white-space: nowrap; }
+  .nav-admin a > .ic { display: none; }
+}
+/* En tableta (hasta 1024 px) el menú de la administración puede bajar a una segunda fila. */
+@media (min-width: 64.01rem) {
+  .nav-admin { flex-wrap: nowrap; }
+}
 
 /* qué lleva cada parada y qué le falta a cada entidad candidata */
 .carga-parada, .necesidades-candidata { margin: var(--s-2) 0 0; padding-left: var(--s-4); font-size: var(--t-sm); }
@@ -366,7 +380,8 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
   background: var(--c-superficie); border: 1px solid var(--c-linea); border-radius: var(--r-lg); padding: var(--s-5); margin-bottom: var(--s-5); box-shadow: var(--sombra); }
 .filtros .campo { margin: 0; }
 .filtros .filtros-ancho { grid-column: 1 / -1; }
-.filtros .filtros-acciones { display: flex; gap: var(--s-2); flex-wrap: wrap; grid-column: 1 / -1; justify-content: flex-end; }
+.filtros .filtros-acciones { display: flex; gap: var(--s-3); flex-wrap: wrap; grid-column: 1 / -1; justify-content: space-between; align-items: center; }
+.filtros .filtros-botones { margin-left: auto; }
 .filtros fieldset { border: 0; padding: 0; min-width: 0; }
 .filtros legend { font-weight: 700; margin-bottom: var(--s-2); }
 .pildoras { display: flex; flex-wrap: wrap; gap: var(--s-2); }

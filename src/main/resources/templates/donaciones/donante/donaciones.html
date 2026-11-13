@@ -29,9 +29,11 @@
         </div>
       </fieldset>
       <div class="filtros-acciones">
-        <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/donante/donaciones}" data-carga>
-          <svg th:replace="~{comun/fragmentos/componentes :: ic('x')}"></svg>Quitar filtros</a>
-        <button class="btn btn-sol" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
+        <div class="fila filtros-botones">
+          <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/donante/donaciones}" data-carga>
+            <svg th:replace="~{comun/fragmentos/componentes :: ic('x')}"></svg>Quitar filtros</a>
+          <button class="btn btn-sol" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
+        </div>
       </div>
     </form>
 

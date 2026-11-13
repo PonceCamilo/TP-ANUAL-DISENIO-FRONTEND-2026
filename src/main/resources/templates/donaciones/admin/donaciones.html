@@ -36,12 +36,14 @@
         <label for="hasta">Hasta</label>
         <input id="hasta" name="hasta" type="date" th:value="${filtros.hasta}">
       </div>
-      <label class="opcion"><input type="checkbox" name="vencidas" value="true" th:checked="${filtros.vencidas != null}">
-        Solo con productos vencidos</label>
       <div class="filtros-acciones">
-        <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/admin/donaciones}" data-carga>
-          <svg th:replace="~{comun/fragmentos/componentes :: ic('x')}"></svg>Limpiar filtros</a>
-        <button class="btn btn-sol" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
+        <label class="opcion"><input type="checkbox" name="vencidas" value="true" th:checked="${filtros.vencidas != null}">
+          Solo con productos vencidos</label>
+        <div class="fila filtros-botones">
+          <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/admin/donaciones}" data-carga>
+            <svg th:replace="~{comun/fragmentos/componentes :: ic('x')}"></svg>Limpiar filtros</a>
+          <button class="btn btn-sol" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
+        </div>
       </div>
     </form>
 

@@ -31,8 +31,8 @@
             <div>
               <p class="item-titulo" th:text="${p.donacion.descripcion}">Descripción</p>
               <p class="suave chico">
-                <span th:text="${#lists.size(p.donacion.bienes)} + ' bienes'">0 bienes</span>
-                <span th:if="${p.nombreDonante != null}" th:text="'· de ' + ${p.nombreDonante}">· de Donante</span>
+                <span th:text="${p.donacion['subcategoria'] != null ? p.donacion['subcategoria'] : 'Donación'}">Alimentos</span><th:block th:each="b : ${p.donacion['bienes']}"> · <span th:text="${b['cantidad']} + ' ' + ${b['unidad']} + ' de ' + ${b['descripcion']}">4 kg de Arroz</span></th:block>
+                <span th:if="${p['nombreDonante'] != null}" th:text="'· de ' + ${p['nombreDonante']}">· de Donante</span>
               </p>
             </div>
           </div>

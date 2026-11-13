@@ -279,7 +279,11 @@ class PantallasCorregidasTest {
     void campanita() throws Exception {
         when(notificaciones.cantidadSinLeer(anyList())).thenReturn(3L);
         when(logistica.camiones()).thenReturn(List.of());
-        when(donaciones.donacionesEnDeposito()).thenReturn(List.of());
+        // Una pendiente cuya persona donante ya no se encuentra: el panel igual se muestra.
+        when(donaciones.donacionesEnDeposito()).thenReturn(List.of(Map.of("id", donacion.toString(),
+                "descripcion", "Alimentos secos", "subcategoria", "Alimentos", "idDonante", UUID.randomUUID().toString(),
+                "bienes", List.of(Map.of("descripcion", "Arroz", "cantidad", 4, "unidad", "kg")))));
+        when(donaciones.donante(any())).thenThrow(new ApiException("No encontramos a la persona donante", 404));
         when(donaciones.paginaDeDonantes(any(), any(), org.mockito.ArgumentMatchers.anyInt()))
                 .thenReturn(new ar.utn.donatrack.frontend.donaciones.services.Pagina(List.of(), 1, 0, 0));
 
@@ -287,6 +291,9 @@ class PantallasCorregidasTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("class=\"badge-no-leidas\"")))
                 .andExpect(content().string(containsString("3 sin leer")))
+                .andExpect(content().string(containsString("barra-admin")))
+                .andExpect(content().string(containsString("4 kg de Arroz")))
+                .andExpect(content().string(containsString("/admin/donaciones/" + donacion + "/candidatos")))
                 .andExpect(content().string(not(containsString("/admin/asignacion\""))));
     }
 }

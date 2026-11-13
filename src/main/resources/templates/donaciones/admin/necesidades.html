@@ -20,11 +20,13 @@
                   th:selected="${#strings.equalsIgnoreCase(s, subcategoria)}">Alimentos</option>
         </select>
       </div>
-      <label class="opcion"><input type="checkbox" name="todas" value="true" th:checked="${todas}"> Incluir las ya cubiertas</label>
       <div class="filtros-acciones">
-        <a class="btn btn-secundario" th:if="${todas or !#strings.isEmpty(subcategoria)}" th:href="@{/admin/entidades/necesidades}" data-carga>
-          <svg th:replace="~{comun/fragmentos/componentes :: ic('x')}"></svg>Limpiar filtros</a>
-        <button class="btn btn-sol" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
+        <label class="opcion"><input type="checkbox" name="todas" value="true" th:checked="${todas}"> Incluir las ya cubiertas</label>
+        <div class="fila filtros-botones">
+          <a class="btn btn-secundario" th:if="${todas or !#strings.isEmpty(subcategoria)}" th:href="@{/admin/entidades/necesidades}" data-carga>
+            <svg th:replace="~{comun/fragmentos/componentes :: ic('x')}"></svg>Limpiar filtros</a>
+          <button class="btn btn-sol" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
+        </div>
       </div>
     </form>
 
