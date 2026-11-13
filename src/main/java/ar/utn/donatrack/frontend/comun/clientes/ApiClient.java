@@ -73,6 +73,16 @@ public class ApiClient {
         });
     }
 
+    /** GET con cabeceras propias del servicio (por ejemplo, la clave del front para Notificaciones). */
+    public Map<String, Object> objetoConCabeceras(Map<String, String> cabeceras, String url, Object... variables) {
+        return ejecutar(() -> {
+            Map<String, Object> r = rest.get().uri(url, variables)
+                    .headers(h -> cabeceras.forEach(h::set))
+                    .retrieve().body(OBJETO);
+            return r == null ? Map.of() : r;
+        });
+    }
+
     public Object leer(String url, Object... variables) {
         return ejecutar(() -> rest.get().uri(url, variables).retrieve().body(Object.class));
     }
@@ -98,6 +108,21 @@ public class ApiClient {
         ejecutar(() -> {
             RestClient.RequestBodySpec spec = rest.method(metodo).uri(url, variables)
                     .contentType(MediaType.APPLICATION_JSON);
+            if (cuerpo != null) {
+                spec.body(cuerpo);
+            }
+            spec.retrieve().toBodilessEntity();
+            return null;
+        });
+    }
+
+    /** Como enviar, con cabeceras propias del servicio. */
+    public void enviarConCabeceras(HttpMethod metodo, String url, Object cuerpo, Map<String, String> cabeceras,
+                                   Object... variables) {
+        ejecutar(() -> {
+            RestClient.RequestBodySpec spec = rest.method(metodo).uri(url, variables)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .headers(h -> cabeceras.forEach(h::set));
             if (cuerpo != null) {
                 spec.body(cuerpo);
             }

@@ -66,9 +66,8 @@ public class AvisosAdvice {
             } else if (!SesionUsuario.ADMINISTRADOR.equals(u.getRol())) {
                 return 0L;
             }
-            return notificaciones.notificacionesDe(destinatarios).stream()
-                    .filter(n -> !Boolean.TRUE.equals(n.get("leida")))
-                    .count();
+            // Entrega 6: el servicio cuenta las no leídas; no hace falta traerlas.
+            return notificaciones.cantidadSinLeer(destinatarios);
         } catch (RuntimeException e) {
             return 0L;
         }

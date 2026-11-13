@@ -142,7 +142,8 @@ public class PanelController {
             model.addAttribute("podioProvisional", Boolean.TRUE.equals(ranking.get("provisional")));
             model.addAttribute("podio", Mapas.lista(ranking.get("puestos")).stream().map(puesto -> {
                 Map<String, Object> fila = new LinkedHashMap<>(puesto);
-                fila.put("nombre", nombreEnPodio(UUID.fromString(String.valueOf(puesto.get("donanteId"))), usuario));
+                fila.put("nombre", nombreEnPodio(UUID.fromString(String.valueOf(puesto.get("donanteId"))),
+                        Mapas.texto(puesto, "nombreVisible"), usuario));
                 return fila;
             }).toList());
         } catch (ApiException e) {
@@ -151,25 +152,16 @@ public class PanelController {
         }
     }
 
-    private String nombreEnPodio(UUID id, SesionUsuario usuario) {
+    /**
+     * Entrega 6: el nombre lo devuelve Incentivos (nombre e inicial del apellido, o
+     * razón social), que lo recibe de Donaciones. Ya no se pide el perfil de otras
+     * personas a Donaciones: desde la Entrega 6 responde 403.
+     */
+    static String nombreEnPodio(UUID id, String nombreVisible, SesionUsuario usuario) {
         if (id.equals(usuario.getDonanteId())) {
             return usuario.getPrimerNombre() + " (vos)";
         }
-        try {
-            Map<String, Object> donante = donaciones.donante(id);
-            if (donante.get("razonSocial") instanceof String razonSocial && !razonSocial.isBlank()) {
-                return razonSocial;
-            }
-            if (donante.get("nombre") instanceof String nombre && !nombre.isBlank()) {
-                if (donante.get("apellido") instanceof String apellido && !apellido.isBlank()) {
-                    return nombre + " " + apellido.strip().charAt(0) + ".";
-                }
-                return nombre;
-            }
-        } catch (ApiException e) {
-            return "Donante";
-        }
-        return "Donante";
+        return nombreVisible == null || nombreVisible.isBlank() ? "Donante" : nombreVisible;
     }
 
     @GetMapping("/admin/panel")

@@ -151,7 +151,8 @@ public class AutenticacionController {
             flash.addFlashAttribute("nombreChofer", nombre.trim());
             flash.addFlashAttribute("emailChofer", email.trim());
         }
-        return "redirect:/admin/camiones";
+        // El formulario de choferes está en el panel de administración (/admin/camiones no existe).
+        return "redirect:/admin/panel";
     }
 
     /** El camión queda en la cuenta del chofer. Logística no guarda esa relación. */
