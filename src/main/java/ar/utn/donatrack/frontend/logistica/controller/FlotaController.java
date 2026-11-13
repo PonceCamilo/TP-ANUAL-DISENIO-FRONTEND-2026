@@ -1,10 +1,15 @@
 package ar.utn.donatrack.frontend.logistica.controller;
 
+import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
+import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,16 +29,42 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class FlotaController {
 
     private final LogisticaApi api;
+    private final AuthClient authClient;
 
-    public FlotaController(LogisticaApi api) {
+    public FlotaController(LogisticaApi api, AuthClient authClient) {
         this.api = api;
+        this.authClient = authClient;
+    }
+
+    private SesionUsuario usuario(HttpSession s) {
+        return (SesionUsuario) s.getAttribute(SesionUsuario.ATRIBUTO);
     }
 
     @GetMapping
     public String listar(Model model) {
-        model.addAttribute("seccion", "flota");
+        model.addAttribute("seccion", "camiones");
+        model.addAttribute("pestania", "flota");
         model.addAttribute("camiones", api.camiones());
         return "logistica/flota";
+    }
+
+    @GetMapping("/choferes")
+    public String choferes(HttpSession sesion, Model model) {
+        model.addAttribute("seccion", "camiones");
+        model.addAttribute("pestania", "choferes");
+        try {
+            model.addAttribute("choferes", authClient.choferes(usuario(sesion)));
+        } catch (ApiException e) {
+            model.addAttribute("choferes", List.of());
+            model.addAttribute("toast", e.getMessage());
+            model.addAttribute("toastTipo", "error");
+        }
+        try {
+            model.addAttribute("camiones", api.camiones());
+        } catch (ApiException e) {
+            model.addAttribute("camiones", List.of());
+        }
+        return "logistica/choferes";
     }
 
     @PostMapping
@@ -66,7 +97,7 @@ public class FlotaController {
         Map<String, Object> ruta = api.rutaVigente(id);
         String estado = String.valueOf(camion.get("estado"));
         boolean rutaAbierta = ruta != null;
-        model.addAttribute("seccion", "flota");
+        model.addAttribute("seccion", "camiones");
         model.addAttribute("camion", camion);
         model.addAttribute("ruta", ruta);
         model.addAttribute("puedeMantenimiento", "DISPONIBLE".equals(estado) && !rutaAbierta);

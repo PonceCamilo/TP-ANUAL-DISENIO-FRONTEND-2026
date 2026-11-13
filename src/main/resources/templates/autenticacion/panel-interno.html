@@ -9,7 +9,7 @@
     </section>
     <div class="seccion" th:if="${usuario.rol == 'ADMINISTRADOR'}">
       <p class="fila">
-        <a class="btn btn-secundario" th:href="@{/admin/flota}" data-carga>Flota</a>
+        <a class="btn btn-secundario" th:href="@{/admin/flota}" data-carga>Camiones</a>
         <a class="btn btn-secundario" th:href="@{/admin/entregas/no-recibidas}" data-carga>Entregas no recibidas</a>
         <form th:action="@{/admin/replanificar}" method="post" data-carga>
           <button class="btn btn-secundario" type="submit" data-cargando="Armando rutas…">Armar rutas del depósito</button>
@@ -17,67 +17,6 @@
       </p>
       <p class="suave chico">Arma una ruta nueva con las entregas que ya volvieron al depósito y cuya ruta anterior terminó.</p>
     </div>
-    <section class="tarjeta seccion" th:if="${usuario.rol == 'ADMINISTRADOR'}" aria-labelledby="titulo-alta-chofer">
-      <h2 id="titulo-alta-chofer">Crear cuenta de chofer</h2>
-      <p>Creá la cuenta con su email y una contraseña que puedas compartirle. El camión se lo asignás abajo.</p>
-      <form th:action="@{/admin/choferes}" method="post" class="formulario" data-carga>
-        <div class="campo">
-          <label for="nombre-chofer">Nombre</label>
-          <input id="nombre-chofer" name="nombre" required maxlength="100" th:value="${nombreChofer}">
-        </div>
-        <div class="campo">
-          <label for="email-chofer">Email</label>
-          <input id="email-chofer" name="email" type="email" required maxlength="150" th:value="${emailChofer}">
-        </div>
-        <div class="campo">
-          <label for="clave-chofer">Contraseña</label>
-          <div class="clave">
-            <input id="clave-chofer" name="password" type="password" required minlength="8" maxlength="72"
-                   autocomplete="new-password" aria-describedby="ayuda-clave-chofer">
-            <button type="button" data-mostrar-clave="clave-chofer" aria-pressed="false">Mostrar</button>
-          </div>
-          <p id="ayuda-clave-chofer" class="ayuda">Al menos 8 caracteres.</p>
-        </div>
-        <button class="btn btn-sol" type="submit" data-cargando="Creando cuenta…">Crear cuenta</button>
-      </form>
-    </section>
-    <section class="tarjeta seccion" th:if="${usuario.rol == 'ADMINISTRADOR'}" aria-labelledby="titulo-asignar-camion">
-      <h2 id="titulo-asignar-camion">Asignar camión</h2>
-      <p>Elegí el camión de cada chofer. En Mi ruta va a ver el reparto de ese camión.</p>
-      <p th:if="${choferesNoDisponibles}">No pudimos cargar los choferes. La asignación vuelve cuando autenticación responda.</p>
-      <p th:if="${flotaNoDisponible}">No pudimos cargar la flota. La asignación vuelve cuando logística responda.</p>
-      <p th:if="${!choferesNoDisponibles and choferes.isEmpty()}">Cuando crees un chofer, vas a poder asignarle un camión.</p>
-      <p th:if="${!flotaNoDisponible and camiones.isEmpty() and !choferes.isEmpty()}">Registrá un camión en Flota antes de asignarlo.</p>
-      <ul class="lista" th:if="${!choferes.isEmpty()}">
-        <li th:each="ch : ${choferes}">
-          <div class="item">
-            <div class="item-cuerpo">
-              <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg></span>
-              <div>
-                <p class="item-titulo" th:text="${ch['nombre']}">Nombre</p>
-                <p class="suave chico" style="margin:0" th:text="${ch['email']}">email</p>
-                <p class="suave chico" style="margin:0" th:if="${ch['patente'] != null}" th:text="|Camión actual: ${ch['patente']}|">Camión actual</p>
-                <p class="suave chico" style="margin:0" th:if="${ch['camionId'] == null}">Sin camión</p>
-                <p class="suave chico" style="margin:0" th:if="${ch['camionPerdido']}">El camión asignado ya no está en la flota.</p>
-              </div>
-            </div>
-            <form th:if="${!flotaNoDisponible and !camiones.isEmpty()}" method="post" class="formulario"
-                  style="flex: 1 1 16rem; margin: 0"
-                  th:action="@{/admin/choferes/{id}/camion(id=${ch['id']})}" data-carga>
-              <div class="campo">
-                <label th:for="${'camion-' + ch['id']}">Camión</label>
-                <select th:id="${'camion-' + ch['id']}" name="camionId" required>
-                  <option value="">Elegí un camión</option>
-                  <option th:each="c : ${camiones}" th:value="${c['id']}" th:text="${c['patente']}"
-                          th:selected="${ch['camionId'] != null and #strings.equals(ch['camionId'], c['id'])}">AB123CD</option>
-                </select>
-              </div>
-              <button class="btn btn-sol" type="submit" data-cargando="Asignando…">Asignar</button>
-            </form>
-          </div>
-        </li>
-      </ul>
-    </section>
     <section class="tarjeta seccion" th:if="${usuario.rol == 'CHOFER'}">
       <h2>Mi camión</h2>
       <p th:if="${camionAsignado == null}">Todavía no tenés un camión asignado. Cuando administración te asigne uno, tu reparto aparece en Mi ruta.</p>

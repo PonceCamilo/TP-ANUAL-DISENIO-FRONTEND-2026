@@ -48,10 +48,10 @@
         <li><a th:href="@{/admin/donaciones}" th:aria-current="${#strings.startsWith(rutaActual, '/admin/donaciones')} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('box')}"></svg>Donaciones</a></li>
         <li><a th:href="@{/admin/donantes}" th:aria-current="${#strings.startsWith(rutaActual, '/admin/donantes')} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('gift')}"></svg>Donantes</a></li>
         <li><a th:href="@{/admin/entidades}" th:aria-current="${#strings.startsWith(rutaActual, '/admin/entidades')} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('building')}"></svg>Entidades</a></li>
-        <li><a th:href="@{/admin/flota}" th:aria-current="${seccion == 'flota'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Flota</a></li>
+        <li><a th:href="@{/admin/flota}" th:aria-current="${seccion == 'camiones'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg>Camiones</a></li>
         <li><a th:href="@{/admin/entregas/no-recibidas}" th:aria-current="${seccion == 'no-recibidas'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg>No recibidas</a></li>
         <li><a th:href="@{/admin/rankings}" th:aria-current="${seccion == 'rankings'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('medal')}"></svg>Rankings</a></li>
-        <li><a th:href="@{/admin/notificaciones}" th:aria-current="${seccion == 'notificaciones'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('bell')}"></svg>Notificaciones</a></li>
+        <li><a th:href="@{/admin/notificaciones}" th:aria-current="${seccion == 'notificaciones'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('bell')}"></svg>Avisos</a></li>
       </ul>
       <ul class="nav" th:if="${usuario.rol == 'CHOFER'}">
         <li><a th:href="@{/chofer/panel}" th:aria-current="${seccion == 'panel'} ? 'page'" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('home')}"></svg>Inicio</a></li>

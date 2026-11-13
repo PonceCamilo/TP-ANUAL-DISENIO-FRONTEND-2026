@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina(${area}, ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <section class="portada" aria-labelledby="titulo-area">
+      <h1 id="titulo-area" th:text="${area}">Panel</h1>
+      <p th:text="${descripcionArea}">Operación del depósito.</p>
+    </section>
+
+    <section aria-labelledby="t-numeros">
+      <h2 id="t-numeros" class="solo-lectores">Operación de hoy</h2>
+      <div class="franja">
+        <div><div class="valor" th:text="${totalEnDeposito}">0</div><div class="rotulo">En depósito</div></div>
+        <div><div class="valor" th:text="${totalPendientes}">0</div><div class="rotulo">Pendientes de asignar</div></div>
+        <div><div class="valor" th:text="${totalCamionesDisponibles}">0</div><div class="rotulo">Camiones disponibles</div></div>
+        <div><div class="valor" th:text="${totalDonantes}">0</div><div class="rotulo">Donantes registrados</div></div>
+      </div>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="t-pendientes">
+      <div class="fila espaciado">
+        <h2 id="t-pendientes">Pendientes de asignación</h2>
+        <a th:href="@{/admin/asignacion}" data-carga>Ver algoritmos</a>
+      </div>
+      <p class="suave chico" th:if="${#lists.isEmpty(pendientesPreview)}">No hay donaciones pendientes de asignar.</p>
+      <ul class="lista" th:if="${!#lists.isEmpty(pendientesPreview)}">
+        <li class="item" th:each="p : ${pendientesPreview}">
+          <div class="item-cuerpo">
+            <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('target')}"></svg></span>
+            <div>
+              <p class="item-titulo" th:text="${p.donacion.descripcion}">Descripción</p>
+              <p class="suave chico">
+                <span th:text="${#lists.size(p.donacion.bienes)} + ' bienes'">0 bienes</span>
+                <span th:if="${p.nombreDonante != null}" th:text="'· de ' + ${p.nombreDonante}">· de Donante</span>
+              </p>
+            </div>
+          </div>
+          <a class="btn btn-sol btn-chico" th:href="@{/admin/donaciones/por-asignar}" data-carga>Asignar</a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="tarjeta seccion" aria-labelledby="t-flota">
+      <div class="fila espaciado">
+        <h2 id="t-flota">Flota</h2>
+        <a th:href="@{/admin/flota}" data-carga>Administrar</a>
+      </div>
+      <p class="suave chico" th:if="${#lists.isEmpty(flotaPreview)}">Todavía no hay camiones cargados.</p>
+      <ul class="lista" th:if="${!#lists.isEmpty(flotaPreview)}">
+        <li class="item" th:each="c : ${flotaPreview}">
+          <div class="item-cuerpo">
+            <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('truck')}"></svg></span>
+            <div>
+              <p class="item-titulo" th:text="${c.patente}">Patente</p>
+              <p class="suave chico" th:text="${c.capacidadVolumenM3} + ' m³ · ' + ${c.alturaM} + ' m · ' + ${c.capacidadCargaKg} + ' kg'">Capacidad</p>
+            </div>
+          </div>
+          <span class="estado"
+                th:classappend="${c.estado == 'DISPONIBLE'} ? 'estado-ok' : (${c.estado == 'EN_RUTA'} ? 'estado-info' : 'estado-warn')"
+                th:text="${c.estado}">DISPONIBLE</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+</main>
+</body>
+</html>

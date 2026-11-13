@@ -11,11 +11,13 @@ import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Controller;
@@ -165,17 +167,57 @@ public class PanelController {
     }
 
     @GetMapping("/admin/panel")
-    public String panelAdministracion(HttpSession sesion, Model model) {
+    public String panelAdministracion(Model model) {
         model.addAttribute("seccion", "panel");
         model.addAttribute("area", "Administración");
         model.addAttribute("descripcionArea", "Área interna para la gestión de DonaTrack.");
-        model.addAttribute("flotaNoDisponible", false);
-        model.addAttribute("choferesNoDisponibles", false);
-        List<Map<String, Object>> camiones = camionesParaAsignar(model);
-        List<Map<String, Object>> choferes = choferesParaAsignar(sesion, model);
-        model.addAttribute("camiones", camiones);
-        model.addAttribute("choferes", conPatente(choferes, camiones));
-        return "autenticacion/panel-interno";
+        try {
+            List<Map<String, Object>> enDeposito = donaciones.donacionesEnDeposito();
+            List<Map<String, Object>> pendientes = donaciones.candidatosPendientes();
+            List<Map<String, Object>> camiones = logistica.camiones();
+            long totalDonantes = donaciones.paginaDeDonantes(null, null, 1).getTotalElementos();
+
+            model.addAttribute("totalEnDeposito", enDeposito.size());
+            model.addAttribute("totalPendientes", pendientes.size());
+            model.addAttribute("totalCamionesDisponibles",
+                    camiones.stream().filter(c -> Mapas.igual(Mapas.texto(c, "estado"), "DISPONIBLE")).count());
+            model.addAttribute("totalDonantes", totalDonantes);
+
+            model.addAttribute("pendientesPreview", pendientes.stream().limit(3).map(p -> {
+                Map<String, Object> fila = new LinkedHashMap<>(p);
+                try {
+                    Map<String, Object> donacion = donaciones.donacion(UUID.fromString(Mapas.texto(p, "idDonacion")));
+                    fila.put("donacion", donacion);
+                    Object idDonante = donacion.get("idDonante");
+                    if (idDonante != null) {
+                        fila.put("nombreDonante", nombreCorto(donaciones.donante(UUID.fromString(String.valueOf(idDonante)))));
+                    }
+                } catch (ApiException | IllegalArgumentException ignorado) {
+                    fila.put("donacion", Map.of());
+                }
+                return fila;
+            }).toList());
+            model.addAttribute("flotaPreview", camiones.stream().limit(3).toList());
+        } catch (ApiException e) {
+            model.addAttribute("totalEnDeposito", 0);
+            model.addAttribute("totalPendientes", 0);
+            model.addAttribute("totalCamionesDisponibles", 0);
+            model.addAttribute("totalDonantes", 0);
+            model.addAttribute("pendientesPreview", List.of());
+            model.addAttribute("flotaPreview", List.of());
+            model.addAttribute("toast", e.getMessage());
+            model.addAttribute("toastTipo", "error");
+        }
+        return "autenticacion/admin-panel";
+    }
+
+    private String nombreCorto(Map<String, Object> donante) {
+        if (donante.get("razonSocial") instanceof String razonSocial && !razonSocial.isBlank()) {
+            return razonSocial;
+        }
+        String nombre = Mapas.texto(donante, "nombre");
+        String apellido = Mapas.texto(donante, "apellido");
+        return (nombre + " " + apellido).strip();
     }
 
     @GetMapping({"/chofer/panel", "/transporte/panel"})
@@ -193,47 +235,6 @@ public class PanelController {
         model.addAttribute("area", "Transporte");
         model.addAttribute("descripcionArea", "Área del equipo que realiza las entregas.");
         return "autenticacion/panel-interno";
-    }
-
-    private List<Map<String, Object>> camionesParaAsignar(Model model) {
-        try {
-            return logistica.camiones();
-        } catch (ApiException e) {
-            model.addAttribute("flotaNoDisponible", true);
-            return List.of();
-        }
-    }
-
-    private List<Map<String, Object>> choferesParaAsignar(HttpSession sesion, Model model) {
-        try {
-            return autenticacion.choferes(usuario(sesion));
-        } catch (ApiException e) {
-            model.addAttribute("choferesNoDisponibles", true);
-            return List.of();
-        }
-    }
-
-    /** Cruza el camionId de la cuenta con la patente que conoce logística. */
-    private List<Map<String, Object>> conPatente(List<Map<String, Object>> choferes,
-                                                 List<Map<String, Object>> camiones) {
-        Map<String, String> patentes = new HashMap<>();
-        for (Map<String, Object> camion : camiones) {
-            if (camion.get("id") != null && camion.get("patente") != null) {
-                patentes.put(String.valueOf(camion.get("id")), String.valueOf(camion.get("patente")));
-            }
-        }
-        List<Map<String, Object>> filas = new ArrayList<>();
-        for (Map<String, Object> chofer : choferes) {
-            Map<String, Object> fila = new LinkedHashMap<>(chofer);
-            Object camionId = chofer.get("camionId");
-            if (camionId != null) {
-                String patente = patentes.get(String.valueOf(camionId));
-                fila.put("patente", patente);
-                fila.put("camionPerdido", patente == null);
-            }
-            filas.add(fila);
-        }
-        return filas;
     }
 
     @GetMapping("/entidad/panel")

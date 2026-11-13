@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 
@@ -34,12 +35,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class PantallasInternasLogisticaTest {
 
     private final LogisticaApi api = mock(LogisticaApi.class);
+    private final AuthClient authClient = mock(AuthClient.class);
     private MockMvc mvc;
 
     @BeforeEach
     void preparar() {
         mvc = MockMvcBuilders.standaloneSetup(
-                new FlotaController(api),
+                new FlotaController(api, authClient),
                 new RevisionEntregasController(api),
                 new MiRutaController(api),
                 new RecepcionController(api),
