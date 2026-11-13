@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -107,8 +108,8 @@ public class PanelController {
         model.addAttribute("metricas", metricas);
         model.addAttribute("misiones", misiones);
         model.addAttribute("insignias", insignias);
-        model.addAttribute("insigniasVisibles", insignias.stream()
-                .filter(insignia -> Boolean.TRUE.equals(insignia.get("visible"))).toList());
+        model.addAttribute("hayInsigniasVisibles", insignias.stream()
+                .anyMatch(insignia -> Boolean.TRUE.equals(insignia.get("visible"))));
         model.addAttribute("misionActiva", misiones.stream()
                 .filter(mision -> Boolean.TRUE.equals(mision.get("activa"))).findFirst().orElse(null));
         cargarPodio(model, usuario(sesion));
@@ -131,7 +132,7 @@ public class PanelController {
         return "incentivos/perfil-publico";
     }
 
-    @PostMapping("/donante/insignias/{insigniaId}/visibilidad")
+    @PostMapping(value = "/donante/insignias/{insigniaId}/visibilidad", headers = "!X-Actualizar-Insignia")
     public String cambiarVisibilidadInsignia(HttpSession sesion, @PathVariable long insigniaId,
                                              @RequestParam boolean visible, RedirectAttributes flash) {
         UUID id = donanteId(sesion);
@@ -147,6 +148,21 @@ public class PanelController {
             flash.addFlashAttribute("toastTipo", "error");
         }
         return "redirect:/donante/panel#t-insignias";
+    }
+
+    @PostMapping(value = "/donante/insignias/{insigniaId}/visibilidad", headers = "X-Actualizar-Insignia")
+    public ResponseEntity<?> actualizarVisibilidadInsignia(HttpSession sesion, @PathVariable long insigniaId,
+                                                          @RequestParam boolean visible) {
+        UUID id = donanteId(sesion);
+        if (id == null) {
+            return ResponseEntity.status(409).body(Map.of("mensaje", "Completá tu perfil de donante."));
+        }
+        try {
+            incentivos.cambiarVisibilidad(id, insigniaId, visible);
+            return ResponseEntity.noContent().build();
+        } catch (ApiException e) {
+            return ResponseEntity.status(e.getStatus()).body(Map.of("mensaje", e.getMessage()));
+        }
     }
 
     private void cargarPodio(Model model, SesionUsuario usuario) {

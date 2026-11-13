@@ -9,8 +9,10 @@
         <h1 id="saludo">Hola, <span th:text="${#strings.isEmpty(usuario.nombre) ? usuario.primerNombre : usuario.nombre}">Cynthia</span></h1>
         <span class="incentivos-categoria" th:if="${logrosDisponibles and !usuario.esDonanteJuridico()}" th:text="${metricas.categoriaActual}">Colaborador</span>
       </div>
-      <ul class="insignias incentivos-lista" aria-label="Insignias visibles del perfil" th:unless="${insigniasVisibles.isEmpty()}">
-        <li class="insignia" th:each="i : ${insigniasVisibles}">
+      <ul class="insignias incentivos-lista" aria-label="Insignias visibles del perfil"
+          data-insignias-visibles th:hidden="${!hayInsigniasVisibles}">
+        <li class="insignia" th:each="i : ${insignias}" th:hidden="${!i.visible}"
+            th:attr="data-insignia-id=${i.id}">
           <span class="medalla"><svg th:replace="~{comun/fragmentos/componentes :: ic('medal')}"></svg></span>
           <span th:text="${i.nombre}">Semilla de Solidaridad</span>
         </li>
@@ -104,10 +106,13 @@
               <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('medal')}"></svg></span>
               <div>
                 <p class="item-titulo" th:text="${i.nombre}">Primera donación</p>
-                <span class="chico suave" th:text="${i.visible ? 'Visible en el perfil' : 'Oculta en el perfil'}">Visible en el perfil</span>
+                <span class="chico suave" data-estado-insignia aria-live="polite"
+                      th:text="${i.visible ? 'Visible en el perfil' : 'Oculta en el perfil'}">Visible en el perfil</span>
+                <div class="chico suave" data-aviso-insignia role="status"></div>
               </div>
             </div>
-            <form th:action="@{/donante/insignias/{id}/visibilidad(id=${i.id})}" method="post">
+            <form th:action="@{/donante/insignias/{id}/visibilidad(id=${i.id})}" method="post"
+                  th:attr="data-visibilidad-insignia=${i.id}">
               <input type="hidden" name="visible" th:value="${!i.visible}">
               <button class="btn btn-secundario incentivos-ojito" type="submit"
                       th:aria-label="|${i.visible ? 'Ocultar' : 'Mostrar'} insignia ${i.nombre}|"
@@ -115,7 +120,7 @@
                 <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
                   <circle cx="12" cy="12" r="2.5"/>
-                  <path th:unless="${i.visible}" d="M3 3l18 18"/>
+                  <path data-ojito-tachado th:attr="visibility=${i.visible ? 'hidden' : 'visible'}" d="M3 3l18 18"/>
                 </svg>
               </button>
             </form>

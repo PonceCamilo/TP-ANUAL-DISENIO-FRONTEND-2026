@@ -1,9 +1,11 @@
 package ar.utn.donatrack.frontend;
 
 import ar.utn.donatrack.frontend.autenticacion.services.AuthClient;
+import ar.utn.donatrack.frontend.comun.clientes.ApiClient;
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.comun.seguridad.SesionUsuario;
 import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
+import ar.utn.donatrack.frontend.donaciones.services.ImportacionCsvClient;
 import ar.utn.donatrack.frontend.incentivos.services.IncentivosApi;
 import ar.utn.donatrack.frontend.logistica.services.LogisticaApi;
 import ar.utn.donatrack.frontend.notificaciones.services.NotificacionesApi;
@@ -19,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,9 +30,14 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -42,6 +51,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PantallasCorregidasTest {
 
     @Autowired MockMvc mvc;
+    @MockitoBean ApiClient api;
+    @MockitoBean ImportacionCsvClient importacionCsv;
     @MockitoBean DonacionesApi donaciones;
     @MockitoBean LogisticaApi logistica;
     @MockitoBean IncentivosApi incentivos;
@@ -272,6 +283,42 @@ class PantallasCorregidasTest {
                 .andExpect(content().string(containsString("Tus insignias")))
                 .andExpect(content().string(containsString("Semilla de Solidaridad")))
                 .andExpect(content().string(containsString("No pudimos cargar tus logros ahora")));
+    }
+
+    @Test
+    @DisplayName("Cambiar visibilidad de una insignia devuelve la confirmación sin recargar el panel")
+    void cambiarVisibilidadSinRecargarPanel() throws Exception {
+        SesionUsuario donante = sesion(SesionUsuario.DONANTE);
+        UUID idDonante = UUID.randomUUID();
+        donante.setDonanteId(idDonante);
+        MockHttpSession sesion = new MockHttpSession();
+        sesion.setAttribute(SesionUsuario.ATRIBUTO, donante);
+        when(incentivos.metricas(idDonante)).thenThrow(new ApiException("Incentivos no responde", 502));
+        when(incentivos.podio()).thenThrow(new ApiException("Incentivos no responde", 502));
+        when(incentivos.insignias(idDonante)).thenReturn(List.of(
+                Map.of("id", 1, "nombre", "Semilla de Solidaridad", "visible", false)));
+        CsrfToken csrf = (CsrfToken) mvc.perform(get("/donante/panel").session(sesion))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-visibilidad-insignia=\"1\"")))
+                .andExpect(content().string(containsString("data-insignia-id=\"1\"")))
+                .andReturn().getRequest().getAttribute(CsrfToken.class.getName());
+
+        String ruta = "/donante/insignias/1/visibilidad";
+        mvc.perform(post(ruta).session(sesion).param(csrf.getParameterName(), csrf.getToken())
+                        .param("visible", "true").header("X-Actualizar-Insignia", "true"))
+                .andExpect(status().isNoContent());
+        verify(incentivos).cambiarVisibilidad(idDonante, 1, true);
+
+        doThrow(new ApiException("No pudimos guardar el cambio.", 503))
+                .when(incentivos).cambiarVisibilidad(idDonante, 1, false);
+        mvc.perform(post(ruta).session(sesion).param(csrf.getParameterName(), csrf.getToken())
+                        .param("visible", "false").header("X-Actualizar-Insignia", "true"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.mensaje").value("No pudimos guardar el cambio."));
+
+        mvc.perform(post(ruta).session(sesion).param(csrf.getParameterName(), csrf.getToken())
+                        .param("visible", "false"))
+                .andExpect(redirectedUrl("/donante/panel#t-insignias"));
     }
 
     @Test

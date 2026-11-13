@@ -51,6 +51,62 @@
     actualizarEnlaceGoogle();
   }
 
+  // ---- insignias: guardar la visibilidad sin recargar el panel -----------------------
+  var insigniasVisibles = document.querySelector('[data-insignias-visibles]');
+  document.querySelectorAll('form[data-visibilidad-insignia]').forEach(function (form) {
+    var fila = form.closest('li');
+    var nombre = fila.querySelector('.item-titulo').textContent;
+    var estado = fila.querySelector('[data-estado-insignia]');
+    var aviso = fila.querySelector('[data-aviso-insignia]');
+    var boton = form.querySelector('button');
+    var tachado = boton.querySelector('[data-ojito-tachado]');
+    var campoVisible = form.elements.namedItem('visible');
+    var insignia = insigniasVisibles.querySelector('[data-insignia-id="' + form.dataset.visibilidadInsignia + '"]');
+    var guardando = false;
+
+    form.addEventListener('submit', async function (evento) {
+      evento.preventDefault();
+      if (guardando) return;
+      var visible = campoVisible.value === 'true';
+      guardando = true;
+      boton.setAttribute('aria-disabled', 'true');
+      aviso.textContent = 'Guardando…';
+      try {
+        var respuesta = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'X-Actualizar-Insignia': 'true' },
+          body: new URLSearchParams(new FormData(form)),
+          redirect: 'manual'
+        });
+        if (respuesta.type === 'opaqueredirect' || respuesta.status === 401) {
+          aviso.textContent = 'Recargá la página y volvé a intentarlo.';
+          return;
+        }
+        if (respuesta.status !== 204) {
+          var tipo = respuesta.headers.get('Content-Type') || '';
+          var error = tipo.includes('application/json') ? await respuesta.json() : null;
+          aviso.textContent = error?.mensaje || 'No pudimos confirmar el cambio. Volvé a intentarlo.';
+          return;
+        }
+
+        campoVisible.value = String(!visible);
+        estado.textContent = visible ? 'Visible en el perfil' : 'Oculta en el perfil';
+        var accion = visible ? 'Ocultar' : 'Mostrar';
+        boton.setAttribute('aria-label', accion + ' insignia ' + nombre);
+        boton.title = accion + ' insignia';
+        tachado.setAttribute('visibility', visible ? 'hidden' : 'visible');
+        insignia.hidden = !visible;
+        insigniasVisibles.hidden = !insigniasVisibles.querySelector('[data-insignia-id]:not([hidden])');
+        aviso.textContent = '';
+      } catch {
+        aviso.textContent = 'No pudimos confirmar el cambio. Volvé a intentarlo.';
+      } finally {
+        guardando = false;
+        boton.removeAttribute('aria-disabled');
+      }
+    });
+  });
+
   // ---- navegación entre pantallas: mismo indicador --------------------------------
   document.querySelectorAll('a[data-carga]').forEach(function (a) {
     a.addEventListener('click', function (e) {
