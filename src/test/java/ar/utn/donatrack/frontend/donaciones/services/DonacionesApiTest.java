@@ -95,7 +95,7 @@ class DonacionesApiTest {
 
     private final ApiDePrueba api = new ApiDePrueba();
     private final DonacionesApi donaciones = new DonacionesApi(api, new FrontendProperties(
-            new FrontendProperties.Servicios(BASE, null, null, null, null), false));
+            new FrontendProperties.Servicios(BASE, null, null, null, null)));
 
     private Map<String, Object> conId(Object id) {
         return Map.of("id", id.toString());

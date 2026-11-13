@@ -21,7 +21,7 @@ public class SecurityConfig {
      * guardado en sesión, que es el que trae el JWT de DonaTrack.
      *
      * oauth2Login solo se activa si hay credenciales de Google configuradas;
-     * sin ellas el front arranca igual y queda el acceso demo.
+     * sin ellas el front arranca igual y queda el ingreso con email y contraseña.
      */
     @Bean
     SecurityFilterChain filtros(HttpSecurity http,

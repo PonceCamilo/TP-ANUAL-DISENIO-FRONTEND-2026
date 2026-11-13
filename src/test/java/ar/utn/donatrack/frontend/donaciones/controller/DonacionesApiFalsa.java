@@ -42,7 +42,7 @@ class DonacionesApiFalsa extends DonacionesApi {
 
     DonacionesApiFalsa() {
         super(new ApiClient(), new FrontendProperties(
-                new FrontendProperties.Servicios("http://donaciones", null, null, null, null), false));
+                new FrontendProperties.Servicios("http://donaciones", null, null, null, null)));
     }
 
     static Map<String, Object> donacion(UUID id, String estado) {

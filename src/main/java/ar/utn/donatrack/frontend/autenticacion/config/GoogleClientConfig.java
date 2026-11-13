@@ -14,7 +14,7 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
  * Registra Google como proveedor solo si hay credenciales. Se hace a mano (y no
  * con spring.security.oauth2.client.registration.*) porque Spring Boot falla al
  * arrancar si el client-id está vacío, y queremos que el front levante igual y
- * ofrezca el acceso demo cuando todavía no se configuró Google.
+ * ofrezca el ingreso con email y contraseña cuando todavía no se configuró Google.
  */
 @Configuration
 public class GoogleClientConfig {

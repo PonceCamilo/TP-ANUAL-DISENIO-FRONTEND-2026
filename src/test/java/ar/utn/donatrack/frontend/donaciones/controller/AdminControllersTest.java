@@ -425,7 +425,7 @@ class AdminControllersTest {
         String nombreRecibido;
 
         ImportacionCsvClientFalso() {
-            super(new FrontendProperties(new FrontendProperties.Servicios("http://donaciones", null, null, null, null), false));
+            super(new FrontendProperties(new FrontendProperties.Servicios("http://donaciones", null, null, null, null)));
         }
 
         @Override

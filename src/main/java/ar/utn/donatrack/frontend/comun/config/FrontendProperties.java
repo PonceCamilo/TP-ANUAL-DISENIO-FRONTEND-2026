@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * cliente no tiene ninguna URL escrita en el código.
  */
 @ConfigurationProperties(prefix = "donatrack")
-public record FrontendProperties(Servicios servicios, boolean demoEnabled) {
+public record FrontendProperties(Servicios servicios) {
 
     public record Servicios(
             String donaciones,

@@ -32,7 +32,7 @@ Abrí http://localhost:8080 (Codespaces: puerto 8080 en la pestaña *Puertos*). 
 | `SERVICIOS_LOGISTICA_URL` | logística | `…:8085` |
 | `SERVICIOS_AUTENTICACION_URL` | autenticación | `…:8088` |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | login con Google | vacío (el botón no aparece) |
-| `DONATRACK_DEMO` | acceso de prueba sin contraseña (solo desarrollo) | `false` |
+| `AUTH_FRONTEND_KEY` | clave compartida con Autenticación y Notificaciones (al menos 32 caracteres, la misma en el back) | vacío (no se pueden vincular perfiles ni activar cuentas) |
 
 **Credenciales:** van siempre en `.env` o variables de entorno. `.env` está en `.gitignore`: nunca lo subas.
 

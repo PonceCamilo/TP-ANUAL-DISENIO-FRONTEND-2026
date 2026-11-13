@@ -28,7 +28,7 @@ class NotificacionesApiTest {
     private static final String CLAVE = "clave-del-frontend-de-al-menos-32-caracteres";
     private final ApiClient api = mock(ApiClient.class);
     private final NotificacionesApi notificaciones = new NotificacionesApi(api,
-            new FrontendProperties(new FrontendProperties.Servicios("d", "i", "http://notificaciones", "l", "a"), false), CLAVE);
+            new FrontendProperties(new FrontendProperties.Servicios("d", "i", "http://notificaciones", "l", "a")), CLAVE);
 
     @Test
     @DisplayName("Pide la primera página filtrada por cada destinatario, sin repetirlos, con la clave del front")
