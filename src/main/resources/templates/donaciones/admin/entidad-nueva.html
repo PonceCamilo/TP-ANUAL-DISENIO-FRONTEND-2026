@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Registrar entidad', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/entidades}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Entidades</a></nav>
+    <div class="encabezado-pagina"><div><h1>Registrar una entidad beneficiaria</h1>
+      <p>Con la ubicación, las donaciones que reciba aparecen en el mapa de la página de inicio.</p></div></div>
+
+    <form class="formulario tarjeta" method="post" th:action="@{/admin/entidades/nueva}" data-carga>
+      <p class="ayuda">Los campos con <span class="requerido">*</span> son obligatorios.</p>
+      <div class="campo">
+        <label for="razonSocial">Nombre de la entidad <span class="requerido" aria-hidden="true">*</span></label>
+        <input id="razonSocial" name="razonSocial" required maxlength="120" placeholder="Ej.: Comedor Los Pibes">
+      </div>
+      <div class="campo">
+        <label for="email">Email de contacto <span class="requerido" aria-hidden="true">*</span></label>
+        <input id="email" name="email" type="email" required maxlength="150" placeholder="contacto@entidad.org">
+        <p class="ayuda">Le llegan los avisos de las donaciones asignadas. Es también el email de quien la representa.</p>
+      </div>
+      <fieldset class="campo">
+        <legend>Quién la representa</legend>
+        <div class="grupo-2">
+          <div class="campo"><label for="representanteNombre">Nombre <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="representanteNombre" name="representanteNombre" required></div>
+          <div class="campo"><label for="representanteApellido">Apellido <span class="requerido" aria-hidden="true">*</span></label>
+            <input id="representanteApellido" name="representanteApellido" required></div>
+        </div>
+      </fieldset>
+      <fieldset class="campo">
+        <legend>Dirección</legend>
+        <div class="grupo-2">
+          <div class="campo"><label for="calle">Calle <span class="requerido" aria-hidden="true">*</span></label><input id="calle" name="calle" required></div>
+          <div class="campo"><label for="numero">Número <span class="requerido" aria-hidden="true">*</span></label><input id="numero" name="numero" type="number" min="0" required></div>
+          <div class="campo"><label for="codigoPostal">Código postal <span class="requerido" aria-hidden="true">*</span></label><input id="codigoPostal" name="codigoPostal" required></div>
+          <div class="campo"><label for="localidad">Localidad <span class="requerido" aria-hidden="true">*</span></label><input id="localidad" name="localidad" required></div>
+          <div class="campo"><label for="provincia">Provincia <span class="requerido" aria-hidden="true">*</span></label><input id="provincia" name="provincia" required></div>
+        </div>
+      </fieldset>
+      <fieldset class="campo">
+        <legend class="fila">Ubicación en el mapa <span class="suave" style="font-weight:500">(opcional)</span></legend>
+        <div class="grupo-2">
+          <div class="campo"><label for="latitud">Latitud</label>
+            <input id="latitud" name="latitud" inputmode="decimal" placeholder="Ej.: -34.6037" aria-describedby="ubicacion-ayuda"></div>
+          <div class="campo"><label for="longitud">Longitud</label>
+            <input id="longitud" name="longitud" inputmode="decimal" placeholder="Ej.: -58.3816" aria-describedby="ubicacion-ayuda"></div>
+        </div>
+        <p id="ubicacion-ayuda" class="ayuda">Las dos o ninguna. Se pueden copiar desde un mapa (clic derecho sobre el lugar).</p>
+      </fieldset>
+      <div class="campo">
+        <label for="telefono">Teléfono <span class="suave" style="font-weight:500">(opcional)</span></label>
+        <input id="telefono" name="telefono" type="tel">
+      </div>
+      <button type="submit" class="btn btn-sol btn-grande" data-cargando="Guardando…">Registrar entidad</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

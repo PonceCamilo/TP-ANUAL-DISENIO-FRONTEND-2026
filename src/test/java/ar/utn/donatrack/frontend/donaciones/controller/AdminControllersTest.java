@@ -382,6 +382,32 @@ class AdminControllersTest {
         }
 
         @Test
+        @DisplayName("Entrega 6: la administración registra una entidad con su ubicación para el mapa")
+        @SuppressWarnings("unchecked")
+        void registrarConUbicacion() {
+            String destino = controller.crear("Comedor Los Pibes", " contacto@comedor.org ", "Ana", "Pérez",
+                    "Medrano", 951, "C1179", "CABA", "Buenos Aires", "", "-34.6037", "-58.3816", flash);
+
+            assertThat(destino).isEqualTo("redirect:/admin/entidades");
+            assertThat(api.acciones).contains("crearEntidad");
+            Map<String, Object> direccion = (Map<String, Object>) api.cuerpoEnviado.get("direccion");
+            assertThat(direccion).containsEntry("latitud", -34.6037).containsEntry("longitud", -58.3816);
+            assertThat((List<Map<String, Object>>) api.cuerpoEnviado.get("representantes"))
+                    .first().satisfies(r -> assertThat(r).containsEntry("email", "contacto@comedor.org"));
+        }
+
+        @Test
+        @DisplayName("Una sola coordenada no se manda: vuelve al formulario con el aviso")
+        void coordenadaIncompleta() {
+            String destino = controller.crear("Comedor", "c@comedor.org", "Ana", "Pérez", "Medrano", 951, "C1179",
+                    "CABA", "Buenos Aires", null, "-34.6", "", flash);
+
+            assertThat(destino).isEqualTo("redirect:/admin/entidades/nueva");
+            assertThat(tipoDeToast()).isEqualTo("error");
+            assertThat(api.acciones).doesNotContain("crearEntidad");
+        }
+
+        @Test
         @DisplayName("Si la entidad ya recibió donaciones, el motivo del servicio se muestra")
         void eliminarConDonaciones() {
             api.falla = new ApiException("La entidad tiene donaciones asignadas", 409);

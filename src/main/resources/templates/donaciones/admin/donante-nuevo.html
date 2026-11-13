@@ -6,7 +6,7 @@
     <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
     <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/donantes}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Donantes</a></nav>
     <div class="encabezado-pagina"><div><h1>Registrar una persona donante</h1>
-      <p>Después puede ingresar a DonaTrack creando su cuenta con este mismo email.</p></div></div>
+      <p>Le creamos una cuenta con este email. Para entrar, la persona elige «Activá tu cuenta» en el ingreso y recibe un enlace por correo para elegir su contraseña.</p></div></div>
 
     <form class="formulario tarjeta" method="post" th:action="@{/admin/donantes/nuevo}" data-carga>
       <p class="ayuda">Los campos con <span class="requerido">*</span> son obligatorios.</p>

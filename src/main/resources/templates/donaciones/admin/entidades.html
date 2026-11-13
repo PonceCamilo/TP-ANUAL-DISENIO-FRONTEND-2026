@@ -7,6 +7,7 @@
 
     <div class="encabezado-pagina">
       <div><h1>Entidades beneficiarias</h1><p>Las organizaciones que reciben donaciones.</p></div>
+      <a class="btn btn-sol" th:href="@{/admin/entidades/nueva}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('plus')}"></svg>Registrar entidad</a>
     </div>
 
     <form method="get" th:action="@{/admin/entidades}" class="tarjeta" aria-label="Buscar entidades" style="margin-bottom: var(--s-5)">

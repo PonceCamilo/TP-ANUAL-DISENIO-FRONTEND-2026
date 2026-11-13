@@ -197,6 +197,14 @@ class DonacionesApiFalsa extends DonacionesApi {
         registrar("crearDonacion");
     }
 
+    /** Entrega 6: alta de entidad por la administración. */
+    @Override
+    public UUID crearEntidad(Map<String, Object> cuerpo) {
+        cuerpoEnviado = cuerpo;
+        registrar("crearEntidad");
+        return UUID.randomUUID();
+    }
+
     /** Desde la rama de Lucía, el alta devuelve el id de la persona creada (para vincular el perfil). */
     @Override
     public UUID registrarDonante(Map<String, Object> cuerpo) {
