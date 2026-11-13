@@ -345,8 +345,6 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
 .nav { min-width: 0; flex-wrap: wrap; row-gap: var(--s-1); }
 @media (min-width: 48.01rem) and (max-width: 90rem) {
   .nav a { padding: 0 var(--s-3); gap: var(--s-1); font-size: var(--t-sm); }
-  /* Los íconos del menú se ocultan (el texto alcanza); la campanita queda por el número. */
-  .nav a > .ic { display: none; }
   .barra-admin .avatar { display: none; }
   .barra .contenedor { gap: var(--s-3); }
   .usuario-nombre { display: none; }
@@ -371,7 +369,9 @@ details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height:
 /* qué lleva cada parada y qué le falta a cada entidad candidata */
 .carga-parada, .necesidades-candidata { margin: var(--s-2) 0 0; padding-left: var(--s-4); font-size: var(--t-sm); }
 .carga-parada li, .necesidades-candidata li { margin: 2px 0; }
-.item-candidata { align-items: flex-start; }
+.item-candidata { align-items: flex-start; flex-wrap: wrap; }
+.item-candidata .item-cuerpo { align-items: flex-start; min-width: 0; flex: 1 1 18rem; }
+.item-candidata .item-cuerpo > div { min-width: 0; overflow-wrap: anywhere; }
 .tabla-envoltorio { overflow-x: auto; }
 .tabla-envoltorio .tabla { min-width: 40rem; }
 

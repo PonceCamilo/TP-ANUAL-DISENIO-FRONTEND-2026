@@ -86,7 +86,7 @@
           lista.appendChild(op);
         });
       }
-      localidad.placeholder = provincia.value ? 'Ej.: ' + (opciones[0] || 'tu localidad') : 'Elegí la provincia primero';
+      localidad.placeholder = provincia.value ? 'Ej.: ' + (opciones[0] || 'tu localidad') : 'Elegí la provincia';
       if (provincia.value === 'Ciudad Autónoma de Buenos Aires' && !localidad.value) {
         localidad.value = 'Ciudad Autónoma de Buenos Aires';
       }

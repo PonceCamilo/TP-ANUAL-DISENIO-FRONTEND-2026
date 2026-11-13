@@ -18,7 +18,7 @@
   <div class="campo">
     <label for="localidad">Localidad <span class="requerido" aria-hidden="true" th:if="${marca}">*</span></label>
     <input id="localidad" name="localidad" required list="localidades-sugeridas" autocomplete="address-level2"
-           maxlength="80" placeholder="Elegí la provincia primero" data-localidad aria-describedby="localidad-ayuda">
+           maxlength="80" placeholder="Elegí la provincia" data-localidad aria-describedby="localidad-ayuda">
     <datalist id="localidades-sugeridas"></datalist>
     <p id="localidad-ayuda" class="ayuda">Elegila de la lista o escribila si no aparece.</p>
   </div>
