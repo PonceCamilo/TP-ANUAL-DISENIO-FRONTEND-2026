@@ -37,6 +37,20 @@
     });
   });
 
+  var registroGoogle = document.getElementById('registro-google');
+  var tipoDonante = document.getElementById('tipoDonante');
+  if (registroGoogle && tipoDonante) {
+    function actualizarEnlaceGoogle() {
+      var url = new URL(registroGoogle.href);
+      url.searchParams.set('tipoDonante', tipoDonante.value);
+      registroGoogle.href = url.href;
+    }
+
+    tipoDonante.addEventListener('change', actualizarEnlaceGoogle);
+    window.addEventListener('pageshow', actualizarEnlaceGoogle);
+    actualizarEnlaceGoogle();
+  }
+
   // ---- navegación entre pantallas: mismo indicador --------------------------------
   document.querySelectorAll('a[data-carga]').forEach(function (a) {
     a.addEventListener('click', function (e) {

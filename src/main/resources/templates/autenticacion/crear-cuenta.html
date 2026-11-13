@@ -56,9 +56,9 @@
         </form>
 
         <div class="separador" th:if="${googleDisponible}">o</div>
-        <a class="btn btn-google btn-grande" th:if="${googleDisponible}" th:href="@{/login/google(rol=${rol})}" data-carga style="width:100%">Registrarme con Google</a>
-        <a class="btn btn-secundario btn-grande" th:if="${googleDisponible and rol == 'DONANTE'}"
-           th:href="@{/login/google(rol='DONANTE',tipoDonante='JURIDICA')}" data-carga>Registrar donante jurídico con Google</a>
+        <a id="registro-google" class="btn btn-google btn-grande"
+           th:if="${googleDisponible}" th:href="@{/login/google(rol=${rol})}"
+           data-carga style="width:100%">Registrarme con Google</a>
       </div>
 
       <p class="pie-form">¿Ya tenés cuenta? <a th:href="@{/login(rol=${rol})}">Ingresá</a></p>
