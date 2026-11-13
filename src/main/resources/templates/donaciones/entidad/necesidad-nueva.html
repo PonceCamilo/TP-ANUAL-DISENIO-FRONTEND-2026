@@ -34,9 +34,19 @@
         <label for="descripcion">Detalle (opcional)</label>
         <textarea id="descripcion" name="descripcion" maxlength="300"></textarea>
       </div>
-      <div class="campo">
-        <label for="cantidadObjetivo">Cantidad que necesitás <span class="requerido" aria-hidden="true">*</span></label>
-        <input id="cantidadObjetivo" name="cantidadObjetivo" type="number" min="1" required inputmode="numeric">
+      <div class="grupo-2">
+        <div class="campo">
+          <label for="cantidadObjetivo">Cantidad que necesitás <span class="requerido" aria-hidden="true">*</span></label>
+          <input id="cantidadObjetivo" name="cantidadObjetivo" type="number" min="1" required inputmode="numeric">
+        </div>
+        <div class="campo">
+          <label for="unidad">Unidad de medida <span class="requerido" aria-hidden="true">*</span>
+            <span th:replace="~{comun/fragmentos/componentes :: ayuda('unidad-nec', 'En qué se mide lo que necesitás. Es la misma que eligen los donantes al donar.')}"></span></label>
+          <select id="unidad" name="unidad" required>
+            <option value="unidades">Unidades</option><option value="kg">Kilos</option>
+            <option value="litros">Litros</option><option value="cajas">Cajas</option>
+          </select>
+        </div>
       </div>
       <fieldset class="campo">
         <legend class="fila">Tipo de necesidad

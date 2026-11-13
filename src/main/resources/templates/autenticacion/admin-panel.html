@@ -21,7 +21,7 @@
     <section class="tarjeta seccion" aria-labelledby="t-pendientes">
       <div class="fila espaciado">
         <h2 id="t-pendientes">Pendientes de asignación</h2>
-        <a th:href="@{/admin/asignacion}" data-carga>Ver algoritmos</a>
+        <a th:href="@{/admin/donaciones/por-asignar}" data-carga>Ver todas</a>
       </div>
       <p class="suave chico" th:if="${#lists.isEmpty(pendientesPreview)}">No hay donaciones pendientes de asignar.</p>
       <ul class="lista" th:if="${!#lists.isEmpty(pendientesPreview)}">
@@ -36,7 +36,8 @@
               </p>
             </div>
           </div>
-          <a class="btn btn-sol btn-chico" th:href="@{/admin/donaciones/por-asignar}" data-carga>Asignar</a>
+          <a class="btn btn-sol btn-chico" th:href="@{/admin/donaciones/{id}/candidatos(id=${p.idDonacion})}" data-carga
+             th:aria-label="'Asignar ' + ${p.donacion.descripcion}">Asignar</a>
         </li>
       </ul>
     </section>

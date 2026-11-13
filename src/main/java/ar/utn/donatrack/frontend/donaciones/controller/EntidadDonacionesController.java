@@ -92,6 +92,7 @@ public class EntidadDonacionesController {
                                  @RequestParam(required = false) String subcategoriaOtra,
                                  @RequestParam int cantidadObjetivo, @RequestParam String tipo,
                                  @RequestParam(required = false) String periodo,
+                                 @RequestParam(required = false) String unidad,
                                  HttpSession sesion, RedirectAttributes flash) {
         UUID id = entidadId(sesion);
         if (id == null) {
@@ -112,6 +113,8 @@ public class EntidadDonacionesController {
         cuerpo.put("descripcion", descripcion == null ? "" : descripcion.trim());
         cuerpo.put("subcategoria", esOtroTipo ? subcategoriaOtra.trim() : subcategoria.trim());
         cuerpo.put("cantidadObjetivo", cantidadObjetivo);
+        // Entrega 6: en qué se mide (las mismas unidades que elige quien dona).
+        cuerpo.put("unidad", unidad == null || unidad.isBlank() ? "unidades" : unidad.strip());
         if ("RECURRENTE".equals(tipo)) {
             cuerpo.put("periodo", periodo == null || periodo.isBlank() ? "MENSUAL" : periodo);
         }

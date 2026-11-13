@@ -35,7 +35,7 @@
               <p class="item-titulo" style="margin:0" th:text="${n.nombre}">Frazadas</p>
               <p class="suave chico" style="margin:0">
                 <span th:if="${n.subcategoria != null}" th:text="${n.subcategoria} + ' · '">Abrigo · </span>
-                <span th:text="${n.cantidadRecibida} + ' de ' + ${n.cantidadObjetivo} + ' recibidas'">10 de 30 recibidas</span>
+                <span th:text="${n.cantidadRecibida} + ' de ' + ${n.cantidadObjetivo} + ' ' + (${n['unidad'] != null and !#strings.isEmpty(n['unidad'])} ? ${n['unidad']} : 'unidades') + ' recibidas'">10 de 30 kg recibidas</span>
                 <span th:if="${n.campania != null}" th:text="' · Campaña: ' + ${n.campania}"> · Campaña: Invierno</span>
               </p>
               <progress th:value="${n.cantidadRecibida}" th:max="${n.cantidadObjetivo}"

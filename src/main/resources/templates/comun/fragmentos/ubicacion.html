@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Entrega 6: provincia y localidad seleccionables. La provincia se elige de las 24
+  jurisdicciones; la localidad sugiere las principales de esa provincia (lista en
+  /js/localidades.js) y admite escribir otra. marca: si se muestra el asterisco.
+-->
+<th:block th:fragment="provincia-localidad(marca)">
+  <div class="campo">
+    <label for="provincia">Provincia <span class="requerido" aria-hidden="true" th:if="${marca}">*</span></label>
+    <select id="provincia" name="provincia" required data-provincia>
+      <option value="">Elegí la provincia</option>
+      <option th:each="p : ${ {'Buenos Aires','Ciudad Autónoma de Buenos Aires','Catamarca','Chaco','Chubut','Córdoba','Corrientes','Entre Ríos','Formosa','Jujuy','La Pampa','La Rioja','Mendoza','Misiones','Neuquén','Río Negro','Salta','San Juan','San Luis','Santa Cruz','Santa Fe','Santiago del Estero','Tierra del Fuego','Tucumán'} }"
+              th:value="${p}" th:text="${p}">Buenos Aires</option>
+    </select>
+  </div>
+  <div class="campo">
+    <label for="localidad">Localidad <span class="requerido" aria-hidden="true" th:if="${marca}">*</span></label>
+    <input id="localidad" name="localidad" required list="localidades-sugeridas" autocomplete="address-level2"
+           maxlength="80" placeholder="Elegí la provincia primero" data-localidad aria-describedby="localidad-ayuda">
+    <datalist id="localidades-sugeridas"></datalist>
+    <p id="localidad-ayuda" class="ayuda">Elegila de la lista o escribila si no aparece.</p>
+  </div>
+  <script th:src="@{/js/localidades.js}" defer></script>
+</th:block>
+</body>
+</html>

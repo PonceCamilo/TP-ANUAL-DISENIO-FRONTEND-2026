@@ -7,7 +7,8 @@
 
     <div class="encabezado-pagina">
       <div><h1>Donaciones por asignar</h1>
-        <p>Las que siguen en depósito, con las entidades que les sugirieron los algoritmos en el cálculo de cada noche.</p></div>
+        <p>Todas las que están en depósito esperando entidad. Al elegir, calculamos en el momento qué entidades
+          les sirven; las que ya pasaron por el cálculo de la noche muestran cuántas se sugirieron.</p></div>
     </div>
 
     <ul class="lista" th:if="${!pendientes.isEmpty()}">
@@ -17,19 +18,29 @@
           <div>
             <p class="item-titulo" th:text="${p.donacion.descripcion}">Frazadas</p>
             <p class="suave chico" style="margin:0">
-              <span th:text="${p.donacion.subcategoria}">Abrigo</span> ·
-              <span th:text="${p.cantidadDeCandidatas == 1} ? '1 entidad sugerida' : ${p.cantidadDeCandidatas} + ' entidades sugeridas'">3 entidades sugeridas</span>
-              <th:block th:if="${p['fechaCalculo'] != null}"> · calculado el
-                <time th:datetime="${p.fechaCalculo}" th:text="${#strings.substring(p.fechaCalculo, 0, 10)}">2026-11-10</time></th:block>
+              <span th:text="${p.donacion.subcategoria}">Abrigo</span>
+              <th:block th:each="b : ${p.donacion['bienes']}"> · <span th:text="${b.cantidad} + ' ' + ${b.unidad} + ' de ' + ${b.descripcion}">10 kg de Arroz</span></th:block>
+            </p>
+            <p class="suave chico" style="margin:0">
+              <th:block th:if="${p.calculada}">
+                <span th:text="${p.cantidadDeCandidatas == 1} ? '1 entidad sugerida' : ${p.cantidadDeCandidatas} + ' entidades sugeridas'">3 entidades sugeridas</span>
+                <th:block th:if="${p['fechaCalculo'] != null}"> · calculado el
+                  <time th:datetime="${p.fechaCalculo}" th:text="${#strings.substring(p.fechaCalculo, 0, 10)}">2026-11-10</time></th:block>
+              </th:block>
+              <span th:unless="${p.calculada}">Todavía sin cálculo nocturno: los candidatos se calculan al elegir.</span>
             </p>
           </div>
         </div>
-        <a class="btn btn-sol" th:href="@{/admin/donaciones/{id}/candidatos(id=${p.idDonacion})}" data-carga
-           th:aria-label="'Elegir entidad para ' + ${p.donacion.descripcion}">Elegir entidad</a>
+        <div class="fila">
+          <a class="btn btn-secundario" th:href="@{/admin/donaciones/{id}(id=${p.idDonacion})}" data-carga
+             th:aria-label="'Ver la donación ' + ${p.donacion.descripcion}">Ver</a>
+          <a class="btn btn-sol" th:href="@{/admin/donaciones/{id}/candidatos(id=${p.idDonacion})}" data-carga
+             th:aria-label="'Elegir entidad para ' + ${p.donacion.descripcion}">Elegir entidad</a>
+        </div>
       </li>
     </ul>
     <th:block th:if="${pendientes.isEmpty()}">
-      <div th:replace="~{comun/fragmentos/componentes :: vacio('pin', 'No hay donaciones esperando destino', 'Las donaciones nuevas aparecen acá después del cálculo nocturno. Mientras tanto, se puede elegir la entidad desde el detalle de cada donación.', '/admin/donaciones?estado=EN_DEPOSITO', 'Ver las que están en depósito')}"></div>
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('pin', 'No hay donaciones esperando destino', 'Cuando alguien registre una donación y quede en depósito, aparece acá para elegirle entidad.', '/admin/donaciones', 'Ver todas las donaciones')}"></div>
     </th:block>
   </div>
 </main>

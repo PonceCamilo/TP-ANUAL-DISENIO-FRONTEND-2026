@@ -29,7 +29,8 @@
     </form>
 
     <div th:if="${entrega != null}">
-      <p>Donación <strong th:text="${entrega['idDonacion']}">id</strong></p>
+      <p th:if="${entrega['resumen'] != null and !#strings.isEmpty(entrega['resumen'])}">Llega: <strong th:text="${entrega['resumen']}">4 kg de Arroz</strong></p>
+      <p th:classappend="${entrega['resumen'] != null} ? 'suave chico'">Donación <strong th:text="${entrega['idDonacion']}">id</strong></p>
       <p>
         <span th:text="${entrega['estado'] == 'EN_TRASLADO' ? 'En camino' : (entrega['estado'] == 'ENTREGADA' ? 'Entregada' : (entrega['estado'] == 'NO_RECIBIDA' ? 'No se pudo entregar' : (entrega['estado'] == 'LISTO_PARA_ENTREGAR' ? 'Todavía no salió' : entrega['estado'])))}">Estado</span>
       </p>

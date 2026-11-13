@@ -15,8 +15,7 @@
       <div class="campo"><label for="calle">Calle</label><input id="calle" name="calle" required></div>
       <div class="campo"><label for="numero">Número</label><input id="numero" name="numero" type="number" min="1" required></div>
       <div class="campo"><label for="codigoPostal">Código postal</label><input id="codigoPostal" name="codigoPostal" required></div>
-      <div class="campo"><label for="localidad">Localidad</label><input id="localidad" name="localidad" required></div>
-      <div class="campo"><label for="provincia">Provincia</label><input id="provincia" name="provincia" required></div>
+      <th:block th:replace="~{comun/fragmentos/ubicacion :: provincia-localidad(false)}"></th:block>
     </div>
     <button class="btn btn-sol" type="submit">Registrar organización</button>
   </form>

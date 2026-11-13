@@ -147,7 +147,9 @@ public class DonanteDonacionesController {
         // Entrega 6 (requisito 9): lista para salir o en camino, se puede seguir en el mapa.
         String estado = Mapas.texto(donacion, "estado");
         if ("LISTA_PARA_ENTREGAR".equals(estado) || "EN_TRASLADO".equals(estado)) {
-            model.addAttribute("rutaId", rutaDe(id));
+            // Donaciones guarda la ruta cuando el camión sale; antes de eso se le pregunta a Logística.
+            String ruta = Mapas.texto(donacion, "idRutaLogistica");
+            model.addAttribute("rutaId", ruta.isBlank() ? rutaDe(id) : ruta);
         }
         return "donaciones/donante/detalle";
     }

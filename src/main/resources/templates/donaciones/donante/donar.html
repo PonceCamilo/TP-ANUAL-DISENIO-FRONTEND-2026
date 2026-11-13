@@ -75,7 +75,8 @@
         <label for="fechaVencimiento">Fecha de vencimiento <span class="suave" style="font-weight:500">(opcional)</span>
           <span th:replace="~{comun/fragmentos/componentes :: ayuda('vence', 'Solo para alimentos o medicamentos. Evita que se descarte algo vencido.')}"></span>
         </label>
-        <input id="fechaVencimiento" name="fechaVencimiento" type="date">
+        <input id="fechaVencimiento" name="fechaVencimiento" type="date" data-desde-hoy aria-describedby="vence-ayuda">
+        <p id="vence-ayuda" class="ayuda">No se aceptan bienes vencidos: la fecha tiene que ser hoy o posterior.</p>
       </div>
 
       <div class="campo">

@@ -7,9 +7,13 @@
     <div class="encabezado-pagina">
       <div>
         <h1>Entrega no recibida</h1>
-        <p th:text="|Donación ${entrega['idDonacion']}|">Donación</p>
+        <p>
+          <span th:text="${entrega['resumen'] != null and !#strings.isEmpty(entrega['resumen'])} ? ${entrega['resumen']} : 'Donación'">4 kg de Arroz</span>
+          <th:block th:if="${entrega['nombreEntidad'] != null}"> para <strong th:text="${entrega['nombreEntidad']}">Comedor</strong></th:block>
+        </p>
       </div>
     </div>
+    <p><a th:href="@{/admin/donaciones/{id}(id=${entrega['idDonacion']})}" data-carga>Ver la donación</a></p>
 
     <p th:text="${entrega['motivoTexto']}">Motivo</p>
     <p class="suave" th:if="${entrega['camionId'] != null}">

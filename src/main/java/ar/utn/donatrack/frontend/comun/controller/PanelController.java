@@ -71,22 +71,37 @@ public class PanelController {
         }
         // Incentivos es un servicio aparte: si no responde (o el donante todavía no
         // tiene actividad allá), el panel igual se muestra, con un aviso.
+        // Entrega 6: métricas, misiones e insignias se piden por separado. Antes iban
+        // juntas y, si fallaba una (por ejemplo las métricas de alguien sin actividad
+        // todavía), desaparecían también las insignias.
         boolean logrosDisponibles = true;
+        boolean misionesDisponibles = true;
+        boolean insigniasDisponibles = true;
+        boolean personaHumana = !usuario(sesion).esDonanteJuridico();
         Map<String, Object> metricas;
-        List<Map<String, Object>> misiones;
-        List<Map<String, Object>> insignias;
+        List<Map<String, Object>> misiones = List.of();
+        List<Map<String, Object>> insignias = List.of();
         try {
             metricas = incentivos.metricas(id);
-            boolean personaHumana = !usuario(sesion).esDonanteJuridico();
-            misiones = personaHumana ? incentivos.misiones(id) : List.of();
-            insignias = personaHumana ? incentivos.insignias(id) : List.of();
         } catch (ApiException e) {
             logrosDisponibles = false;
             metricas = Map.of("totalDonacionesHistoricas", 0, "donacionesMesActual", 0,
                     "organizacionesAyudadas", 0, "posicionRanking", 0, "categoriaActual", "Sin categoría");
-            misiones = List.of();
-            insignias = List.of();
         }
+        if (personaHumana) {
+            try {
+                misiones = incentivos.misiones(id);
+            } catch (ApiException e) {
+                misionesDisponibles = false;
+            }
+            try {
+                insignias = incentivos.insignias(id);
+            } catch (ApiException e) {
+                insigniasDisponibles = false;
+            }
+        }
+        model.addAttribute("misionesDisponibles", misionesDisponibles);
+        model.addAttribute("insigniasDisponibles", insigniasDisponibles);
         model.addAttribute("logrosDisponibles", logrosDisponibles);
         model.addAttribute("idPerfil", id);
         model.addAttribute("metricas", metricas);
@@ -172,8 +187,10 @@ public class PanelController {
         model.addAttribute("area", "Administración");
         model.addAttribute("descripcionArea", "Área interna para la gestión de DonaTrack.");
         try {
+            // Entrega 6: "pendientes de asignar" son todas las que están en depósito (antes
+            // solo las del cálculo nocturno, y las recién cargadas no aparecían).
             List<Map<String, Object>> enDeposito = donaciones.donacionesEnDeposito();
-            List<Map<String, Object>> pendientes = donaciones.candidatosPendientes();
+            List<Map<String, Object>> pendientes = enDeposito;
             List<Map<String, Object>> camiones = logistica.camiones();
             long totalDonantes = donaciones.paginaDeDonantes(null, null, 1).getTotalElementos();
 
@@ -184,16 +201,16 @@ public class PanelController {
             model.addAttribute("totalDonantes", totalDonantes);
 
             model.addAttribute("pendientesPreview", pendientes.stream().limit(3).map(p -> {
-                Map<String, Object> fila = new LinkedHashMap<>(p);
+                Map<String, Object> fila = new LinkedHashMap<>();
+                fila.put("idDonacion", Mapas.texto(p, "id"));
+                fila.put("donacion", p);
                 try {
-                    Map<String, Object> donacion = donaciones.donacion(UUID.fromString(Mapas.texto(p, "idDonacion")));
-                    fila.put("donacion", donacion);
-                    Object idDonante = donacion.get("idDonante");
+                    Object idDonante = p.get("idDonante");
                     if (idDonante != null) {
                         fila.put("nombreDonante", nombreCorto(donaciones.donante(UUID.fromString(String.valueOf(idDonante)))));
                     }
                 } catch (ApiException | IllegalArgumentException ignorado) {
-                    fila.put("donacion", Map.of());
+                    // Sin el nombre de quien donó, la fila igual se muestra.
                 }
                 return fila;
             }).toList());

@@ -10,36 +10,38 @@
       <a class="btn btn-sol" th:href="@{/admin/donaciones/nueva}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('plus')}"></svg>Registrar donación</a>
     </div>
 
-    <form method="get" th:action="@{/admin/donaciones}" class="tarjeta pila" aria-label="Filtrar donaciones" style="margin-bottom: var(--s-5)">
-      <div class="grupo-2">
-        <div class="campo">
-          <label for="estado">Estado</label>
-          <select id="estado" name="estado">
-            <option value="" th:selected="${filtros.estado == null or filtros.estado == ''}">Todos</option>
-            <option th:each="e : ${ {'EN_DEPOSITO','ASIGNACION_REALIZADA','LISTA_PARA_ENTREGAR','EN_TRASLADO','ENTREGADA','ENTREGA_FALLIDA','VENCIDA'} }"
-                    th:value="${e}" th:text="${@etiquetas.estado(e)}" th:selected="${filtros.estado == e}">En depósito</option>
-          </select>
+    <form method="get" th:action="@{/admin/donaciones}" class="filtros" aria-label="Filtrar donaciones" data-autoenviar>
+      <fieldset class="campo filtros-ancho">
+        <legend>Estado</legend>
+        <div class="pildoras">
+          <label class="pildora"><input type="radio" name="estado" value="" th:checked="${filtros.estado == null or filtros.estado == ''}"><span>Todos</span></label>
+          <label class="pildora" th:each="e : ${estados}">
+            <input type="radio" name="estado" th:value="${e}" th:checked="${filtros.estado == e}">
+            <span th:text="${@etiquetas.estado(e)}">En depósito</span></label>
         </div>
-        <div class="campo">
-          <label for="subcategoria">Subcategoría</label>
-          <input id="subcategoria" name="subcategoria" th:value="${filtros.subcategoria}" placeholder="Ej.: Abrigo" maxlength="60">
-        </div>
-        <div class="campo">
-          <label for="desde">Desde</label>
-          <input id="desde" name="desde" type="date" th:value="${filtros.desde}">
-        </div>
-        <div class="campo">
-          <label for="hasta">Hasta</label>
-          <input id="hasta" name="hasta" type="date" th:value="${filtros.hasta}">
-        </div>
+      </fieldset>
+      <div class="campo">
+        <label for="subcategoria">Subcategoría</label>
+        <select id="subcategoria" name="subcategoria">
+          <option value="" th:selected="${filtros.subcategoria == null or filtros.subcategoria == ''}">Todas</option>
+          <option th:each="t : ${catalogo}" th:value="${t}" th:text="${t}"
+                  th:selected="${filtros.subcategoria != null and #strings.equalsIgnoreCase(filtros.subcategoria, t)}">Abrigo</option>
+        </select>
       </div>
-      <div class="fila espaciado">
-        <label class="opcion"><input type="checkbox" name="vencidas" value="true" th:checked="${filtros.vencidas != null}">
-          Solo con productos vencidos</label>
-        <div class="fila">
-          <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/admin/donaciones}" data-carga>Limpiar</a>
-          <button class="btn" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
-        </div>
+      <div class="campo">
+        <label for="desde">Registradas desde</label>
+        <input id="desde" name="desde" type="date" th:value="${filtros.desde}">
+      </div>
+      <div class="campo">
+        <label for="hasta">Hasta</label>
+        <input id="hasta" name="hasta" type="date" th:value="${filtros.hasta}">
+      </div>
+      <label class="opcion"><input type="checkbox" name="vencidas" value="true" th:checked="${filtros.vencidas != null}">
+        Solo con productos vencidos</label>
+      <div class="filtros-acciones">
+        <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/admin/donaciones}" data-carga>
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('x')}"></svg>Limpiar filtros</a>
+        <button class="btn btn-sol" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
       </div>
     </form>
 

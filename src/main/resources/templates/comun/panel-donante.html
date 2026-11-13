@@ -34,7 +34,7 @@
       </th:block>
     </section>
 
-    <div class="banner banner-aviso" role="status" th:unless="${logrosDisponibles}" style="margin-top: var(--s-4)">
+    <div class="banner banner-aviso" role="status" th:unless="${logrosDisponibles and misionesDisponibles and insigniasDisponibles}" style="margin-top: var(--s-4)">
       <svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg>
       <div><strong>No pudimos cargar tus logros ahora.</strong> Tus donaciones están a salvo; probá de nuevo en un rato.</div>
     </div>
@@ -74,9 +74,10 @@
       </ol>
     </section>
 
-    <div class="grilla-2 seccion" th:if="${logrosDisponibles and !usuario.esDonanteJuridico()}">
+    <div class="grilla-2 seccion" th:if="${!usuario.esDonanteJuridico()}">
       <section class="tarjeta" aria-labelledby="t-misiones">
         <h2 id="t-misiones">Tu misión actual</h2>
+        <p class="suave" th:unless="${misionesDisponibles}">No pudimos cargar tus misiones ahora.</p>
         <div th:if="${misionActiva}" th:with="m=${misionActiva}">
           <h3 th:text="${m.nombre}">Racha solidaria</h3>
           <p class="suave" th:text="${m.descripcion}">Doná durante tres meses consecutivos.</p>
@@ -84,7 +85,7 @@
                     th:aria-label="|Progreso de ${m.nombre}|"></progress>
           <p class="chico suave" th:text="|${m.progresoActual} de ${m.objetivo} · Te falta completar ${m.distanciaRestante}|">1 de 3 · Te falta completar 2</p>
         </div>
-        <p class="suave" th:unless="${misionActiva}">Por ahora no tenés una misión activa.</p>
+        <p class="suave" th:if="${misionesDisponibles and misionActiva == null}">Por ahora no tenés una misión activa.</p>
         <ul class="lista" th:unless="${misiones.isEmpty()}">
           <li class="item" th:each="m : ${misiones}" th:unless="${m.activa}">
             <span class="item-titulo" th:text="${m.nombre}">Misión</span>
@@ -120,7 +121,8 @@
             </form>
           </li>
         </ul>
-        <p class="suave" th:if="${insignias.isEmpty()}">La primera insignia llega con tu primera donación entregada.</p>
+        <p class="suave" th:if="${insigniasDisponibles and insignias.isEmpty()}">La primera insignia llega con tu primera donación entregada.</p>
+        <p class="suave" th:unless="${insigniasDisponibles}">No pudimos cargar tus insignias ahora. Probá de nuevo en un rato.</p>
       </section>
     </div>
 

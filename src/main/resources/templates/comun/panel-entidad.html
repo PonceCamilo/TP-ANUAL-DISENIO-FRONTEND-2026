@@ -47,7 +47,7 @@
                      aria-valuemin="0" th:aria-valuemax="${n.cantidadObjetivo}" th:aria-valuenow="${n.cantidadRecibida}">
                   <span th:style="'width:' + ${n.cantidadObjetivo > 0 ? n.cantidadRecibida * 100 / n.cantidadObjetivo : 0} + '%'"></span>
                 </div>
-                <p class="chico suave" style="margin:0" th:text="${#numbers.formatDecimal(n.cantidadRecibida, 1, 0)} + ' de ' + ${#numbers.formatDecimal(n.cantidadObjetivo, 1, 0)} + ' recibidas'">3 de 10</p>
+                <p class="chico suave" style="margin:0" th:text="${#numbers.formatDecimal(n.cantidadRecibida, 1, 0)} + ' de ' + ${#numbers.formatDecimal(n.cantidadObjetivo, 1, 0)} + ' ' + (${n['unidad'] != null and !#strings.isEmpty(n['unidad'])} ? ${n['unidad']} : 'unidades') + ' recibidas'">3 de 10 kg recibidas</p>
               </div>
               <button type="button" class="btn btn-secundario btn-chico" data-modal="confirmar-borrado"
                       th:attr="data-accion=@{/entidad/campanias/{c}/necesidades/{n}/eliminar(c=${c.idCampania},n=${n.id})},data-detalle='Vas a eliminar la necesidad «' + ${n.nombre} + '». Esta acción no se puede deshacer.'">

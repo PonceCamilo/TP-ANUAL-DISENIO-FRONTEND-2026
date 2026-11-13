@@ -190,6 +190,58 @@ class AdminControllersTest {
         }
 
         @Test
+        @DisplayName("Entrega 6: también aparecen las que están en depósito y todavía no tienen cálculo nocturno")
+        void porAsignarSinCalculo() {
+            UUID nueva = UUID.randomUUID();
+            api.enDeposito = List.of(Map.of("id", nueva.toString(), "descripcion", "Arroz"));
+
+            controller.porAsignar(model);
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> pendientes = (List<Map<String, Object>>) model.get("pendientes");
+            assertThat(pendientes).singleElement().satisfies(p -> assertThat(p)
+                    .containsEntry("idDonacion", nueva.toString()).containsEntry("calculada", false));
+        }
+
+        @Test
+        @DisplayName("Entrega 6: dividir pasa las cantidades por bien y lleva a elegir la entidad de la parte nueva")
+        void dividir() {
+            UUID bien = UUID.randomUUID();
+            UUID otro = UUID.randomUUID();
+            Map<String, String> parametros = new java.util.LinkedHashMap<>();
+            parametros.put("cantidad_" + bien, "4");
+            parametros.put("cantidad_" + otro, "0");
+            parametros.put("_csrf", "x");
+
+            String destino = controller.dividir(id, parametros, flash);
+
+            assertThat(api.acciones).containsExactly("dividir " + id);
+            assertThat(api.cantidadesDivididas).containsExactly(Map.entry(bien, 4));
+            assertThat(destino).isEqualTo("redirect:/admin/donaciones/" + api.parteNueva.get("id") + "/candidatos");
+            assertThat(tipoDeToast()).isEqualTo("ok");
+        }
+
+        @Test
+        @DisplayName("Sin ninguna cantidad no se divide: vuelve al detalle con el aviso")
+        void dividirSinCantidades() {
+            String destino = controller.dividir(id, Map.of("cantidad_" + UUID.randomUUID(), "0"), flash);
+
+            assertThat(api.acciones).isEmpty();
+            assertThat(destino).isEqualTo("redirect:/admin/donaciones/" + id + "#dividir");
+            assertThat(tipoDeToast()).isEqualTo("error");
+        }
+
+        @Test
+        @DisplayName("Si el servicio rechaza la división, se muestra su motivo")
+        void dividirRechazada() {
+            api.falla = new ApiException("Tiene que quedar algo en la donación original", 422);
+
+            controller.dividir(id, Map.of("cantidad_" + UUID.randomUUID(), "3"), flash);
+
+            assertThat(toast()).isEqualTo("Tiene que quedar algo en la donación original");
+        }
+
+        @Test
         @DisplayName("Los despachos muestran a qué entidad va cada donación")
         void despachos() {
             api.entidades = List.of(Map.of("id", "e1", "razonSocial", "Escuela 12"));
@@ -405,6 +457,42 @@ class AdminControllersTest {
             assertThat(destino).isEqualTo("redirect:/admin/entidades/nueva");
             assertThat(tipoDeToast()).isEqualTo("error");
             assertThat(api.acciones).doesNotContain("crearEntidad");
+        }
+
+        @Test
+        @DisplayName("Entrega 6: el listado cuenta las necesidades abiertas de cada entidad")
+        @SuppressWarnings("unchecked")
+        void cuentaNecesidadesAbiertas() {
+            api.pagina = new Pagina(List.of(Map.of("id", "e1", "campanias", List.of(Map.of("necesidades", List.of(
+                    Map.of("nombre", "Arroz", "satisfecha", false), Map.of("nombre", "Leche", "satisfecha", true)))))), 1, 1, 1);
+
+            controller.listado(null, 1, model);
+
+            assertThat((Map<String, Long>) model.get("abiertasPorEntidad")).containsEntry("e1", 1L);
+        }
+
+        @Test
+        @DisplayName("Entrega 6: todas las necesidades, abiertas primero y las que más faltan arriba")
+        @SuppressWarnings("unchecked")
+        void necesidades() {
+            api.entidades = List.of(
+                    Map.of("id", "e1", "razonSocial", "Comedor", "campanias", List.of(Map.of("necesidades", List.of(
+                            Map.of("nombre", "Arroz", "subcategoria", "Alimentos", "cantidadObjetivo", 10, "cantidadRecibida", 8,
+                                    "unidad", "kg", "satisfecha", false),
+                            Map.of("nombre", "Leche", "subcategoria", "Alimentos", "cantidadObjetivo", 5, "cantidadRecibida", 5,
+                                    "satisfecha", true))))),
+                    Map.of("id", "e2", "razonSocial", "Escuela", "campanias", List.of(Map.of("necesidades", List.of(
+                            Map.of("nombre", "Cuadernos", "subcategoria", "Útiles escolares", "cantidadObjetivo", 50,
+                                    "cantidadRecibida", 0, "satisfecha", false))))));
+
+            controller.necesidades(false, null, model);
+            List<Map<String, Object>> abiertas = (List<Map<String, Object>>) model.get("necesidades");
+            assertThat(abiertas).extracting(n -> n.get("nombre")).containsExactly("Cuadernos", "Arroz");
+            assertThat(abiertas.get(1)).containsEntry("falta", 2).containsEntry("unidad", "kg").containsEntry("porcentaje", 80);
+
+            controller.necesidades(true, "alimentos", model);
+            assertThat((List<Map<String, Object>>) model.get("necesidades"))
+                    .extracting(n -> n.get("nombre")).containsExactly("Arroz", "Leche");
         }
 
         @Test

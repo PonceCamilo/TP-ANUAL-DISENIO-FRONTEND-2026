@@ -94,6 +94,15 @@ public class DonacionesApi {
         api.enviar(HttpMethod.POST, donaciones + "/donaciones", cuerpo);
     }
 
+    /**
+     * Entrega 6: separa parte de una donación en depósito en una donación nueva, para
+     * repartirla entre varias entidades. cantidades: id de bien → cuánto pasa a la nueva.
+     * Devuelve la donación nueva.
+     */
+    public Map<String, Object> dividir(UUID donacionId, Map<UUID, Integer> cantidades) {
+        return api.crear(donaciones + "/donaciones/" + donacionId + "/division", Map.of("cantidades", cantidades));
+    }
+
     public List<Map<String, Object>> entidades() {
         return paginado(donaciones + "/entidades");
     }

@@ -38,10 +38,17 @@
               <div class="item-cuerpo">
                 <span class="icono-circulo" th:text="${p['orden']}">1</span>
                 <div>
-                  <p class="item-titulo" th:if="${p['direccion'] != null}"
-                     th:text="|${p['direccion']['calle']} ${p['direccion']['numero']}|">Calle 123</p>
-                  <p class="suave chico" style="margin:0" th:if="${p['direccion'] != null}"
-                     th:text="|${p['direccion']['localidad']} · ${p['direccion']['provincia']}|">Localidad</p>
+                  <p class="item-titulo" th:if="${p['nombreEntidad'] != null}" th:text="${p['nombreEntidad']}">Comedor Los Pibes</p>
+                  <p th:classappend="${p['nombreEntidad'] != null} ? 'suave chico' : 'item-titulo'" style="margin:0" th:if="${p['direccion'] != null}"
+                     th:text="|${p['direccion']['calle']} ${p['direccion']['numero']}, ${p['direccion']['localidad']} · ${p['direccion']['provincia']}|">Calle 123</p>
+                  <ul class="carga-parada" th:if="${p['entregas'] != null and !#lists.isEmpty(p['entregas'])}">
+                    <li th:each="e : ${p['entregas']}">
+                      <a th:href="@{/admin/donaciones/{id}(id=${e['idDonacion']})}" data-carga
+                         th:text="${e['resumen'] != null and !#strings.isEmpty(e['resumen'])} ? ${e['resumen']} : 'Ver la donación'">4 kg de Arroz</a>
+                      <span class="suave chico" th:if="${e['estado'] != null}"
+                            th:text="'· ' + (${e['estado'] == 'ENTREGADA'} ? 'entregada' : (${e['estado'] == 'NO_RECIBIDA'} ? 'no recibida' : (${e['estado'] == 'EN_TRASLADO'} ? 'en traslado' : 'por entregar')))">· en traslado</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </li>

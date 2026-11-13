@@ -27,8 +27,7 @@
           <div class="campo"><label for="calle">Calle <span class="requerido" aria-hidden="true">*</span></label><input id="calle" name="calle" required></div>
           <div class="campo"><label for="numero">Número <span class="requerido" aria-hidden="true">*</span></label><input id="numero" name="numero" type="number" min="0" required></div>
           <div class="campo"><label for="codigoPostal">Código postal <span class="requerido" aria-hidden="true">*</span></label><input id="codigoPostal" name="codigoPostal" required autocomplete="postal-code"></div>
-          <div class="campo"><label for="localidad">Localidad <span class="requerido" aria-hidden="true">*</span></label><input id="localidad" name="localidad" required></div>
-          <div class="campo"><label for="provincia">Provincia <span class="requerido" aria-hidden="true">*</span></label><input id="provincia" name="provincia" required></div>
+          <th:block th:replace="~{comun/fragmentos/ubicacion :: provincia-localidad(true)}"></th:block>
         </div>
       </fieldset>
       <fieldset class="campo">

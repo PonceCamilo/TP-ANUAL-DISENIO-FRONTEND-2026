@@ -28,10 +28,9 @@
             <div class="item-cuerpo">
               <span class="icono-circulo" th:text="${p['orden']}">1</span>
               <div>
-                <p class="item-titulo" th:if="${p['direccion'] != null}"
-                   th:text="|${p['direccion']['calle']} ${p['direccion']['numero']}|">Calle 123</p>
-                <p class="suave chico" style="margin:0" th:if="${p['direccion'] != null}"
-                   th:text="|${p['direccion']['localidad']} · ${p['direccion']['provincia']}|">Localidad</p>
+                <p class="item-titulo" th:if="${p['nombreEntidad'] != null}" th:text="${p['nombreEntidad']}">Comedor Los Pibes</p>
+                <p th:classappend="${p['nombreEntidad'] != null} ? 'suave chico' : 'item-titulo'" style="margin:0" th:if="${p['direccion'] != null}"
+                   th:text="|${p['direccion']['calle']} ${p['direccion']['numero']}, ${p['direccion']['localidad']} · ${p['direccion']['provincia']}|">Calle 123</p>
               </div>
             </div>
           </li>

@@ -76,6 +76,9 @@ public class AdminDonacionesController {
 
         model.addAttribute("pagina", pagina);
         model.addAttribute("filtros", filtros);
+        model.addAttribute("catalogo", catalogoCon(subcategoria));
+        model.addAttribute("estados", List.of("EN_DEPOSITO", "ASIGNACION_REALIZADA", "LISTA_PARA_ENTREGAR",
+                "EN_TRASLADO", "ENTREGADA", "ENTREGA_FALLIDA", "VENCIDA"));
         model.addAttribute("aviso", aviso);
         model.addAttribute("hayFiltros", filtros.values().stream().anyMatch(v -> v != null && !String.valueOf(v).isBlank()));
         model.addAttribute("urlAnterior", Administracion.url(LISTADO, filtros, pagina.getNumero() - 1));
@@ -130,6 +133,50 @@ public class AdminDonacionesController {
         return exito(flash, "Dimos de baja la donación. Queda guardada con su historial.", LISTADO);
     }
 
+    /**
+     * Entrega 6: reparte una donación en depósito. Lo que se indica de cada bien
+     * (campos cantidad_{idBien}) pasa a una donación nueva, que se asigna aparte; la
+     * original se queda con el resto. Después se va a elegir la entidad de la parte nueva.
+     */
+    @PostMapping("/{id}/dividir")
+    public String dividir(@PathVariable UUID id, @RequestParam Map<String, String> parametros,
+                          RedirectAttributes flash) {
+        String volver = LISTADO + "/" + id;
+        Map<UUID, Integer> cantidades = new LinkedHashMap<>();
+        for (Map.Entry<String, String> par : parametros.entrySet()) {
+            if (!par.getKey().startsWith("cantidad_") || Administracion.vacio(par.getValue())) {
+                continue;
+            }
+            try {
+                UUID idBien = UUID.fromString(par.getKey().substring("cantidad_".length()));
+                int cantidad = Integer.parseInt(par.getValue().strip());
+                if (cantidad < 0) {
+                    return error(flash, "Las cantidades no pueden ser negativas.", volver + "#dividir");
+                }
+                if (cantidad > 0) {
+                    cantidades.put(idBien, cantidad);
+                }
+            } catch (IllegalArgumentException e) {
+                return error(flash, "Revisá las cantidades: tienen que ser números enteros.", volver + "#dividir");
+            }
+        }
+        if (cantidades.isEmpty()) {
+            return error(flash, "Indicá cuánto de algún bien pasa a la otra entidad.", volver + "#dividir");
+        }
+        Map<String, Object> parte;
+        try {
+            parte = api.dividir(id, cantidades);
+        } catch (ApiException e) {
+            return error(flash, e.getMessage(), volver + "#dividir");
+        }
+        String nueva = Mapas.texto(parte, "id");
+        if (nueva.isBlank()) {
+            return exito(flash, "Separamos la donación en dos. La parte nueva está en depósito.", LISTADO + "/por-asignar");
+        }
+        return exito(flash, "Separamos esa parte en una donación nueva. Elegí a qué entidad va; "
+                + "la original sigue en depósito con el resto.", LISTADO + "/" + nueva + "/candidatos");
+    }
+
     /** Las entidades que recomienda cada algoritmo, para elegir a cuál asignarla. */
     @GetMapping("/{id}/candidatos")
     public String candidatos(@PathVariable UUID id, Model model) {
@@ -143,6 +190,7 @@ public class AdminDonacionesController {
         }
         model.addAttribute("donacion", donacion);
         model.addAttribute("rankings", rankings);
+        model.addAttribute("candidatas", Candidatos.unificados(respuesta, Mapas.texto(donacion, "subcategoria")));
         model.addAttribute("coincidencias", Mapas.lista(respuesta.get("coincidencias")));
         model.addAttribute("asignable", "EN_DEPOSITO".equals(Mapas.texto(donacion, "estado")));
         model.addAttribute("pestania", "por-asignar");
@@ -162,19 +210,33 @@ public class AdminDonacionesController {
                 LISTADO + "/" + id);
     }
 
-    /** Bandeja del matchmaking nocturno: donaciones en depósito con sus entidades sugeridas. */
+    /**
+     * Todas las donaciones en depósito, que esperan entidad. Entrega 6: antes solo
+     * aparecían las que ya tenían el cálculo nocturno, así que una donación recién
+     * cargada no se podía asignar desde acá hasta el día siguiente. Ahora están todas;
+     * las que tienen cálculo muestran cuántas entidades se sugirieron, y "Elegir
+     * entidad" calcula los candidatos en el momento para cualquiera.
+     */
     @GetMapping("/por-asignar")
     public String porAsignar(Model model) {
-        Map<String, Map<String, Object>> enDeposito = porId(api.donacionesEnDeposito());
-        List<Map<String, Object>> pendientes = new ArrayList<>();
-        for (Map<String, Object> pendiente : api.candidatosPendientes()) {
-            Map<String, Object> donacion = enDeposito.get(Mapas.texto(pendiente, "idDonacion"));
-            if (donacion == null) {
-                continue; // ya se asignó o se dio de baja después del cálculo
+        Map<String, Map<String, Object>> calculadas = new LinkedHashMap<>();
+        try {
+            for (Map<String, Object> pendiente : api.candidatosPendientes()) {
+                calculadas.put(Mapas.texto(pendiente, "idDonacion"), pendiente);
             }
-            Map<String, Object> fila = new LinkedHashMap<>(pendiente);
+        } catch (ApiException e) {
+            // Sin la bandeja nocturna igual se listan: los candidatos se calculan al entrar.
+        }
+        List<Map<String, Object>> pendientes = new ArrayList<>();
+        for (Map<String, Object> donacion : api.donacionesEnDeposito()) {
+            String id = Mapas.texto(donacion, "id");
+            Map<String, Object> calculo = calculadas.get(id);
+            Map<String, Object> fila = new LinkedHashMap<>();
+            fila.put("idDonacion", id);
             fila.put("donacion", donacion);
-            fila.put("cantidadDeCandidatas", Candidatos.idsDeEntidades(pendiente).size());
+            fila.put("calculada", calculo != null);
+            fila.put("fechaCalculo", calculo == null ? null : calculo.get("fechaCalculo"));
+            fila.put("cantidadDeCandidatas", calculo == null ? 0 : Candidatos.idsDeEntidades(calculo).size());
             pendientes.add(fila);
         }
         model.addAttribute("pendientes", pendientes);
@@ -244,6 +306,20 @@ public class AdminDonacionesController {
             return error(flash, e.getMessage(), volver);
         }
         return exito(flash, "Registramos la donación a nombre de " + emailDonante.strip() + ".", LISTADO);
+    }
+
+    /** Las subcategorías conocidas, más la que se filtró si no está entre ellas. */
+    private List<String> catalogoCon(String elegida) {
+        List<String> catalogo = new ArrayList<>();
+        try {
+            catalogo.addAll(api.subcategorias());
+        } catch (ApiException e) {
+            // Sin catálogo, el filtro queda con la subcategoría elegida (si hay).
+        }
+        if (!Administracion.vacio(elegida) && catalogo.stream().noneMatch(s -> s.equalsIgnoreCase(elegida.strip()))) {
+            catalogo.add(elegida.strip());
+        }
+        return catalogo;
     }
 
     private static Map<String, Map<String, Object>> porId(List<Map<String, Object>> elementos) {

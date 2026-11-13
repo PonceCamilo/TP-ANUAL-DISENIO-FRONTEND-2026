@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Entidad', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/entidades}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Entidades</a></nav>
+
+    <div class="encabezado-pagina">
+      <div>
+        <h1 th:text="${entidad.razonSocial}">Comedor Los Pibes</h1>
+        <p>
+          <span th:text="${abiertas == 1} ? '1 necesidad abierta' : ${abiertas} + ' necesidades abiertas'">3 necesidades abiertas</span>
+          · <span th:text="${campanias.size() == 1} ? '1 campaña' : ${campanias.size()} + ' campañas'">2 campañas</span>
+        </p>
+      </div>
+      <a class="btn btn-secundario" th:href="@{/admin/entidades/necesidades}" data-carga>
+        <svg th:replace="~{comun/fragmentos/componentes :: ic('target')}"></svg>Necesidades de todas</a>
+    </div>
+
+    <div class="grilla-2 seccion">
+      <section class="tarjeta" aria-labelledby="t-ubicacion">
+        <h2 id="t-ubicacion" style="font-size: var(--t-lg)">Dónde está</h2>
+        <p class="item-titulo" style="margin:0" th:if="${direccion['calle'] != null}"
+           th:text="${direccion['calle']} + ' ' + ${direccion['numero']}">Av. Siempreviva 742</p>
+        <p class="suave" style="margin:0"
+           th:text="${localidad} + (${#strings.isEmpty(provincia)} ? '' : ', ' + ${provincia}) + (${direccion['codigoPostal'] != null} ? ' (CP ' + ${direccion['codigoPostal']} + ')' : '')">Lanús, Buenos Aires (CP 1824)</p>
+        <p class="chico" style="margin-top: var(--s-3)" th:if="${direccion['latitud'] != null and direccion['longitud'] != null}">
+          <a th:href="${'https://www.google.com/maps/search/?api=1&query=' + direccion['latitud'] + ',' + direccion['longitud']}"
+             target="_blank" rel="noopener">Ver en Google Maps</a>
+          <span class="suave">· aparece en el mapa de la página de inicio</span>
+        </p>
+        <p class="suave chico" style="margin-top: var(--s-3)" th:if="${direccion['latitud'] == null or direccion['longitud'] == null}">
+          Sin coordenadas: no aparece en el mapa de la página de inicio.</p>
+      </section>
+
+      <section class="tarjeta" aria-labelledby="t-contacto">
+        <h2 id="t-contacto" style="font-size: var(--t-lg)">Contacto</h2>
+        <ul class="lista" th:if="${!contactos.isEmpty()}">
+          <li th:each="c : ${contactos}">
+            <span class="suave chico" th:text="${c['tipo'] == 'EMAIL'} ? 'Email' : (${c['tipo'] == 'TELEFONO'} ? 'Teléfono' : ${c['tipo']})">Email</span>:
+            <span th:text="${c['valor']}">contacto@entidad.org</span>
+          </li>
+        </ul>
+        <h3 style="font-size: var(--t-base); margin-top: var(--s-4)">Quién la representa</h3>
+        <ul class="lista" th:if="${!representantes.isEmpty()}">
+          <li th:each="r : ${representantes}">
+            <span th:text="${r['nombre']} + ' ' + ${r['apellido']}">Ana Pérez</span>
+            <span class="suave chico" th:if="${r['email'] != null}" th:text="'· ' + ${r['email']}">· ana@entidad.org</span>
+          </li>
+        </ul>
+        <p class="suave" th:if="${representantes.isEmpty()}">Sin representantes cargados.</p>
+      </section>
+    </div>
+
+    <section class="tarjeta seccion" th:each="c : ${campanias}" th:aria-label="${'Campaña ' + c['descripcionGeneral']}">
+      <div class="fila espaciado">
+        <h2 style="font-size: var(--t-lg)" th:text="${c['descripcionGeneral']}">Invierno 2026</h2>
+        <span class="suave chico" th:if="${c['fechaInicio'] != null}"
+              th:text="'Del ' + ${c['fechaInicio']} + (${c['fechaFin'] != null} ? ' al ' + ${c['fechaFin']} : '')">Del 2026-06-01 al 2026-08-31</span>
+      </div>
+      <div class="tabla-envoltorio" th:if="${!c.filas.isEmpty()}">
+        <table class="tabla">
+          <thead>
+            <tr><th scope="col">Necesidad</th><th scope="col">Tipo de bien</th><th scope="col">Recibió</th><th scope="col">Falta</th><th scope="col">Avance</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="n : ${c.filas}">
+              <td>
+                <strong th:text="${n.nombre}">Arroz</strong>
+                <span class="suave chico" th:text="' · ' + ${n.tipo}"> · Extraordinaria</span>
+                <div class="suave chico" th:if="${!#strings.isEmpty(n.descripcion)}" th:text="${n.descripcion}">Para el comedor</div>
+              </td>
+              <td th:text="${n.subcategoria}">Alimentos</td>
+              <td th:text="${n.recibida} + ' de ' + ${n.objetivo} + ' ' + ${n.unidad}">10 de 30 kg</td>
+              <td>
+                <span th:if="${n.satisfecha}" class="estado estado-ok">Cubierta</span>
+                <span th:unless="${n.satisfecha}" th:text="${n.falta} + ' ' + ${n.unidad}">20 kg</span>
+              </td>
+              <td style="min-width: 8rem">
+                <div class="progreso" th:classappend="${n.satisfecha} ? 'completo'" role="progressbar" th:aria-valuenow="${n.porcentaje}" aria-valuemin="0" aria-valuemax="100"
+                     th:aria-label="'Avance de ' + ${n.nombre}">
+                  <span th:style="'width:' + ${n.porcentaje} + '%'"></span></div>
+                <span class="suave chico" th:text="${n.porcentaje} + '%'">33%</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="suave" th:if="${c.filas.isEmpty()}">Esta campaña todavía no tiene necesidades cargadas.</p>
+    </section>
+
+    <th:block th:if="${campanias.isEmpty()}">
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('target', 'Todavía no tiene campañas', 'Cuando la entidad cargue una campaña con sus necesidades, aparecen acá.', null, null)}"></div>
+    </th:block>
+  </div>
+</main>
+</body>
+</html>

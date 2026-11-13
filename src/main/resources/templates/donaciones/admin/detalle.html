@@ -54,6 +54,27 @@
       </section>
     </div>
 
+    <section class="tarjeta seccion" id="dividir" aria-labelledby="t-dividir"
+             th:if="${donacion.estado == 'EN_DEPOSITO' and (donacion.bienes.size() > 1 or (donacion.bienes.size() == 1 and donacion.bienes[0].cantidad > 1))}">
+      <h2 id="t-dividir" style="font-size: var(--t-lg)">Repartir entre varias entidades</h2>
+      <p class="suave chico">Indicá cuánto de cada bien va a otra entidad. Esa parte se separa en una donación nueva
+        (de la misma persona, en depósito) y elegís su destino; esta se queda con el resto.</p>
+      <form method="post" th:action="@{/admin/donaciones/{id}/dividir(id=${donacion.id})}" class="pila" data-carga>
+        <div class="grilla-2">
+          <div class="campo" th:each="b : ${donacion.bienes}">
+            <label th:for="${'dividir-' + b['id']}">
+              <span th:text="${b.descripcion}">Arroz</span>
+              <span class="suave" style="font-weight:500" th:text="'(hay ' + ${b.cantidad} + ' ' + ${b.unidad} + ')'">(hay 10 kg)</span>
+            </label>
+            <input th:id="${'dividir-' + b['id']}" th:name="${'cantidad_' + b['id']}" type="number" min="0"
+                   th:max="${b.cantidad}" value="0" inputmode="numeric">
+          </div>
+        </div>
+        <div><button class="btn btn-secundario" type="submit" data-cargando="Separando…">
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('box')}"></svg>Separar esa parte</button></div>
+      </form>
+    </section>
+
     <div class="grilla-2 seccion">
       <section class="tarjeta pila" aria-labelledby="t-acciones">
         <h2 id="t-acciones" style="font-size: var(--t-lg)">Acciones</h2>

@@ -160,6 +160,33 @@ class PantallasAdminTest {
         }
 
         @Test
+        @DisplayName("Entrega 6: candidatos en una sola lista, con la recomendada y lo que le falta a cada una")
+        void candidatosUnificados() throws Exception {
+            Map<String, Object> hogar = Map.of("id", UUID.randomUUID().toString(), "razonSocial", "Hogar Belén",
+                    "campanias", List.of(Map.of("necesidades", List.of(Map.of("nombre", "Frazadas", "subcategoria", "Abrigo",
+                            "cantidadObjetivo", 30, "cantidadRecibida", 10, "unidad", "unidades", "satisfecha", false)))));
+            api.candidatos = Map.of(
+                    "rankings", List.of(Map.of("algoritmo", "COMPATIBILIDAD_SEMANTICA", "entidades", List.of(hogar)),
+                            Map.of("algoritmo", "PRIORIDAD_SUBATENDIDOS", "entidades", List.of(hogar))),
+                    "coincidencias", List.of(hogar));
+
+            mvc.perform(comoAdmin("/admin/donaciones/" + api.donacion.get("id") + "/candidatos"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Recomendada")))
+                    .andExpect(content().string(containsString("le faltan <span>20 unidades</span>")))
+                    .andExpect(content().string(not(containsString("Entidades que piden esta subcategoría"))));
+        }
+
+        @Test
+        @DisplayName("Entrega 6: el detalle en depósito permite repartir la donación")
+        void detalleConDivision() throws Exception {
+            mvc.perform(comoAdmin("/admin/donaciones/" + api.donacion.get("id")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Repartir entre varias entidades")))
+                    .andExpect(content().string(containsString("/dividir")));
+        }
+
+        @Test
         @DisplayName("Bandeja de por asignar")
         void porAsignar() throws Exception {
             String id = UUID.randomUUID().toString();
@@ -199,6 +226,42 @@ class PantallasAdminTest {
     @Nested
     @DisplayName("Donantes y entidades")
     class DonantesYEntidades {
+
+        @Test
+        @DisplayName("Entrega 6: el detalle de una entidad muestra sus necesidades con unidad y avance")
+        void detalleDeEntidad() throws Exception {
+            api.entidad = Map.of("id", UUID.randomUUID().toString(), "razonSocial", "Comedor Los Pibes",
+                    "direccion", Map.of("calle", "Medrano", "numero", 951, "codigoPostal", "C1179",
+                            "localidad", Map.of("nombre", "Almagro", "provincia", Map.of("nombre", "Ciudad Autónoma de Buenos Aires")),
+                            "latitud", -34.6, "longitud", -58.42),
+                    "contactos", List.of(Map.of("tipo", "EMAIL", "valor", "contacto@comedor.org")),
+                    "representantes", List.of(Map.of("nombre", "Ana", "apellido", "Pérez")),
+                    "campanias", List.of(Map.of("descripcionGeneral", "Invierno", "necesidades", List.of(
+                            Map.of("nombre", "Arroz", "subcategoria", "Alimentos", "cantidadObjetivo", 30,
+                                    "cantidadRecibida", 10, "unidad", "kg", "satisfecha", false)))));
+
+            mvc.perform(comoAdmin("/admin/entidades/" + api.entidad.get("id")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Comedor Los Pibes")))
+                    .andExpect(content().string(containsString("10 de 30 kg")))
+                    .andExpect(content().string(containsString("20 kg")))
+                    .andExpect(content().string(containsString("Almagro, Ciudad Autónoma de Buenos Aires")))
+                    .andExpect(content().string(containsString("google.com/maps")));
+        }
+
+        @Test
+        @DisplayName("Entrega 6: la vista de todas las necesidades")
+        void todasLasNecesidades() throws Exception {
+            api.entidades = List.of(Map.of("id", UUID.randomUUID().toString(), "razonSocial", "Escuela 12",
+                    "campanias", List.of(Map.of("necesidades", List.of(Map.of("nombre", "Cuadernos",
+                            "subcategoria", "Útiles escolares", "cantidadObjetivo", 50, "cantidadRecibida", 0, "satisfecha", false))))));
+
+            mvc.perform(comoAdmin("/admin/entidades/necesidades"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Escuela 12")))
+                    .andExpect(content().string(containsString("Cuadernos")))
+                    .andExpect(content().string(containsString("0 de 50 unidades")));
+        }
 
         @Test
         @DisplayName("Listado de donantes con nombre, estado y acciones")

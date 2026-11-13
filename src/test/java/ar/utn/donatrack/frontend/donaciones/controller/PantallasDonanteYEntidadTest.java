@@ -128,13 +128,13 @@ class PantallasDonanteYEntidadTest {
                 "ubicacion", Map.of("idEntidad", UUID.randomUUID().toString(), "razonSocial", "Comedor Los Pibes",
                         "localidad", "Lanús", "provincia", "Buenos Aires"),
                 "necesidadesAbiertas", List.of(Map.of("nombre", "Frazadas", "subcategoria", "Abrigo",
-                        "cantidadObjetivo", 30, "cantidadRecibida", 10, "campania", "Invierno")))), 1, 1, 1);
+                        "cantidadObjetivo", 30, "cantidadRecibida", 10, "unidad", "kg", "campania", "Invierno")))), 1, 1, 1);
 
         mvc.perform(get("/donante/entidades").sessionAttr(SesionUsuario.ATRIBUTO, donante))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Comedor Los Pibes")))
                 .andExpect(content().string(containsString("Lanús, Buenos Aires")))
-                .andExpect(content().string(containsString("10 de 30 recibidas")))
+                .andExpect(content().string(containsString("10 de 30 kg recibidas")))
                 .andExpect(content().string(containsString("Campaña: Invierno")));
     }
 

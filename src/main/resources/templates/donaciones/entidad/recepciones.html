@@ -29,10 +29,13 @@
         </div></div>
         <div class="fila" style="gap: var(--s-3)">
           <span th:replace="~{comun/fragmentos/componentes :: estado(${d.estado})}"></span>
+          <a class="btn btn-secundario" th:if="${d.estado == 'EN_TRASLADO' and d['idRutaLogistica'] != null}"
+             th:href="@{/tracking/ruta/{ruta}(ruta=${d['idRutaLogistica']})}" data-carga>
+            <svg th:replace="~{comun/fragmentos/componentes :: ic('pin')}"></svg>Ver en el mapa</a>
           <a class="btn btn-sol" th:if="${d.estado == 'EN_TRASLADO'}"
              th:href="@{/recepcion(donacion=${d.id})}" data-carga>Confirmar recepción</a>
           <a class="btn btn-secundario" th:if="${d.estado == 'LISTA_PARA_ENTREGAR'}"
-             th:href="@{/recepcion(donacion=${d.id})}" data-carga>Seguir la entrega</a>
+             th:href="@{/recepcion(donacion=${d.id})}" data-carga>Ver la entrega</a>
           <a class="btn btn-secundario" th:if="${d.estado == 'ENTREGADA'}"
              th:href="@{/recepcion(donacion=${d.id})}" data-carga>Ver la recepción</a>
         </div>

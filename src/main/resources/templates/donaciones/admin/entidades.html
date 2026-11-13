@@ -7,7 +7,10 @@
 
     <div class="encabezado-pagina">
       <div><h1>Entidades beneficiarias</h1><p>Las organizaciones que reciben donaciones.</p></div>
-      <a class="btn btn-sol" th:href="@{/admin/entidades/nueva}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('plus')}"></svg>Registrar entidad</a>
+      <div class="fila">
+        <a class="btn btn-secundario" th:href="@{/admin/entidades/necesidades}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('target')}"></svg>Ver todas las necesidades</a>
+        <a class="btn btn-sol" th:href="@{/admin/entidades/nueva}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('plus')}"></svg>Registrar entidad</a>
+      </div>
     </div>
 
     <form method="get" th:action="@{/admin/entidades}" class="tarjeta" aria-label="Buscar entidades" style="margin-bottom: var(--s-5)">
@@ -28,21 +31,27 @@
           <div class="item-cuerpo">
             <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('building')}"></svg></span>
             <div>
-              <p class="item-titulo" th:text="${e.razonSocial}">Comedor Los Pibes</p>
+              <p class="item-titulo"><a th:href="@{/admin/entidades/{id}(id=${e.id})}" th:text="${e.razonSocial}" data-carga>Comedor Los Pibes</a></p>
               <p class="suave chico" style="margin:0">
                 <th:block th:if="${e['direccion'] != null and e['direccion']['localidad'] != null}">
                   <span th:text="${e['direccion']['localidad']['nombre']}">Lanús</span> ·
                 </th:block>
                 <span th:with="campanias=${e['campanias'] == null ? 0 : e['campanias'].size()}"
                       th:text="${campanias == 1} ? '1 campaña' : ${campanias} + ' campañas'">2 campañas</span>
+                <span th:with="abiertas=${abiertasPorEntidad.get(e.id) ?: 0}"
+                      th:text="' · ' + (${abiertas == 1} ? '1 necesidad abierta' : ${abiertas} + ' necesidades abiertas')"> · 3 necesidades abiertas</span>
               </p>
             </div>
           </div>
+          <div class="fila">
+          <a class="btn btn-secundario" th:href="@{/admin/entidades/{id}(id=${e.id})}" data-carga
+             th:aria-label="'Ver ' + ${e.razonSocial}">Ver</a>
           <button type="button" class="btn btn-secundario btn-icono" data-modal="confirmar-baja"
                   th:data-accion="@{/admin/entidades/{id}/eliminar(id=${e.id})}"
                   th:data-detalle="${'Se elimina ' + e.razonSocial + '. Si ya recibió donaciones, el servicio no lo permite.'}"
                   th:aria-label="'Eliminar ' + ${e.razonSocial}">
             <svg th:replace="~{comun/fragmentos/componentes :: ic('trash')}"></svg></button>
+          </div>
         </li>
       </ul>
       <nav th:replace="~{donaciones/admin/fragmentos :: paginador(${pagina}, ${urlAnterior}, ${urlSiguiente})}"></nav>

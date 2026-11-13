@@ -2,6 +2,7 @@ package ar.utn.donatrack.frontend.donaciones.controller;
 
 import ar.utn.donatrack.frontend.comun.exceptions.ApiException;
 import ar.utn.donatrack.frontend.donaciones.services.DonacionesApi;
+import ar.utn.donatrack.frontend.donaciones.services.Necesidades;
 import ar.utn.donatrack.frontend.donaciones.services.Pagina;
 
 import java.util.ArrayList;
@@ -46,13 +47,83 @@ public class AdminEntidadesController {
         Map<String, Object> filtros = new LinkedHashMap<>();
         filtros.put("email", email);
 
+        Map<String, Long> abiertasPorEntidad = new LinkedHashMap<>();
+        for (Map<String, Object> entidad : pagina.getContenido()) {
+            abiertasPorEntidad.put(String.valueOf(entidad.get("id")), Necesidades.de(entidad).stream()
+                    .filter(n -> !Boolean.TRUE.equals(n.get("satisfecha"))).count());
+        }
         model.addAttribute("pagina", pagina);
+        model.addAttribute("abiertasPorEntidad", abiertasPorEntidad);
         model.addAttribute("filtros", filtros);
         model.addAttribute("hayFiltros", !Administracion.vacio(email));
         model.addAttribute("urlAnterior", Administracion.url(LISTADO, filtros, pagina.getNumero() - 1));
         model.addAttribute("urlSiguiente", Administracion.url(LISTADO, filtros, pagina.getNumero() + 1));
         model.addAttribute("pestania", "entidades");
         return "donaciones/admin/entidades";
+    }
+
+    /**
+     * Entrega 6: todas las necesidades de todas las entidades, para que la
+     * administración vea qué falta. Por defecto solo las abiertas.
+     */
+    @GetMapping("/necesidades")
+    public String necesidades(@RequestParam(defaultValue = "false") boolean todas,
+                              @RequestParam(required = false) String subcategoria, Model model) {
+        List<Map<String, Object>> filas = new ArrayList<>();
+        java.util.Set<String> subcategorias = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (Map<String, Object> entidad : api.entidades()) {
+            for (Map<String, Object> fila : Necesidades.de(entidad)) {
+                subcategorias.add(String.valueOf(fila.get("subcategoria")));
+                boolean abierta = !Boolean.TRUE.equals(fila.get("satisfecha"));
+                boolean coincide = Administracion.vacio(subcategoria)
+                        || subcategoria.strip().equalsIgnoreCase(String.valueOf(fila.get("subcategoria")));
+                if ((todas || abierta) && coincide) {
+                    filas.add(fila);
+                }
+            }
+        }
+        filas.sort(java.util.Comparator
+                .comparing((Map<String, Object> f) -> (Boolean) f.get("satisfecha"))
+                .thenComparing(f -> -((Integer) f.get("falta")))
+                .thenComparing(f -> String.valueOf(f.get("razonSocial")).toLowerCase()));
+        subcategorias.remove("");
+        model.addAttribute("necesidades", filas);
+        model.addAttribute("todas", todas);
+        model.addAttribute("subcategoria", subcategoria == null ? "" : subcategoria.strip());
+        model.addAttribute("subcategorias", subcategorias);
+        model.addAttribute("pestania", "entidades");
+        return "donaciones/admin/necesidades";
+    }
+
+    /** Entrega 6: el detalle de una entidad, con su ubicación, campañas y necesidades. */
+    @GetMapping("/{id}")
+    public String detalle(@PathVariable UUID id, Model model) {
+        Map<String, Object> entidad = api.entidad(id);
+        Map<String, Object> direccion = ar.utn.donatrack.frontend.comun.util.Mapas.mapa(entidad.get("direccion"));
+        Map<String, Object> localidad = ar.utn.donatrack.frontend.comun.util.Mapas.mapa(direccion.get("localidad"));
+        List<Map<String, Object>> campanias = new ArrayList<>();
+        for (Map<String, Object> campania : ar.utn.donatrack.frontend.comun.util.Mapas.lista(entidad.get("campanias"))) {
+            Map<String, Object> conNecesidades = new LinkedHashMap<>(campania);
+            List<Map<String, Object>> necesidades = new ArrayList<>();
+            for (Map<String, Object> necesidad : ar.utn.donatrack.frontend.comun.util.Mapas.lista(campania.get("necesidades"))) {
+                necesidades.add(Necesidades.fila(entidad, campania, necesidad));
+            }
+            conNecesidades.put("filas", necesidades);
+            campanias.add(conNecesidades);
+        }
+        model.addAttribute("entidad", entidad);
+        model.addAttribute("direccion", direccion);
+        model.addAttribute("localidad", ar.utn.donatrack.frontend.comun.util.Mapas.texto(localidad, "nombre"));
+        model.addAttribute("provincia", ar.utn.donatrack.frontend.comun.util.Mapas.texto(
+                ar.utn.donatrack.frontend.comun.util.Mapas.mapa(localidad.get("provincia")), "nombre"));
+        model.addAttribute("contactos", ar.utn.donatrack.frontend.comun.util.Mapas.lista(entidad.get("contactos")));
+        model.addAttribute("representantes", ar.utn.donatrack.frontend.comun.util.Mapas.lista(entidad.get("representantes")));
+        model.addAttribute("campanias", campanias);
+        model.addAttribute("abiertas", campanias.stream()
+                .flatMap(c -> ((List<?>) c.get("filas")).stream())
+                .filter(f -> !Boolean.TRUE.equals(((Map<?, ?>) f).get("satisfecha"))).count());
+        model.addAttribute("pestania", "entidades");
+        return "donaciones/admin/entidad";
     }
 
     @GetMapping("/nueva")

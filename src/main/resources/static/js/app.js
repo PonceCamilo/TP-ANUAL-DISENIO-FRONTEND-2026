@@ -122,6 +122,31 @@
     });
   });
 
+  // ---- filtros: elegir una opción ya filtra (el botón queda para las fechas) -------------
+  document.querySelectorAll('form[data-autoenviar]').forEach(function (form) {
+    form.addEventListener('change', function (ev) {
+      var t = ev.target;
+      if (t && (t.type === 'radio' || t.type === 'checkbox' || t.tagName === 'SELECT')) {
+        if (form.requestSubmit) { form.requestSubmit(); } else { form.submit(); }
+      }
+    });
+  });
+
+  // ---- fechas de vencimiento: no se puede donar algo vencido ----------------------------
+  // El mínimo es hoy, en la fecha de quien usa el navegador (no la del servidor).
+  document.querySelectorAll('input[type="date"][data-desde-hoy]').forEach(function (campo) {
+    var hoy = new Date();
+    hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
+    campo.min = hoy.toISOString().slice(0, 10);
+    function revisar() {
+      campo.setCustomValidity(campo.value && campo.value < campo.min
+        ? 'Ese bien ya está vencido: no se puede donar. Elegí una fecha de hoy en adelante.' : '');
+    }
+    campo.addEventListener('input', revisar);
+    campo.addEventListener('change', revisar);
+    revisar();
+  });
+
   // ---- crear cuenta: las dos contraseñas tienen que coincidir ---------------------------
   document.querySelectorAll('form[data-repetir]').forEach(function (form) {
     var a = form.querySelector('[name="password"]');

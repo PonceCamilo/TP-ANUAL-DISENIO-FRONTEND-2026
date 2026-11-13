@@ -124,6 +124,16 @@ class DonacionesApiFalsa extends DonacionesApi {
     @Override
     public UUID buscarDonante(String email) { return donanteEncontrado; }
 
+    Map<UUID, Integer> cantidadesDivididas;
+    Map<String, Object> parteNueva = Map.of("id", UUID.randomUUID().toString());
+
+    @Override
+    public Map<String, Object> dividir(UUID donacionId, Map<UUID, Integer> cantidades) {
+        registrar("dividir " + donacionId);
+        cantidadesDivididas = cantidades;
+        return parteNueva;
+    }
+
     // ── Entrega 6: "Mis donaciones" filtrada y datos públicos ──────────────────
 
     List<String> subcategoriasPedidas;

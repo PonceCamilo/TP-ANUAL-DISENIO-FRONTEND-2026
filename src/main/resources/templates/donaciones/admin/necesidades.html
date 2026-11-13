@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{comun/fragmentos/base :: pagina('Necesidades', ~{::main})}">
+<body>
+<main id="contenido" tabindex="-1">
+  <div class="contenedor">
+    <nav th:replace="~{donaciones/admin/fragmentos :: pestanias(${pestania})}"></nav>
+    <nav class="migas" aria-label="Ruta"><a th:href="@{/admin/entidades}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('arrow-left')}"></svg>Entidades</a></nav>
+
+    <div class="encabezado-pagina">
+      <div><h1>Necesidades de las entidades</h1>
+        <p>Lo que piden todas las entidades, con cuánto recibieron y cuánto les falta. Primero las que más necesitan.</p></div>
+    </div>
+
+    <form method="get" th:action="@{/admin/entidades/necesidades}" class="filtros" aria-label="Filtrar necesidades" data-autoenviar>
+      <div class="campo">
+        <label for="subcategoria">Tipo de bien</label>
+        <select id="subcategoria" name="subcategoria">
+          <option value="" th:selected="${#strings.isEmpty(subcategoria)}">Todos</option>
+          <option th:each="s : ${subcategorias}" th:value="${s}" th:text="${s}"
+                  th:selected="${#strings.equalsIgnoreCase(s, subcategoria)}">Alimentos</option>
+        </select>
+      </div>
+      <label class="opcion"><input type="checkbox" name="todas" value="true" th:checked="${todas}"> Incluir las ya cubiertas</label>
+      <div class="filtros-acciones">
+        <a class="btn btn-secundario" th:if="${todas or !#strings.isEmpty(subcategoria)}" th:href="@{/admin/entidades/necesidades}" data-carga>
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('x')}"></svg>Limpiar filtros</a>
+        <button class="btn btn-sol" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
+      </div>
+    </form>
+
+    <p class="suave chico" role="status" th:if="${!necesidades.isEmpty()}"
+       th:text="${necesidades.size() == 1} ? '1 necesidad' : ${necesidades.size()} + ' necesidades'">5 necesidades</p>
+    <div class="tarjeta tabla-envoltorio" th:if="${!necesidades.isEmpty()}">
+      <table class="tabla">
+        <thead>
+          <tr><th scope="col">Entidad</th><th scope="col">Necesidad</th><th scope="col">Tipo de bien</th><th scope="col">Recibió</th><th scope="col">Falta</th><th scope="col">Avance</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="n : ${necesidades}">
+            <td><a th:href="@{/admin/entidades/{id}(id=${n.idEntidad})}" th:text="${n.razonSocial}" data-carga>Comedor Los Pibes</a></td>
+            <td>
+              <strong th:text="${n.nombre}">Arroz</strong>
+              <div class="suave chico" th:text="${n.tipo} + (${#strings.isEmpty(n.campania)} ? '' : ' · ' + ${n.campania})">Extraordinaria · Invierno</div>
+            </td>
+            <td th:text="${n.subcategoria}">Alimentos</td>
+            <td th:text="${n.recibida} + ' de ' + ${n.objetivo} + ' ' + ${n.unidad}">10 de 30 kg</td>
+            <td>
+              <span th:if="${n.satisfecha}" class="estado estado-ok">Cubierta</span>
+              <span th:unless="${n.satisfecha}" th:text="${n.falta} + ' ' + ${n.unidad}">20 kg</span>
+            </td>
+            <td style="min-width: 8rem">
+              <div class="progreso" th:classappend="${n.satisfecha} ? 'completo'" role="progressbar" th:aria-valuenow="${n.porcentaje}" aria-valuemin="0" aria-valuemax="100"
+                   th:aria-label="'Avance de ' + ${n.nombre}">
+                <span th:style="'width:' + ${n.porcentaje} + '%'"></span></div>
+              <span class="suave chico" th:text="${n.porcentaje} + '%'">33%</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <th:block th:if="${necesidades.isEmpty()}">
+      <div th:replace="~{comun/fragmentos/componentes :: vacio('check', 'No hay necesidades para mostrar', 'Ninguna entidad tiene necesidades abiertas con ese filtro.', null, null)}"></div>
+    </th:block>
+  </div>
+</main>
+</body>
+</html>

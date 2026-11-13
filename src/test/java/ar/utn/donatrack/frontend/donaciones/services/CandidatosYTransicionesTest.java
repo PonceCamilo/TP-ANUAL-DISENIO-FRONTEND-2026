@@ -49,6 +49,41 @@ class CandidatosYTransicionesTest {
         }
 
         @Test
+        @DisplayName("Entrega 6: una sola lista; primero la que proponen todos, después por la suma de puestos")
+        @SuppressWarnings("unchecked")
+        void unificados() {
+            Map<String, Object> necesidadAbrigo = Map.of("nombre", "Camperas", "subcategoria", "Abrigo",
+                    "cantidadObjetivo", 20, "cantidadRecibida", 5, "unidad", "unidades", "satisfecha", false);
+            Map<String, Object> necesidadOtra = Map.of("nombre", "Arroz", "subcategoria", "Alimentos",
+                    "cantidadObjetivo", 10, "cantidadRecibida", 0, "satisfecha", false);
+            Map<String, Object> conNecesidades = Map.of("id", escuela.toString(), "razonSocial", "Escuela 12",
+                    "direccion", Map.of("localidad", Map.of("nombre", "Lanús", "provincia", Map.of("nombre", "Buenos Aires"))),
+                    "campanias", List.of(Map.of("necesidades", List.of(necesidadAbrigo, necesidadOtra))));
+            Map<String, Object> respuesta = Map.of(
+                    "rankings", List.of(
+                            Map.of("algoritmo", "COMPATIBILIDAD_SEMANTICA",
+                                    "entidades", List.of(Map.of("id", comedor.toString(), "razonSocial", "Comedor"), conNecesidades)),
+                            Map.of("algoritmo", "PRIORIDAD_SUBATENDIDOS",
+                                    "entidades", List.of(conNecesidades))),
+                    "coincidencias", List.of(conNecesidades));
+
+            List<Map<String, Object>> filas = Candidatos.unificados(respuesta, "Abrigo");
+
+            assertThat(filas).extracting(f -> f.get("razonSocial")).containsExactly("Escuela 12", "Comedor");
+            Map<String, Object> primera = filas.getFirst();
+            assertThat(primera).containsEntry("recomendada", true).containsEntry("localidad", "Lanús")
+                    .containsEntry("provincia", "Buenos Aires");
+            assertThat((List<Map<String, Object>>) primera.get("puestos"))
+                    .extracting(p -> p.get("puesto")).containsExactly(2, 1);
+            // Solo las necesidades abiertas de la misma subcategoría, con lo que falta y su unidad.
+            assertThat((List<Map<String, Object>>) primera.get("necesidades")).singleElement()
+                    .satisfies(n -> assertThat(n).containsEntry("nombre", "Camperas").containsEntry("falta", 15)
+                            .containsEntry("unidad", "unidades"));
+            assertThat((List<Map<String, Object>>) filas.get(1).get("puestos"))
+                    .extracting(p -> p.get("puesto")).containsExactly(1, 0);
+        }
+
+        @Test
         @DisplayName("Una respuesta sin rankings no tiene candidatas")
         void sinRankings() {
             assertThat(Candidatos.idsDeEntidades(Map.of())).isEmpty();

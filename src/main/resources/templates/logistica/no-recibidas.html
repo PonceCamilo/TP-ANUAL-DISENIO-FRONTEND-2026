@@ -17,7 +17,8 @@
           <div class="item-cuerpo">
             <span class="icono-circulo"><svg th:replace="~{comun/fragmentos/componentes :: ic('alert')}"></svg></span>
             <div>
-              <p class="item-titulo" th:text="|Donación ${e['idDonacion']}|">Donación</p>
+              <p class="item-titulo" th:text="${e['resumen'] != null and !#strings.isEmpty(e['resumen'])} ? ${e['resumen']} : |Donación ${e['idDonacion']}|">Donación</p>
+              <p class="suave chico" style="margin:0" th:if="${e['nombreEntidad'] != null}" th:text="'Para ' + ${e['nombreEntidad']}">Para Comedor</p>
               <p class="suave chico" style="margin:0" th:text="${e['motivoTexto']}">Motivo</p>
             </div>
           </div>

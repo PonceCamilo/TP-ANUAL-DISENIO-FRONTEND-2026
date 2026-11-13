@@ -8,34 +8,30 @@
       <a class="btn btn-sol" th:href="@{/donante/donar}" data-carga><svg th:replace="~{comun/fragmentos/componentes :: ic('plus')}"></svg>Nueva donación</a>
     </div>
 
-    <form method="get" th:action="@{/donante/donaciones}" class="tarjeta" style="margin-bottom: var(--s-4)"
-          aria-label="Filtrar mis donaciones">
-      <div class="campo" style="max-width:20rem">
-        <label for="estado">Estado</label>
-        <select id="estado" name="estado">
-          <option value="" th:selected="${estadoFiltro == ''}">Todos</option>
-          <option value="EN_DEPOSITO" th:selected="${estadoFiltro == 'EN_DEPOSITO'}">En depósito</option>
-          <option value="ASIGNACION_REALIZADA" th:selected="${estadoFiltro == 'ASIGNACION_REALIZADA'}">Entidad asignada</option>
-          <option value="LISTA_PARA_ENTREGAR" th:selected="${estadoFiltro == 'LISTA_PARA_ENTREGAR'}">Lista para entregar</option>
-          <option value="EN_TRASLADO" th:selected="${estadoFiltro == 'EN_TRASLADO'}">En camino</option>
-          <option value="ENTREGADA" th:selected="${estadoFiltro == 'ENTREGADA'}">Entregada</option>
-          <option value="ENTREGA_FALLIDA" th:selected="${estadoFiltro == 'ENTREGA_FALLIDA'}">Entrega fallida</option>
-          <option value="VENCIDA" th:selected="${estadoFiltro == 'VENCIDA'}">Vencida</option>
-        </select>
-      </div>
-      <fieldset class="campo" th:if="${!catalogo.isEmpty()}">
+    <form method="get" th:action="@{/donante/donaciones}" class="filtros" aria-label="Filtrar mis donaciones" data-autoenviar>
+      <fieldset class="campo filtros-ancho">
+        <legend>Estado</legend>
+        <div class="pildoras">
+          <label class="pildora"><input type="radio" name="estado" value="" th:checked="${estadoFiltro == ''}"><span>Todas</span></label>
+          <label class="pildora" th:each="e : ${ {'EN_DEPOSITO','ASIGNACION_REALIZADA','LISTA_PARA_ENTREGAR','EN_TRASLADO','ENTREGADA','ENTREGA_FALLIDA','VENCIDA'} }">
+            <input type="radio" name="estado" th:value="${e}" th:checked="${estadoFiltro == e}">
+            <span th:text="${@etiquetas.estado(e)}">En depósito</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="campo filtros-ancho" th:if="${!catalogo.isEmpty()}">
         <legend class="fila">Tipo de lo que donaste
           <span th:replace="~{comun/fragmentos/componentes :: ayuda('filtro-tipo', 'Podés elegir varios tipos: se muestran las donaciones de cualquiera de ellos.')}"></span></legend>
-        <div class="opciones">
-          <label class="opcion" th:each="tipo, i : ${catalogo}">
+        <div class="pildoras">
+          <label class="pildora" th:each="tipo, i : ${catalogo}">
             <input type="checkbox" name="subcategoria" th:value="${tipo}"
-                   th:checked="${subcategoriasElegidas.contains(tipo)}"> <span th:text="${tipo}">Abrigo</span>
+                   th:checked="${subcategoriasElegidas.contains(tipo)}"><span th:text="${tipo}">Abrigo</span>
           </label>
         </div>
       </fieldset>
-      <div class="fila">
-        <button class="btn btn-secundario" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
-        <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/donante/donaciones}" data-carga>Quitar filtros</a>
+      <div class="filtros-acciones">
+        <a class="btn btn-secundario" th:if="${hayFiltros}" th:href="@{/donante/donaciones}" data-carga>
+          <svg th:replace="~{comun/fragmentos/componentes :: ic('x')}"></svg>Quitar filtros</a>
+        <button class="btn btn-sol" type="submit"><svg th:replace="~{comun/fragmentos/componentes :: ic('search')}"></svg>Filtrar</button>
       </div>
     </form>
 

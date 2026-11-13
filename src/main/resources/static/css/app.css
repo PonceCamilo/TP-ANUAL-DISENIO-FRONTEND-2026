@@ -337,13 +337,54 @@ footer.pie { border-top: 1px solid var(--c-linea); padding: var(--s-5) 0; color:
 details.demo { margin-top: var(--s-4); }
 details.demo summary { cursor: pointer; color: var(--c-texto-suave); min-height: var(--objetivo-min); display: flex; align-items: center; }
 
+/* ---------- escritorio angosto: el menú no se sale de la pantalla ----------
+   La administración tiene 8 secciones: entre 768 px y 1440 px no entraban en una
+   fila y empujaban la página hacia los costados (se veía "con zoom"). Se achican
+   los botones y, si igual no entran, bajan a una segunda fila. */
+.nav-principal { min-width: 0; }
+.nav { min-width: 0; flex-wrap: wrap; row-gap: var(--s-1); }
+@media (min-width: 48.01rem) and (max-width: 90rem) {
+  .nav a { padding: 0 var(--s-3); gap: var(--s-1); font-size: var(--t-sm); }
+  .barra .contenedor { gap: var(--s-3); }
+  .usuario-nombre { display: none; }
+}
+@media (min-width: 48.01rem) and (max-width: 64rem) {
+  .marca { font-size: 1.25rem; }
+  .nav a { padding: 0 var(--s-2); }
+}
+.badge-no-leidas { box-shadow: 0 0 0 2px #fff; }
+
+/* qué lleva cada parada y qué le falta a cada entidad candidata */
+.carga-parada, .necesidades-candidata { margin: var(--s-2) 0 0; padding-left: var(--s-4); font-size: var(--t-sm); }
+.carga-parada li, .necesidades-candidata li { margin: 2px 0; }
+.item-candidata { align-items: flex-start; }
+.tabla-envoltorio { overflow-x: auto; }
+.tabla-envoltorio .tabla { min-width: 40rem; }
+
+/* filtros de los listados: en grilla, con chips y un "Limpiar" */
+.filtros { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); align-items: end;
+  background: var(--c-superficie); border: 1px solid var(--c-linea); border-radius: var(--r-lg); padding: var(--s-5); margin-bottom: var(--s-5); box-shadow: var(--sombra); }
+.filtros .campo { margin: 0; }
+.filtros .filtros-ancho { grid-column: 1 / -1; }
+.filtros .filtros-acciones { display: flex; gap: var(--s-2); flex-wrap: wrap; grid-column: 1 / -1; justify-content: flex-end; }
+.filtros fieldset { border: 0; padding: 0; min-width: 0; }
+.filtros legend { font-weight: 700; margin-bottom: var(--s-2); }
+.pildoras { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.pildora { position: relative; }
+.pildora input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; min-height: 0; cursor: pointer; }
+.pildora span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--s-4); border: 1px solid var(--c-linea);
+  border-radius: var(--r-pill); background: #fff; font-size: var(--t-sm); font-weight: 600; color: var(--c-tinta); }
+.pildora:hover span { border-color: var(--c-ruta); }
+.pildora input:checked + span { background: var(--c-ruta); border-color: var(--c-ruta); color: #fff; }
+.pildora input:focus-visible + span { outline: 3px solid var(--c-foco); outline-offset: 2px; }
+
 /* ---------- celular: la navegación pasa abajo, con botones grandes ---------- */
 @media (max-width: 48rem) {
   :root { --t-2xl: 1.875rem; --t-xl: 1.5rem; --alto-barra: 60px; }
   main { padding-top: var(--s-5); padding-bottom: calc(var(--s-8) + 72px); }
   .nav-principal { position: fixed; z-index: 50; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--c-linea);
     padding: var(--s-1) var(--s-2) calc(var(--s-1) + env(safe-area-inset-bottom)); gap: 0; box-shadow: 0 -8px 24px rgba(16, 37, 63, .08); }
-  .nav { justify-content: space-around; width: 100%; }
+  .nav { justify-content: space-around; width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .nav li { flex: 1; }
   .nav a { flex-direction: column; justify-content: center; gap: 2px; padding: var(--s-2) 0; min-height: 56px; width: 100%; font-size: var(--t-xs); border-radius: var(--r-md); }
   .nav a .ic { width: 1.5rem; height: 1.5rem; }
